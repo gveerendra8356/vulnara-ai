@@ -26,7 +26,7 @@ class RemediationRepository {
         '/scans/$scanId/remediations',
         queryParameters: {'status': status},
       );
-      final items = (response.data['items'] as List).cast<Map<String, dynamic>>();
+      final items = (response.data as List).cast<Map<String, dynamic>>();
       return items.map(Remediation.fromJson).toList();
     } on DioException catch (e) {
       throw ApiClient.toApiException(e);

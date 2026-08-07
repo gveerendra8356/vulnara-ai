@@ -24,7 +24,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       final loggedIn = authState is AuthLoggedIn;
       final onLoginPage = state.matchedLocation == '/login';
 
-      if (authState is AuthUnknown) return null; // wait for restore attempt to resolve
+      if (authState is AuthUnknown) return '/login'; // prevent booting secure routes before auth check resolves
       if (!loggedIn && !onLoginPage) return '/login';
       if (loggedIn && onLoginPage) return '/scans';
       return null;

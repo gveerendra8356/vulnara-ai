@@ -20,8 +20,8 @@ async def seed_db():
         print("Seeding database...")
         
         # 1. Create Users
-        admin_email = "admin@vulnara.local"
-        analyst_email = "analyst@vulnara.local"
+        admin_email = "admin@vulnara.com"
+        analyst_email = "analyst@vulnara.com"
         
         # Check if users already exist
         admin = (await session.execute(text(f"SELECT user_id FROM users WHERE email='{admin_email}'"))).scalar()
@@ -55,7 +55,7 @@ async def seed_db():
             client_id = uuid.uuid4()
             session.add(User(
                 user_id=client_id,
-                email="client@vulnara.local",
+                email="client@vulnara.com",
                 password_hash=get_password_hash("Client123!"),
                 full_name="Demo Client",
                 role="client"

@@ -32,7 +32,7 @@ async function logout() {
 
 async function listScans(params = {}) {
   const { data } = await http.get("/scans", { params });
-  return data;
+  return Array.isArray(data) ? { items: data } : data;
 }
 
 async function createScan(payload) {
@@ -54,7 +54,7 @@ async function listVulnerabilities(scanId, filters = {}) {
   const params = { ...filters };
   if (Array.isArray(params.severity)) params.severity = params.severity.join(",");
   const { data } = await http.get(`/scans/${scanId}/vulnerabilities`, { params });
-  return data;
+  return Array.isArray(data) ? { items: data } : data;
 }
 
 async function getVulnerability(vulnId) {
@@ -69,7 +69,7 @@ async function updateVulnerability(vulnId, payload) {
 
 async function listThreatLogs(scanId, filters = {}) {
   const { data } = await http.get(`/scans/${scanId}/threat-logs`, { params: filters });
-  return data;
+  return Array.isArray(data) ? { items: data } : data;
 }
 
 async function createRemediation(vulnId, payload) {
@@ -88,12 +88,12 @@ async function getRemediation(remId) {
 // expose this; adjust to match whatever you implement.
 async function listAllRemediations(filters = {}) {
   const { data } = await http.get("/remediations", { params: filters });
-  return data;
+  return Array.isArray(data) ? { items: data } : data;
 }
 
 async function listScanRemediations(scanId, filters = {}) {
   const { data } = await http.get(`/scans/${scanId}/remediations`, { params: filters });
-  return data;
+  return Array.isArray(data) ? { items: data } : data;
 }
 
 async function approveRemediation(remId) {
