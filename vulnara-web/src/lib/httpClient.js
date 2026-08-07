@@ -24,11 +24,17 @@ http.interceptors.response.use(
   (res) => res,
   (err) => {
     const data = err?.response?.data;
-    const message =
-      data?.error?.message ||
-      (typeof data?.detail === "string" ? data.detail : null) ||
-      err.message ||
-      "Request failed";
+    let message = data?.error?.message;
+    if (!message && data?.detail) {
+      if (typeof data.detail === "string") {
+        message = data.detail;
+      } else if (Array.isArray(data.detail)) {
+        message = data.detail.map(d => `${d.loc.join('.')}: ${d.msg}`).join(", ");
+      }
+    }
+    if (!message) {
+      message = err.message || "Request failed";
+    }
     return Promise.reject(new Error(message));
   }
 );

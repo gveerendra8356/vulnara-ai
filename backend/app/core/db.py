@@ -10,11 +10,13 @@ trade-off of the free tier (first query after idle can take ~1-2s longer).
 from __future__ import annotations
 
 import os
-
+from dotenv import load_dotenv
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
+load_dotenv()
+
 # Example: postgresql+asyncpg://user:password@ep-xxxx.neon.tech/vulnara?ssl=require
-DATABASE_URL = os.environ["DATABASE_URL"]
+DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite+aiosqlite:///./vulnara.db")
 
 engine = create_async_engine(DATABASE_URL, pool_pre_ping=True)
 

@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export function RegisterPage() {
-  const { register } = useAuth();
+  const { register, login } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ full_name: "", email: "", password: "", role: "client" });
   const [error, setError] = useState("");
@@ -17,7 +17,8 @@ export function RegisterPage() {
     setBusy(true);
     try {
       await register(form);
-      navigate("/login");
+      await login({ email: form.email, password: form.password });
+      navigate("/");
     } catch (err) {
       setError(err.message || "Registration failed");
     } finally {

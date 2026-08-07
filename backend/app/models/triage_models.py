@@ -12,7 +12,7 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy import String, Numeric, ForeignKey, DateTime, Integer, Boolean, Text, func
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy import Uuid as UUID, JSON as JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.scan import Base  # shared declarative base from Task 3

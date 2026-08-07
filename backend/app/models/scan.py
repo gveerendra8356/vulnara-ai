@@ -15,7 +15,7 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy import String, Boolean, ForeignKey, DateTime, func
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Uuid as UUID
 from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase
 
 

@@ -10,10 +10,11 @@ class ApiConfig {
   /// Change this to your deployed backend's base URL.
   /// Use 10.0.2.2 instead of localhost when testing against a backend
   /// running on your dev machine from the Android emulator.
-  static const String baseUrl = 'https://your-vulnara-backend.example.com';
+  /// Use localhost:8000 for iOS simulator, web, or desktop testing.
+  static const String baseUrl = 'http://10.0.2.2:8000'; // Defaulting to Android Emulator for convenience
 
   /// Same host, but ws(s):// scheme, for the live scan status socket.
-  static const String wsBaseUrl = 'wss://your-vulnara-backend.example.com';
+  static const String wsBaseUrl = 'ws://10.0.2.2:8000';
 
   static const Duration connectTimeout = Duration(seconds: 10);
   static const Duration receiveTimeout = Duration(seconds: 15);

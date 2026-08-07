@@ -18,14 +18,30 @@ from fastapi import FastAPI
 from app.api.routes.scans import router as scans_router
 from app.api.routes.remediations import router as remediations_router
 from app.api.routes.devices import router as devices_router
+from app.api.routes.auth import router as auth_router
+from app.api.routes.vulnerabilities import router as vulnerabilities_router
+from app.api.routes.admin import router as admin_router
 
 logging.basicConfig(level=logging.INFO)
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI(title="Vulnara API")
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(auth_router, tags=["auth"])
 app.include_router(scans_router, tags=["scans"])
+app.include_router(vulnerabilities_router, tags=["vulnerabilities"])
 app.include_router(remediations_router, tags=["remediations"])
 app.include_router(devices_router, tags=["devices"])
+app.include_router(admin_router)
 
 
 @app.get("/health")

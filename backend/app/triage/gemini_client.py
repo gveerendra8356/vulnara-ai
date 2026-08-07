@@ -46,7 +46,7 @@ from app.triage.schemas import ActiveTestVerdict, RemediationResponse, TriageRes
 
 logger = logging.getLogger("vulnara.triage.gemini")
 
-GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "your-gemini-api-key")
 GEMINI_MODEL_NAME = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash")
 
 _client = genai.Client(api_key=GEMINI_API_KEY)

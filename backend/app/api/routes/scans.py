@@ -26,7 +26,11 @@ from app.core.audit_log import log_authorization_confirmation
 from app.core.auth import CurrentUser, get_current_user
 from app.core.db import get_session
 from app.models.scan import Scan
+from app.models.triage_models import Vulnerability, Remediation, CVEDefinition
+from app.models.threat_log import ThreatLog
 from app.schemas.scan import ScanCreateRequest, ScanCreateResponse
+from app.schemas.triage import VulnerabilityResponse, ThreatLogResponse, RemediationResponse
+from sqlalchemy.orm import selectinload
 from app.scanner.task_runner import run_scan_task
 from app.websocket.manager import scan_connection_manager
 
@@ -182,3 +186,98 @@ async def scan_status_ws(websocket: WebSocket, scan_id: uuid.UUID):
         pass
     finally:
         await scan_connection_manager.disconnect(scan_id_str, websocket)
+
+
+@router.get("/scans", response_model=list[ScanCreateResponse])
+async def list_scans(
+    current_user: CurrentUser = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
+):
+    stmt = select(Scan).order_by(Scan.created_at.desc())
+    if current_user.role == "client":
+        stmt = stmt.where(Scan.user_id == current_user.user_id)
+    result = await session.execute(stmt)
+    return result.scalars().all()
+
+@router.post("/scans/{scan_id}/cancel", response_model=ScanCreateResponse)
+async def cancel_scan(
+    scan_id: uuid.UUID,
+    current_user: CurrentUser = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
+):
+    result = await session.execute(select(Scan).where(Scan.scan_id == scan_id))
+    scan = result.scalar_one_or_none()
+    if not scan:
+        raise HTTPException(status_code=404, detail="Scan not found")
+    if scan.user_id != current_user.user_id and current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    if scan.status in ["PENDING", "IN_PROGRESS"]:
+        scan.status = "CANCELLED"
+        await session.commit()
+        await session.refresh(scan)
+    return scan
+
+@router.get("/scans/{scan_id}/vulnerabilities", response_model=list[VulnerabilityResponse])
+async def list_scan_vulnerabilities(
+    scan_id: uuid.UUID,
+    severity: str | None = None,
+    current_user: CurrentUser = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
+):
+    # Verify access to scan first
+    scan_result = await session.execute(select(Scan).where(Scan.scan_id == scan_id))
+    scan = scan_result.scalar_one_or_none()
+    if not scan:
+        raise HTTPException(status_code=404, detail="Scan not found")
+    if scan.user_id != current_user.user_id and current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    stmt = select(Vulnerability).where(Vulnerability.scan_id == scan_id)
+    if severity:
+        severities = [s.strip().upper() for s in severity.split(",")]
+        stmt = stmt.where(Vulnerability.severity.in_(severities))
+    
+    # We might want to join CVE details if they exist.
+    # In a real app we'd load it. Pydantic from_attributes works if relationship is loaded.
+    # We'll just load the vulnerabilities directly.
+    result = await session.execute(stmt.order_by(Vulnerability.discovered_at.desc()))
+    return result.scalars().all()
+
+@router.get("/scans/{scan_id}/threat-logs", response_model=list[ThreatLogResponse])
+async def list_scan_threat_logs(
+    scan_id: uuid.UUID,
+    current_user: CurrentUser = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
+):
+    # Verify access
+    scan_result = await session.execute(select(Scan).where(Scan.scan_id == scan_id))
+    scan = scan_result.scalar_one_or_none()
+    if not scan or (scan.user_id != current_user.user_id and current_user.role != "admin"):
+        raise HTTPException(status_code=404, detail="Scan not found")
+
+    stmt = select(ThreatLog).where(ThreatLog.scan_id == scan_id).order_by(ThreatLog.executed_at.desc())
+    result = await session.execute(stmt)
+    return result.scalars().all()
+
+@router.get("/scans/{scan_id}/remediations", response_model=list[RemediationResponse])
+async def list_scan_remediations(
+    scan_id: uuid.UUID,
+    current_user: CurrentUser = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
+):
+    # Verify access
+    scan_result = await session.execute(select(Scan).where(Scan.scan_id == scan_id))
+    scan = scan_result.scalar_one_or_none()
+    if not scan or (scan.user_id != current_user.user_id and current_user.role != "admin"):
+        raise HTTPException(status_code=404, detail="Scan not found")
+
+    # Join remediations via vulnerabilities
+    stmt = (
+        select(Remediation)
+        .join(Vulnerability, Remediation.vuln_id == Vulnerability.vuln_id)
+        .where(Vulnerability.scan_id == scan_id)
+        .order_by(Remediation.created_at.desc())
+    )
+    result = await session.execute(stmt)
+    return result.scalars().all()
