@@ -1,4 +1,3 @@
-
 -- Migration 003: add DeviceTokens table for FCM push notifications.
 --
 -- Neither the Task 1 schema nor the Task 2 API contract has any concept
