@@ -89,31 +89,31 @@ class NmapScanner:
         failure or on timeout.
         """
         cmd = [self.nmap_path, *args, "-oX", "-"]
+        import subprocess
 
-        proc = await asyncio.create_subprocess_exec(
-            *cmd,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-        )
+        def run_sync():
+            return subprocess.run(
+                cmd,
+                capture_output=True,
+                timeout=self.timeout_seconds,
+            )
 
         try:
-            stdout, stderr = await asyncio.wait_for(
-                proc.communicate(), timeout=self.timeout_seconds
-            )
-        except asyncio.TimeoutError:
-            proc.kill()
-            await proc.wait()
+            proc = await asyncio.to_thread(run_sync)
+        except subprocess.TimeoutExpired:
             raise NmapExecutionError(
                 f"nmap timed out after {self.timeout_seconds}s running: {' '.join(cmd)}"
             )
+        except Exception as e:
+            raise NmapExecutionError(f"Failed to execute nmap: {e}")
 
         if proc.returncode != 0:
             raise NmapExecutionError(
-                f"nmap exited {proc.returncode}: {stderr.decode(errors='replace')}"
+                f"nmap exited {proc.returncode}: {proc.stderr.decode(errors='replace')}"
             )
 
         try:
-            return ET.fromstring(stdout)
+            return ET.fromstring(proc.stdout)
         except ET.ParseError as e:
             raise NmapExecutionError(f"Failed to parse nmap XML output: {e}")
 
@@ -127,7 +127,7 @@ class NmapScanner:
         host, but we keep it list-based since `target` could be a CIDR
         range in future (e.g. client authorizes a whole subnet).
         """
-        root = await self._run_nmap_xml(["-sn", "-T4", target])
+        root = await self._run_nmap_xml(["-sn", "-Pn", "-T4", target])
 
         hosts: list[HostResult] = []
         for host_el in root.findall("host"):
@@ -166,6 +166,7 @@ class NmapScanner:
         args = [
             "-sV",  # service + version detection (implies banner grabbing)
             "--script=banner",  # NSE script: explicit raw banner grab as backup
+            "-Pn",  # skip host discovery (assume up) to bypass unprivileged ICMP drops
             "-T4",  # timing template: aggressive but safe for most targets
             *port_range.split(),
             ip,

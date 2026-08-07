@@ -137,6 +137,14 @@ async def get_scan(
     if scan.user_id != current_user.user_id and current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Not authorized to view this scan")
 
+    from sqlalchemy import func
+    counts_result = await session.execute(
+        select(Vulnerability.severity, func.count())
+        .where(Vulnerability.scan_id == scan_id)
+        .group_by(Vulnerability.severity)
+    )
+    severity_counts = dict(counts_result.all())
+
     return {
         "scan_id": scan.scan_id,
         "user_id": scan.user_id,
@@ -147,9 +155,10 @@ async def get_scan(
         "started_at": scan.started_at,
         "completed_at": scan.completed_at,
         "created_at": scan.created_at,
-        # Real severity counts require the Vulnerabilities table / triage
-        # module, not built in this task -- zeroed placeholder for now.
-        "vuln_count_by_severity": {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0, "INFO": 0},
+        "vuln_count_by_severity": {
+            sev: severity_counts.get(sev, 0)
+            for sev in ("CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO")
+        },
     }
 
 

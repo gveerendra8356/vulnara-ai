@@ -71,9 +71,19 @@ class ScanStatusNotifier extends StateNotifier<ScanStatusState> {
     // screen isn't blank while the socket handshake is in flight.
     try {
       final scan = await _ref.read(scanRepositoryProvider).getScan(_scanId);
+      
+      final vulnsRaw = await _ref.read(scanRepositoryProvider).getVulnerabilities(_scanId);
+      final vulns = vulnsRaw.map(VulnerabilitySummary.fromJson).toList();
+      vulns.sort((a, b) {
+        final rankA = ScanStatusState._severityRank[a.severity] ?? 5;
+        final rankB = ScanStatusState._severityRank[b.severity] ?? 5;
+        return rankA.compareTo(rankB);
+      });
+
       state = state.copyWith(
         status: scan.status,
         severityCounts: scan.severityCounts ?? SeverityCounts.zero,
+        topFindings: vulns.take(_maxTopFindings).toList(),
       );
       if (scan.status == ScanStatus.completed ||
           scan.status == ScanStatus.failed ||
