@@ -178,8 +178,38 @@ async def scan_status_ws(websocket: WebSocket, scan_id: uuid.UUID):
         await websocket.close(code=4001)
         return
 
-    # TODO: verify token, resolve user, and confirm user owns scan_id
-    # (or is admin) before accepting -- mirroring the check in get_scan().
+    from jose import jwt, JWTError
+    from app.core.security import SECRET_KEY, ALGORITHM
+    from app.models.user import User
+    from app.core.db import AsyncSessionLocal
+    
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id_str = payload.get("sub")
+        if not user_id_str:
+            await websocket.close(code=4001)
+            return
+        user_id = uuid.UUID(user_id_str)
+    except JWTError:
+        await websocket.close(code=4001)
+        return
+
+    async with AsyncSessionLocal() as session:
+        user_result = await session.execute(select(User).where(User.user_id == user_id))
+        user = user_result.scalar_one_or_none()
+        if not user:
+            await websocket.close(code=4001)
+            return
+
+        scan_result = await session.execute(select(Scan).where(Scan.scan_id == scan_id))
+        scan = scan_result.scalar_one_or_none()
+        if not scan:
+            await websocket.close(code=4004)
+            return
+
+        if scan.user_id != user.user_id and user.role != "admin":
+            await websocket.close(code=4003)
+            return
 
     scan_id_str = str(scan_id)
     await scan_connection_manager.connect(scan_id_str, websocket)

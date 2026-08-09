@@ -30,8 +30,14 @@ async def update_config(
 async def list_cve_defs(current_user: CurrentUser = Depends(get_current_user)):
     if current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Not authorized")
-    # Return empty list as stub
-    return []
+    from sqlalchemy import select
+    from app.core.db import AsyncSessionLocal
+    from app.models.triage_models import CVEDefinition
+    
+    async with AsyncSessionLocal() as session:
+        stmt = select(CVEDefinition).order_by(CVEDefinition.published_date.desc()).limit(100)
+        result = await session.execute(stmt)
+        return result.scalars().all()
 
 @router.post("/cve-definitions/sync")
 async def sync_cve_defs(current_user: CurrentUser = Depends(get_current_user)):

@@ -6,6 +6,7 @@ Implements Task 2 API Contract Section 1: Auth
 
 from __future__ import annotations
 
+import uuid
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -108,7 +109,12 @@ async def refresh_token(payload: RefreshTokenRequest, session: AsyncSession = De
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid refresh token")
 
-    result = await session.execute(select(User).where(User.user_id == user_id_str))
+    try:
+        user_id_uuid = uuid.UUID(user_id_str)
+    except ValueError:
+        raise HTTPException(status_code=401, detail="Invalid refresh token")
+
+    result = await session.execute(select(User).where(User.user_id == user_id_uuid))
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
