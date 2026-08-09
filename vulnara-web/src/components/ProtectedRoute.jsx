@@ -7,7 +7,7 @@ export function ProtectedRoute({ children, requireAdmin = false }) {
 
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <LoadingRow label="Checking session..." />
       </div>
     );
