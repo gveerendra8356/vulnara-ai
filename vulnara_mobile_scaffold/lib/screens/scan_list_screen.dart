@@ -1,5 +1,9 @@
 // screens/scan_list_screen.dart -- build order item 3 (home). Entry
 // point after login: scan history + FAB into NewScanScreen.
+//
+// UI matches the Stitch "scans_list" mock: accent-striped scan cards
+// with a status pill, timestamp row, and a live progress bar for
+// in-progress scans, plus the shared VULNARA app bar / bottom nav.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,8 +11,11 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../models/scan.dart';
-import '../providers/auth_provider.dart';
 import '../providers/scan_providers.dart';
+import '../theme/vulnara_theme.dart';
+import '../widgets/glass_panel.dart';
+import '../widgets/vulnara_app_bar.dart';
+import '../widgets/vulnara_bottom_nav.dart';
 
 class ScanListScreen extends ConsumerWidget {
   const ScanListScreen({super.key});
@@ -18,77 +25,191 @@ class ScanListScreen extends ConsumerWidget {
     final scansAsync = ref.watch(scanListProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Scans'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => ref.read(authProvider.notifier).logout(),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
+      backgroundColor: VulnaraColors.pageBackground,
+      extendBodyBehindAppBar: true,
+      extendBody: true,
+      appBar: VulnaraAppBar(actions: [VulnaraAvatar(onTap: () => context.go('/profile'))]),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: VulnaraColors.primary,
+        foregroundColor: VulnaraColors.onPrimary,
+        elevation: 0,
         onPressed: () async {
           final created = await context.push<bool>('/scans/new');
           if (created == true) ref.invalidate(scanListProvider);
         },
-        icon: const Icon(Icons.add),
-        label: const Text('New scan'),
+        child: const Icon(Icons.add),
       ),
+      bottomNavigationBar: const VulnaraBottomNav(current: VulnaraTab.scans),
       body: RefreshIndicator(
         onRefresh: () async => ref.invalidate(scanListProvider),
         child: scansAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (err, _) => _ErrorView(message: err.toString(), onRetry: () => ref.invalidate(scanListProvider)),
-          data: (scans) {
-            if (scans.isEmpty) {
-              return LayoutBuilder(
-                builder: (context, constraints) => SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  child: SizedBox(
-                    height: constraints.maxHeight,
-                    child: const Center(child: Text('No scans yet -- tap "New scan" to start one.')),
+          data: (scans) => CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(
+                  VulnaraSpacing.containerPadding,
+                  80,
+                  VulnaraSpacing.containerPadding,
+                  0,
+                ),
+                sliver: SliverToBoxAdapter(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Active Scans', style: VulnaraFonts.headlineMd()),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Monitoring ${scans.length} target${scans.length == 1 ? '' : 's'}.',
+                        style: VulnaraFonts.codeSm(color: VulnaraColors.onSurfaceVariant),
+                      ),
+                      const SizedBox(height: VulnaraSpacing.stackLg),
+                    ],
                   ),
                 ),
-              );
-            }
-            return ListView.separated(
-              physics: const AlwaysScrollableScrollPhysics(),
-              itemCount: scans.length,
-              separatorBuilder: (_, __) => const Divider(height: 1),
-              itemBuilder: (context, index) => _ScanTile(scan: scans[index]),
-            );
-          },
+              ),
+              if (scans.isEmpty)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
+                    child: Text(
+                      'No scans yet -- tap "+" to start one.',
+                      style: VulnaraFonts.codeSm(color: VulnaraColors.onSurfaceVariant),
+                    ),
+                  ),
+                )
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(
+                    VulnaraSpacing.containerPadding,
+                    0,
+                    VulnaraSpacing.containerPadding,
+                    120,
+                  ),
+                  sliver: SliverList.separated(
+                    itemCount: scans.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: VulnaraSpacing.stackMd),
+                    itemBuilder: (context, index) => _ScanCard(scan: scans[index]),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _ScanTile extends StatelessWidget {
-  const _ScanTile({required this.scan});
+class _ScanCard extends StatelessWidget {
+  const _ScanCard({required this.scan});
 
   final Scan scan;
 
-  Color _statusColor(ScanStatus status) => switch (status) {
-        ScanStatus.completed => Colors.green,
-        ScanStatus.failed => Colors.red,
-        ScanStatus.cancelled => Colors.grey,
-        ScanStatus.inProgress => Colors.blue,
-        ScanStatus.pending => Colors.orange,
+  (Color, String, IconData) _statusMeta() => switch (scan.status) {
+        ScanStatus.inProgress => (VulnaraColors.primary, 'IN PROGRESS', Icons.dns_outlined),
+        ScanStatus.failed => (VulnaraColors.error, 'FAILED', Icons.language),
+        ScanStatus.completed => (VulnaraColors.secondaryFixedDim, 'COMPLETED', Icons.lan),
+        ScanStatus.pending => (VulnaraColors.outline, 'PENDING', Icons.storage),
+        ScanStatus.cancelled => (VulnaraColors.outline, 'CANCELLED', Icons.storage),
       };
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: CircleAvatar(
-        backgroundColor: _statusColor(scan.status).withValues(alpha: 0.15),
-        child: Icon(Icons.dns_outlined, color: _statusColor(scan.status), size: 20),
+    final (accent, label, icon) = _statusMeta();
+    final dateStr = DateFormat("yyyy-MM-dd HH:mm:ss 'UTC'").format(scan.createdAt.toUtc());
+    final isPending = scan.status == ScanStatus.pending || scan.status == ScanStatus.cancelled;
+
+    return Opacity(
+      opacity: isPending ? 0.7 : 1,
+      child: Material(
+        color: VulnaraColors.surfaceContainer,
+        borderRadius: BorderRadius.circular(VulnaraRadius.lg),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(VulnaraRadius.lg),
+          onTap: () => context.push('/scans/${scan.scanId}'),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(VulnaraRadius.lg),
+              border: Border.all(color: VulnaraColors.outlineVariant.withValues(alpha: 0.3)),
+            ),
+            child: Stack(
+              children: [
+                Positioned(
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  child: Container(width: 4, decoration: BoxDecoration(color: accent)),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, VulnaraSpacing.stackMd, VulnaraSpacing.stackMd,
+                      VulnaraSpacing.stackMd),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(icon, color: accent, size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              scan.target,
+                              style: VulnaraFonts.codeSm(fontWeight: FontWeight.w700),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          VulnaraChip(label: label, color: accent, dot: scan.status == ScanStatus.inProgress),
+                        ],
+                      ),
+                      const SizedBox(height: VulnaraSpacing.stackMd),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                scan.status == ScanStatus.completed ? 'COMPLETED' : 'INITIATED',
+                                style: VulnaraFonts.labelCaps(),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(dateStr, style: VulnaraFonts.codeSm()),
+                            ],
+                          ),
+                          const Spacer(),
+                          if (scan.severityCounts != null && scan.status == ScanStatus.completed) ...[
+                            const Icon(Icons.bug_report_outlined, size: 16, color: VulnaraColors.onSurfaceVariant),
+                            const SizedBox(width: 4),
+                            Text('${scan.severityCounts!.total} Vulns',
+                                style: VulnaraFonts.codeSm(color: VulnaraColors.onSurfaceVariant)),
+                            const SizedBox(width: 12),
+                          ],
+                          const Icon(Icons.arrow_forward, size: 20, color: VulnaraColors.onSurfaceVariant),
+                        ],
+                      ),
+                      if (scan.status == ScanStatus.inProgress) ...[
+                        const SizedBox(height: VulnaraSpacing.stackMd),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(VulnaraRadius.full),
+                          child: const LinearProgressIndicator(
+                            value: null,
+                            minHeight: 4,
+                            backgroundColor: VulnaraColors.surfaceContainerHighest,
+                            valueColor: AlwaysStoppedAnimation(VulnaraColors.primary),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
-      title: Text(scan.target),
-      subtitle: Text('${scan.status.name} · ${DateFormat.yMMMd().add_jm().format(scan.createdAt.toLocal())}'),
-      trailing: const Icon(Icons.chevron_right),
-      onTap: () => context.push('/scans/${scan.scanId}'),
     );
   }
 }
@@ -107,7 +228,7 @@ class _ErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(message, textAlign: TextAlign.center),
+            Text(message, textAlign: TextAlign.center, style: VulnaraFonts.bodyBase()),
             const SizedBox(height: 12),
             OutlinedButton(onPressed: onRetry, child: const Text('Retry')),
           ],

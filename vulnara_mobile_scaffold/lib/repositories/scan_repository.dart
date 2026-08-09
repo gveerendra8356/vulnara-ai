@@ -64,4 +64,13 @@ class ScanRepository {
       throw ApiClient.toApiException(e);
     }
   }
+
+  Future<Map<String, dynamic>> getVulnerability(String vulnId) async {
+    try {
+      final response = await _client.dio.get('/vulnerabilities/$vulnId');
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      throw ApiClient.toApiException(e);
+    }
+  }
 }

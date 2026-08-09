@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'router.dart';
+import 'theme/vulnara_theme.dart';
 
 class VulnaraApp extends ConsumerWidget {
   const VulnaraApp({super.key});
@@ -14,7 +15,9 @@ class VulnaraApp extends ConsumerWidget {
 
     return MaterialApp.router(
       title: 'Vulnara',
-      theme: ThemeData(colorSchemeSeed: Colors.indigo, useMaterial3: true),
+      theme: buildVulnaraTheme(),
+      darkTheme: buildVulnaraTheme(),
+      themeMode: ThemeMode.dark,
       routerConfig: router,
     );
   }

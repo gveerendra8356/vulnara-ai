@@ -50,11 +50,27 @@ class RemediationRepository {
     }
   }
 
+  Future<void> requestRemediation(String vulnId) async {
+    try {
+      await _client.dio.post('/vulnerabilities/$vulnId/remediations', data: {});
+    } on DioException catch (e) {
+      throw ApiClient.toApiException(e);
+    }
+  }
+
   Future<void> reject(String remediationId, {String? reason}) async {
     try {
       await _client.dio.post('/remediations/$remediationId/reject', data: {
         if (reason != null && reason.isNotEmpty) 'reason': reason,
       });
+    } on DioException catch (e) {
+      throw ApiClient.toApiException(e);
+    }
+  }
+
+  Future<void> execute(String remediationId) async {
+    try {
+      await _client.dio.post('/remediations/$remediationId/mark-executed');
     } on DioException catch (e) {
       throw ApiClient.toApiException(e);
     }
