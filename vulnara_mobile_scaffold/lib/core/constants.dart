@@ -7,17 +7,16 @@
 class ApiConfig {
   ApiConfig._();
 
-  /// Change this to your deployed backend's base URL.
-  /// Use 10.0.2.2 instead of localhost when testing against a backend
-  /// running on your dev machine from the Android emulator.
-  /// Use localhost:8000 for iOS simulator, web, or desktop testing.
-  static const String baseUrl = 'http://10.0.2.2:8000'; // Defaulting to Android Emulator for convenience
+  /// Production Render backend.
+  /// For local dev against an emulator, change to: http://10.0.2.2:8000
+  /// For local dev against iOS simulator / web: http://localhost:8000
+  static const String baseUrl = 'https://vulnara-backend.onrender.com';
 
-  /// Same host, but ws(s):// scheme, for the live scan status socket.
-  static const String wsBaseUrl = 'ws://10.0.2.2:8000';
+  /// Same host, wss:// for the live scan status WebSocket.
+  static const String wsBaseUrl = 'wss://vulnara-backend.onrender.com';
 
-  static const Duration connectTimeout = Duration(seconds: 10);
-  static const Duration receiveTimeout = Duration(seconds: 15);
+  static const Duration connectTimeout = Duration(seconds: 30); // longer for Render cold-start
+  static const Duration receiveTimeout = Duration(seconds: 30);
 }
 
 class StorageKeys {
@@ -26,3 +25,4 @@ class StorageKeys {
   static const String accessToken = 'vulnara_access_token';
   static const String refreshToken = 'vulnara_refresh_token';
 }
+
