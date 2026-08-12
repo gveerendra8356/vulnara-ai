@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: vulnara-backend
+    runtime: python
+    plan: free
+    region: singapore          # closest free region to India; change if you prefer another
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        sync: false             # you paste the Neon connection string in the Render dashboard
+      - key: VULNARA_SECRET_KEY
+        generateValue: true     # Render auto-generates a strong random secret for you
+      - key: GROQ_API_KEY
+        sync: false             # you paste your Groq key in the Render dashboard
+      - key: CORS_ORIGINS
+        value: http://localhost:5173   # update after your frontend is deployed, e.g. add https://your-app.vercel.app
