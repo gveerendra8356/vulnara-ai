@@ -1,54 +1,88 @@
-# How to Deploy Vulnara for FREE (Long-Term Strategy)
+# How to Deploy Vulnara for FREE (Current Stack)
 
-Deploying a complex stack (FastAPI, WebSockets, PostgreSQL, React, and Flutter) usually costs money. However, by strategically utilizing modern "Forever Free" tiers and generous developer platforms, you can host Vulnara for $0/month indefinitely.
+Deploying a complex stack (FastAPI, WebSockets, PostgreSQL, React, and Flutter) usually costs money. However, by strategically utilizing modern "Forever Free" tiers and generous developer platforms, you can host Vulnara for **$0/month** indefinitely.
 
-Here are the two best strategies to achieve this.
-
----
-
-## Strategy A: The "Zero Server" Cloud Approach (Easiest)
-
-This approach uses managed services. It is the easiest to set up, but has minor limitations (like the backend going to sleep when nobody is using it).
-
-### 1. Frontend (Web Dashboard) ➔ Vercel or Netlify ($0)
-- **What to do:** Push your `vulnara-web` folder to GitHub. Log into [Vercel](https://vercel.com/) and import the repository.
-- **Settings:** Build command: `npm run build`. Output directory: `dist`.
-- **Why:** Vercel provides a forever-free tier with global CDN hosting, automatic SSL, and unlimited bandwidth for most hobby projects.
-
-### 2. Database (PostgreSQL) ➔ Neon.tech or Supabase ($0)
-- **What to do:** Create a free account on [Neon.tech](https://neon.tech/) (Serverless Postgres) or [Supabase](https://supabase.com/).
-- **Why:** Neon gives you 500MB of storage and generous compute credits for free. Supabase gives you a 500MB database, though Supabase pauses your project after 1 week of zero activity (you just have to click "Unpause"). Neon scales to zero but wakes up instantly.
-- **Action:** Copy the provided `DATABASE_URL` string.
-
-### 3. Backend API (FastAPI) ➔ Render or Koyeb ($0)
-- **What to do:** Push the `backend` folder to GitHub. Create a "Web Service" on [Render.com](https://render.com/).
-- **Settings:** Set the environment to Python. Start command: `uvicorn app.main:app --host 0.0.0.0 --port 10000`. Add your `DATABASE_URL` and `GROQ_API_KEY` to the Environment Variables settings.
-- **The Catch:** Render’s free tier **spins down** after 15 minutes of inactivity. The next time a Client requests a scan, the backend will take ~30 seconds to wake up. However, it supports WebSockets out of the box and is completely free.
-
-### 4. AI Engine ➔ Groq API ($0)
-- **What to do:** Groq currently offers a generous free tier for developers. Simply use your free `GROQ_API_KEY`. Be mindful of the Requests Per Minute (RPM) limits on the free tier.
+The stack documented here is the **actual deployed stack** as of 2026.
 
 ---
 
-## Strategy B: The "Always Free VPS" Approach (Best for Long-Term)
+## The Current Free Stack
 
-If you do not want your backend to ever fall asleep and you want a true production feel without limits, you should use **Oracle Cloud's Always Free** tier. 
+| Component | Service | Cost |
+|---|---|---|
+| Backend API | [Render](https://render.com) Web Service | $0 |
+| Database | [Neon](https://neon.tech) Serverless Postgres | $0 |
+| Frontend | [GitHub Pages](https://pages.github.com) | $0 |
+| AI Engine | [Groq](https://console.groq.com) Developer API | $0 |
+| Keep-Alive | [cron-job.org](https://cron-job.org) | $0 |
+| Mobile (Android) | GitHub Releases (APK sideload) | $0 |
 
-### 1. The Server (Backend + Database) ➔ Oracle Cloud Always Free ($0 Forever)
-- **What you get:** Oracle Cloud offers an incredibly generous "Always Free" tier. You can provision an ARM Compute Instance with up to **4 OCPUs and 24 GB of RAM** entirely for free, forever.
-- **What to do:** 
-  1. Sign up for Oracle Cloud (requires a credit card for verification, but won't be charged if you select "Always Free" resources).
-  2. Spin up an Ubuntu ARM instance.
-  3. SSH into the server and install **Docker** and **Docker Compose**.
-  4. Write a `docker-compose.yml` file to run both your FastAPI backend and a PostgreSQL database container directly on the server.
-- **Why this is better:** Your backend will run 24/7. It will never sleep. You don't have to worry about database size limits (you get 200GB of block storage for free). You have total control over Nginx and WebSockets.
+---
 
-### 2. Frontend ➔ Vercel ($0)
-- Keep the frontend on Vercel. There is no reason to host static files on your VPS when Vercel offers a free global CDN. Just point your Vercel environment variables (`VITE_API_URL`) to your Oracle VPS IP address (or domain).
+## 1. Frontend (Web Dashboard) → GitHub Pages ($0)
 
-### 3. Domain Name ➔ DuckDNS or Freenom ($0)
-- To secure your Oracle server with HTTPS (required for Secure WebSockets `wss://`), you need a domain name.
-- **What to do:** Use [DuckDNS](https://www.duckdns.org/) to get a free sub-domain (e.g., `vulnara.duckdns.org`). Point it to your Oracle VPS IP address, and use **Certbot** to generate a free SSL certificate.
+- **What to do:** The repo includes `.github/workflows/deploy-frontend.yml`. Every push to `main` automatically builds `vulnara-web/` and deploys the `dist/` folder to the `gh-pages` branch.
+- **Enable Pages:** GitHub repo → **Settings → Pages → Source:** `gh-pages` branch.
+- **Why:** GitHub Pages provides free static hosting with global CDN and automatic HTTPS — no dashboard clicks needed after the first setup.
+- **SPA routing:** A `404.html` shim in `vulnara-web/public/` redirects unknown paths back to `index.html` so React Router works on refresh and direct links.
+- **Live at:** `https://<username>.github.io/vulnara-ai/`
+
+---
+
+## 2. Database (PostgreSQL) → Neon.tech ($0)
+
+- **What to do:** Create a free account at [Neon.tech](https://neon.tech/). Create a new Project and copy the connection string.
+- **Driver note:** Convert the Neon URL to the `asyncpg` prefix before pasting into Render:
+  ```
+  # From Neon: postgres://user:pass@host/db?sslmode=require
+  # To paste:  postgresql+asyncpg://user:pass@host/db
+  ```
+  `core/db.py` handles the SSL requirement via `connect_args` — the `?sslmode=` suffix will break `asyncpg`.
+- **Why:** Neon gives 500 MB storage and scales to zero (wakes in < 1 s). The keep-alive cron keeps it awake continuously.
+
+---
+
+## 3. Backend API (FastAPI) → Render ($0)
+
+- **What to do:** The repo root contains `render.yaml`. On Render: **New → Blueprint** → connect the GitHub repo. Render reads the Blueprint and provisions everything.
+- **Required env vars to fill in when prompted:**
+  - `DATABASE_URL` — from Neon (step 2 above, `asyncpg` prefix)
+  - `GROQ_API_KEY` — from [console.groq.com](https://console.groq.com)
+  - `CORS_ORIGINS` — your GitHub Pages URL + `http://localhost:5173`
+- **The Catch:** Render's free tier **spins down** after 15 minutes of inactivity. The next request after sleep takes ~20–30 s to wake up.
+- **Solution:** Use cron-job.org (step 5 below) to ping `/health` every 5 minutes, preventing sleep.
+- **Why Render over Oracle/Google Cloud VMs:** No VM management, SSH, Docker, or Nginx config required. `render.yaml` codifies everything. Auto-redeploys on every `git push`.
+
+> **Important limitation:** Render's free containers are sandboxed — they cannot run `nmap` (raw socket scanning). Vulnara's `/health` and AI features work fine; only the active nmap-based port scan portion requires a real VM (see below).
+
+---
+
+## 4. AI Engine → Groq API ($0)
+
+- **What to do:** Get your API key at [console.groq.com](https://console.groq.com/). Set it as `GROQ_API_KEY` in Render's environment.
+- **Why:** Groq offers a generous free tier (RPM-limited). Sufficient for development and small-team usage.
+
+---
+
+## 5. Keep-Alive → cron-job.org ($0)
+
+- **What to do:** Create a free account at [cron-job.org](https://cron-job.org/).
+- **Create a job:** `GET https://<your-app>.onrender.com/health` — every **5 minutes**.
+- **Why this works:** `/health` runs a real `SELECT 1` against Neon — one ping keeps both the Render service and Neon's compute node awake simultaneously.
+
+---
+
+## If You Need Real nmap Scanning (Optional VM Path)
+
+If you need the full active port-scanning feature (which requires raw socket access), you need a full Linux VM. The cheapest always-free option is **Google Cloud e2-micro** (1 shared vCPU, 1 GB RAM, permanent free in `us-central1/us-east1/us-west1`).
+
+Oracle's Always Free ARM tier was cut in 2026 and is no longer a reliable option.
+
+```bash
+# On the GCP e2-micro VM:
+sudo apt update && sudo apt install docker.io docker-compose -y
+docker-compose up -d --build
+```
 
 ---
 
@@ -59,16 +93,17 @@ Distributing a mobile app through official channels costs money:
 - **Apple App Store:** $99/year fee.
 
 **To deploy the mobile app for 100% FREE:**
-1. **For Android:** Build the APK (`flutter build apk --release`). Go to your GitHub repository, create a "Release", and attach the `.apk` file. Users can download and install it directly to their Android phones for free (sideloading).
-2. **For iOS:** Apple strictly prohibits sideloading without a paid developer account. The only free way to run the app on an iPhone is to plug it into a Mac with Xcode, sign it with a free personal team, and install it directly via USB (this expires every 7 days).
+
+1. **For Android:** Build the APK (`flutter build apk --release`). Go to your GitHub repository, create a **Release**, and attach the `.apk` file. Users can download and sideload it directly onto their Android phones.
+2. **For iOS:** Apple strictly prohibits sideloading without a paid developer account. The only free way to run the app on an iPhone is to plug it into a Mac with Xcode, sign it with a free personal team, and install it directly via USB (expires every 7 days).
 
 ---
 
-## Summary Checklist for the Ultimate Free Stack
+## Summary Checklist for the Current Free Stack
 
-1. **Frontend:** Hosted on **Vercel** (Free).
-2. **Database:** Hosted in a Docker container on an **Oracle Cloud Free ARM VPS** (Free).
-3. **Backend API:** Hosted via Docker on the same **Oracle Cloud VPS**, behind Nginx (Free & 24/7 Uptime).
-4. **Domain & SSL:** **DuckDNS** + **Let's Encrypt** (Free).
-5. **AI:** **Groq** Developer API (Free).
+1. **Frontend:** Deployed automatically to **GitHub Pages** on every push via GitHub Actions (Free).
+2. **Database:** **Neon** serverless Postgres (Free, scales to zero, kept awake by cron ping).
+3. **Backend API:** **Render** Web Service deployed via `render.yaml` Blueprint (Free, kept awake by cron ping).
+4. **AI:** **Groq** Developer API (Free).
+5. **Keep-Alive:** **cron-job.org** pinging `/health` every 5 minutes (Free).
 6. **Mobile App:** Distribute the Android `.apk` via **GitHub Releases** (Free).

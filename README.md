@@ -131,3 +131,22 @@ flutter run
 For step-by-step guides on how to test specific workflows (like the closed-loop remediation process or live WebSocket updates), please refer to our detailed documentation:
 - [Web Application Testing Guide](./docs/web_app_guide.md)
 - [Mobile Application Testing Guide](./docs/mobile_app_guide.md)
+- [Deployment Guide (Render + Neon + GitHub Pages)](./docs/deployment_guide.md)
+- [Free Deployment Guide (current stack)](./docs/free_deployment_guide.md)
+
+---
+
+## 🚀 Production Deployment
+
+Vulnara is deployed using a fully free stack:
+
+| Component | Service | URL |
+|---|---|---|
+| **Backend API** | [Render](https://render.com) (Blueprint via `render.yaml`) | `https://<app>.onrender.com` |
+| **Database** | [Neon](https://neon.tech) serverless Postgres | — |
+| **Frontend** | [GitHub Pages](https://pages.github.com) (via GitHub Actions) | `https://<username>.github.io/vulnara-ai/` |
+| **Keep-alive** | [cron-job.org](https://cron-job.org) pings `/health` every 5 min | — |
+
+Frontend deploys automatically on every push to `main` via `.github/workflows/deploy-frontend.yml`.
+
+See [docs/deployment_guide.md](./docs/deployment_guide.md) for full setup instructions.

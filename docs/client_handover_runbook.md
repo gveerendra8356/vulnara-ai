@@ -1,124 +1,50 @@
 # Vulnara: Deployment & Client Handover Runbook
 ---
 
-## 1. Backend VM Setup (Free Tier Options)
+## 1. Backend Deployment — Render + Neon (Current Stack)
 
-> **Why a full VM is required:** Vulnara runs `nmap` for port scanning — a tool that requires raw socket access and root privileges. Serverless/container platforms (Render, Cloud Run, Railway) sandbox these capabilities and will break scanning. You **must** use a full Linux VM.
+The backend is deployed on **Render** (free Web Service) with **Neon** as the serverless Postgres database. No VM, no Docker, no SSH required. Render auto-deploys from the `render.yaml` Blueprint in the repo on every `git push`.
 
-### ⚠️ The Credit Card Reality
-Every major cloud provider requires a credit/debit card for **identity verification** to prevent free-tier abuse (crypto mining, spam). They will **not charge you** if you stay within the free tier limits. This is unavoidable — it is the same requirement for Oracle, Google Cloud, and AWS.
+### Step 1 — Neon Database
+1. Have the client create a free account at [neon.tech](https://neon.tech/).
+2. Create a new **Project**. Copy the Postgres connection string.
+3. Convert it to the `asyncpg` driver prefix (Render env var):
+   ```
+   # Neon gives you: postgres://user:pass@host/db?sslmode=require
+   # Paste this:     postgresql+asyncpg://user:pass@host/db
+   ```
+   > Drop the `?sslmode=require` suffix — `core/db.py` handles SSL via `connect_args` because `asyncpg` rejects the libpq-style query param.
 
----
+### Step 2 — Render Blueprint Deploy
+1. Have the client create a free [Render](https://render.com) account (GitHub login is fine).
+2. **New → Blueprint** → connect the GitHub repo.
+3. Render reads `render.yaml` and prompts for the two `sync: false` secrets:
+   - `DATABASE_URL` — the `asyncpg` URL from step 1.
+   - `GROQ_API_KEY` — from [console.groq.com](https://console.groq.com).
+4. After deploy, verify:
+   ```
+   GET https://<app>.onrender.com/health
+   → {"status": "ok", "db": "ok"}
+   ```
+5. Set `CORS_ORIGINS` in Render → Environment to include the GitHub Pages frontend URL once it is live.
 
-### Option A: Google Cloud Free Tier — e2-micro VM (Recommended Alternative)
+### Step 3 — Keep-Alive (cron-job.org)
+Render's free tier sleeps after 15 minutes of inactivity; Neon suspends after 5 minutes.
+1. Create a free account at [cron-job.org](https://cron-job.org/).
+2. Create a job: `GET https://<app>.onrender.com/health` every **5 minutes**.
+3. `/health` runs `SELECT 1` against Neon — one ping keeps both awake.
 
-This is the **best Oracle alternative**. Google's `e2-micro` VM is **permanently free** (not just a 12-month trial), requires a credit card for verification only, and has full root access.
+### Environment Variables Summary
 
-**Free Tier Specs:** 1 shared vCPU, 1 GB RAM, 30 GB disk. Suitable for Vulnara's backend.
+| Variable | Value | Source |
+|---|---|---|
+| `DATABASE_URL` | `postgresql+asyncpg://...` | Neon dashboard |
+| `VULNARA_SECRET_KEY` | auto-generated | Render `generateValue: true` |
+| `GROQ_API_KEY` | your key | console.groq.com |
+| `CORS_ORIGINS` | GitHub Pages URL + `http://localhost:5173` | Your Pages domain |
 
-**Critical Constraint:** Create the VM in one of these US regions only for it to remain free:
-`us-central1`, `us-east1`, or `us-west1`.
-
-#### Steps
-1. Have the client create a **Google Cloud Account** at [cloud.google.com](https://cloud.google.com). Enter card details (verification only — free tier stays free).
-2. Go to **Compute Engine > VM Instances > Create Instance**.
-3. Set the following:
-   - **Machine type:** `e2-micro` (under the "General Purpose" series)
-   - **Region:** `us-central1` (Iowa) — cheapest and most reliable free region
-   - **Boot disk:** Ubuntu 22.04 LTS, **Standard persistent disk**, 30 GB
-   - **Firewall:** Check "Allow HTTP traffic" and "Allow HTTPS traffic"
-4. Click **Create** and wait for the VM to start.
-5. Click **SSH** in the browser to open a terminal (no local SSH setup needed initially).
-
-#### Firewall Rules (VPC Network)
-1. Go to **VPC Network > Firewall > Create Firewall Rule**.
-2. Add a rule for **TCP Port 22** (SSH).
-3. *If using Cloudflare Tunnels (recommended), you do NOT need to open Port 80 or 443.*
-
-#### Docker & Docker Compose Installation
-SSH into the machine and run:
-```bash
-sudo apt update && sudo apt upgrade -y
-sudo apt install docker.io docker-compose -y
-sudo systemctl enable docker
-sudo systemctl start docker
-sudo usermod -aG docker $USER
-newgrp docker
-```
-
-#### Deploying the Backend (Restart-on-Reboot)
-Create a `docker-compose.yml` file for the FastAPI backend:
-```yaml
-version: '3.8'
-services:
-  backend:
-    build: .
-    ports:
-      - "8000:8000"
-    restart: always # Critical: Ensures the container boots on VM restart
-    environment:
-      - DATABASE_URL=${DATABASE_URL}
-      - GROQ_API_KEY=${GROQ_API_KEY}
-```
-Run `docker-compose up -d --build`.
-
----
-
-### Option B: Oracle Cloud Free Tier — Ampere A1 (Original Plan)
-
-Oracle's Always Free Tier is the most **powerful** free VM available (4 OCPUs, 24 GB RAM) but has two known friction points:
-- **Signup requires a credit card** (verification only, same as Google).
-- **"Out of Capacity" errors** are common for the A1 shape in popular regions — try `ap-mumbai-1`, `eu-frankfurt-1`, or `sa-saopaulo-1` if your preferred region is full.
-
-#### Steps
-1. Have the client create an **Oracle Cloud Account** at [cloud.oracle.com](https://cloud.oracle.com).
-2. Go to **Compute > Instances > Create Instance**.
-3. Choose the **Ampere A1 Compute (ARM)** shape. Allocate 4 OCPUs and 24 GB RAM.
-4. Select **Ubuntu 22.04 / 24.04** as the image.
-5. Save the SSH Key.
-
-#### Firewall & Security Groups
-1. Go to **Networking > Virtual Cloud Networks**. Click the active VCN → Security Lists.
-2. Add Ingress Rules:
-   - **TCP Port 22** (SSH — restrict to your IP if possible).
-   - *If using Cloudflare Tunnels, you do NOT need to open Port 80 or 443.*
-3. Outbound rules are open by default, allowing nmap traffic to scan targets.
-
-#### Docker & Docker Compose Installation
-```bash
-sudo apt update && sudo apt upgrade -y
-sudo apt install docker.io docker-compose -y
-sudo systemctl enable docker
-sudo systemctl start docker
-sudo usermod -aG docker ubuntu
-```
-
-#### Deploying the Backend
-Same `docker-compose.yml` as Option A above. Run `docker-compose up -d --build`.
-
----
-
-### Option C: AWS Free Tier — t3.micro (12-Month Trial)
-
-**Note:** AWS Free Tier (t3.micro, 1 vCPU, 1 GB RAM) is only free for the **first 12 months** after account creation. After that, it costs ~$8–10/month. Suitable only if the client plans to upgrade to a paid plan later anyway.
-
-1. Create an **AWS Account** at [aws.amazon.com](https://aws.amazon.com).
-2. Go to **EC2 > Launch Instance**.
-3. Choose **Ubuntu 22.04**, instance type `t3.micro`, storage 30 GB (gp2).
-4. Create a security group allowing TCP Port 22 (SSH).
-5. Download the `.pem` key file.
-6. Install Docker the same way as Option A.
-
----
-
-### Quick Comparison
-
-| Provider | vCPU | RAM | Duration | Credit Card | nmap Works |
-|---|---|---|---|---|---|
-| **Google Cloud e2-micro** | 0.25 shared | 1 GB | **Permanent** | Verification only | ✅ Yes |
-| **Oracle Cloud A1** | 4 | 24 GB | **Permanent** | Verification only | ✅ Yes |
-| **AWS t3.micro** | 1 | 1 GB | 12 months only | Verification only | ✅ Yes |
-| Render / Cloud Run | — | — | Permanent | No card needed | ❌ No (sandboxed) |
+### ⚠️ Render Sandbox Limitation
+Render's free containers cannot run `nmap` (raw socket access is sandboxed). The AI features, `/health`, and all API endpoints work fine. If the client needs full active port scanning, they need a **Google Cloud e2-micro VM** (permanently free in `us-central1/us-east1/us-west1`). SSH in, install Docker, and run `docker-compose up -d --build` with the same env vars.
 
 ---
 
@@ -141,26 +67,13 @@ For a security tool, hiding the origin IP is paramount.
 
 ## 3. FastAPI CORS Configuration
 
-To prevent unauthorized domains from hitting the API, configure CORS in `backend/app/main.py`:
+CORS is no longer hardcoded. `backend/app/main.py` reads the `CORS_ORIGINS` environment variable (comma-separated list of allowed origins). Set it in the Render dashboard:
 
-```python
-from fastapi.middleware.cors import CORSMiddleware
-
-app = FastAPI()
-
-origins = [
-    "https://vulnara.clientdomain.com", # Vercel Production Domain
-    "http://localhost:5173",            # Client local testing
-]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 ```
+CORS_ORIGINS=https://<username>.github.io,http://localhost:5173
+```
+
+This keeps the API locked to only the frontend domain(s) actually calling it, without touching source code when the frontend URL changes.
 
 ---
 
@@ -178,14 +91,16 @@ Neon's free tier scales to zero (suspends) after 5 minutes of inactivity. When a
 
 ---
 
-## 5. Vercel Deployment (React App)
+## 5. GitHub Pages Deployment (React App)
 
-1. Have the client create a **Vercel** account linked to their GitHub (or invite them to a Vercel team).
-2. Import the `vulnara-web` directory.
-3. Set the Environment Variables:
-   - `VITE_API_URL` = `https://api.clientdomain.com`
-   - `VITE_WS_URL` = `wss://api.clientdomain.com/ws`
-4. Click Deploy. Vercel handles the SSL and global CDN distribution.
+The frontend deploys automatically via GitHub Actions — no separate hosting account needed.
+
+1. In the GitHub repo, go to **Settings → Pages → Source** and select the `gh-pages` branch.
+2. Every push to `main` triggers `.github/workflows/deploy-frontend.yml`, which:
+   - Runs `npm ci && npm run build` inside `vulnara-web/`.
+   - Publishes the `dist/` folder to the `gh-pages` branch.
+3. The site is live at `https://<username>.github.io/vulnara-ai/`.
+4. Set `VITE_API_BASE_URL` and `VITE_WS_BASE_URL` in `vulnara-web/.env.production` (or as GitHub Actions secrets) to point to the Render backend.
 
 ---
 
@@ -210,11 +125,13 @@ Vulnara is an active vulnerability scanner. It sends exploitative payloads acros
 ### The Handover Checklist
 
 **Must be transferred to (or created by) the Client:**
-- [ ] **Cloud VM Account (Google Cloud / Oracle / AWS):** Must be registered with the **client's** credit card and phone number — not yours.
+- [ ] **Render Account:** Must be connected to the **client's** GitHub — not yours.
+- [ ] **Neon Account:** Database ownership must be under the client's email.
+- [ ] *(Optional — only for full nmap scanning)* **Cloud VM Account (Google Cloud e2-micro):** Must be registered with the **client's** credit card and phone number — not yours.
 - [ ] **Domain Name & Cloudflare:** The domain `clientdomain.com` must be owned by them.
 - [ ] **Neon.tech Account:** Database ownership.
 - [ ] **Groq API Key:** The client must generate their own API key. If they run up a massive bill processing threat logs, it charges their account, not yours.
-- [ ] **Vercel Account:** For the frontend hosting.
+- [ ] **GitHub Repository / GitHub Pages:** Frontend auto-deploys from the repo. Client must have admin access to the repo (or their own fork).
 - [ ] **Firebase Account:** For App Distribution and Push Notifications.
 
 **What stays with you:**
