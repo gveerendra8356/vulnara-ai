@@ -10,3 +10,5 @@ groq>=0.4
 firebase-admin>=6.5
 passlib[bcrypt]>=1.7.4
 email-validator>=2.1.0
+aiosqlite
+python-dotenv>=1.0
