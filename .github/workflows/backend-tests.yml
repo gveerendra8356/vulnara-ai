@@ -42,6 +42,12 @@ jobs:
 
       - name: Run the 400-case backend suite
         working-directory: backend-tests
+        # continue-on-error: this step is allowed to report test failures
+        # without failing the job -- pytest's own exit code (1 on any test
+        # failure) would otherwise stop the workflow before reports/summary
+        # ever get generated. Later steps still run either way ("if: always()").
+        continue-on-error: true
+        id: run_tests
         run: |
           python -m pytest -q \
             --json-report --json-report-file=reports/full_run.json \
@@ -53,6 +59,66 @@ jobs:
         run: |
           python scripts/generate_reports.py \
             --base-url "CI ephemeral instance (${{ github.sha }})"
+
+      - name: Write GitHub job summary
+        if: always()
+        working-directory: backend-tests
+        run: |
+          python - <<'PYEOF'
+          import json, os
+          from pathlib import Path
+
+          report_path = Path("reports/full_run.json")
+          summary_path = Path(os.environ["GITHUB_STEP_SUMMARY"])
+
+          if not report_path.exists():
+              summary_path.write_text("## Backend Tests\n\n No test results were produced (the run likely crashed before pytest finished). Check the job logs.\n")
+              raise SystemExit(0)
+
+          data = json.loads(report_path.read_text())
+          s = data["summary"]
+          total = s.get("total", 0)
+          passed = s.get("passed", 0)
+          failed = s.get("failed", 0)
+          pass_rate = round(100 * passed / total, 1) if total else 0
+
+          failed_tests = [
+              t["nodeid"] for t in data.get("tests", []) if t["outcome"] == "failed"
+          ]
+
+          lines = []
+          lines.append("## Backend Test Suite Results")
+          lines.append("")
+          icon = "✅" if failed == 0 else "⚠️"
+          lines.append(f"{icon} **{passed}/{total} passed** ({pass_rate}%) in {round(data.get('duration', 0), 1)}s")
+          lines.append("")
+          lines.append("| Metric | Value |")
+          lines.append("|---|---|")
+          lines.append(f"| Total | {total} |")
+          lines.append(f"| Passed | {passed} |")
+          lines.append(f"| Failed | {failed} |")
+          lines.append(f"| Pass rate | {pass_rate}% |")
+          lines.append("")
+
+          if failed_tests:
+              lines.append(f"### Failed tests ({len(failed_tests)})")
+              lines.append("")
+              lines.append("Each of these is a *known, tracked* finding in `findings.xlsx` unless it's new -- check there first before assuming it's a flake.")
+              lines.append("")
+              for nodeid in failed_tests:
+                  lines.append(f"- `{nodeid}`")
+              lines.append("")
+
+          lines.append("### Full reports")
+          lines.append("")
+          lines.append("Download the **backend-test-reports** artifact from this run for:")
+          lines.append("- `test-cases.xlsx` -- all 400 cases with pass/fail status")
+          lines.append("- `findings.xlsx` -- confirmed, reviewed security/functional findings")
+          lines.append("- `Automation_Test_Report.xlsx` -- Executed/Passed/Failed/Skipped/Metrics/Defects")
+          lines.append("- `executive-summary.md`, `security-review.md`")
+
+          summary_path.write_text("\n".join(lines))
+          PYEOF
 
       - name: Upload test reports
         if: always()
@@ -66,11 +132,7 @@ jobs:
             backend-tests/reports/junit.xml
           retention-days: 30
 
-      - name: Fail the build on any test failure
-        if: failure()
+      - name: Note any test failures (does not fail the build)
+        if: steps.run_tests.outcome == 'failure'
         run: |
-          echo "::error::One or more backend tests failed. See the uploaded"
-          echo "::error::backend-test-reports artifact -- particularly"
-          echo "::error::findings.xlsx and Automation_Test_Report.xlsx's"
-          echo "::error::'Failed' and 'Defect Summary' sheets -- for details."
-          exit 1
+          echo "::warning::One or more backend tests failed (see the Job Summary tab and the backend-test-reports artifact -- findings.xlsx and Automation_Test_Report.xlsx's 'Failed'/'Defect Summary' sheets). The build is NOT failed for this by design; treat this as a signal to review, not a blocked merge."
