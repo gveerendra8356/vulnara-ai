@@ -108,7 +108,12 @@ TOKEN_KEY = "vulnara_access_token"
 # ---------------------------------------------------------------------------
 # Timeouts / retries
 # ---------------------------------------------------------------------------
-DEFAULT_WAIT = int(os.environ.get("SELENIUM_DEFAULT_WAIT", "12"))
+# 20s (not a tighter value) because CI runners are typically 2 vCPUs and
+# xdist runs several real headless Chrome instances concurrently on that
+# same box -- the app's own login round-trip is well under 1s (mockApi's
+# simulated latency is ~260ms), so a wait this long is headroom for CI
+# resource contention, not a sign the app itself is slow.
+DEFAULT_WAIT = int(os.environ.get("SELENIUM_DEFAULT_WAIT", "20"))
 SHORT_WAIT = 4
 HEALTHCHECK_RETRIES = 30
 HEALTHCHECK_DELAY_SECONDS = 2

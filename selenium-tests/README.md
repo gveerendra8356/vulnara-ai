@@ -88,8 +88,44 @@ problems traced to the CI setup, not the tests:
    `pytest-rerunfailures` marks the superseded attempt with a special
    `rerun` outcome — the report hook in `conftest.py` wasn't filtering that
    out, so every retried test got logged twice (832 total entries against
-   420 actually-unique tests). Fixed by skipping any report whose outcome is
-   `"rerun"`.
+   420 actually-unique tests). The first fix attempt for this (checking
+   `report.outcome == "rerun"` inside `pytest_runtest_makereport`) turned
+   out to be checking too early: `pytest-rerunfailures` only sets that
+   attribute *after* `pytest_runtest_makereport` has already run for that
+   attempt, so the check silently never matched. The real fix moves the
+   actual recording to `pytest_runtest_logreport`, which fires at exactly
+   the point that attribute is reliably set — verified with an isolated
+   repro harness (a fixture that fails once then passes on rerun, and a
+   fixture that fails every attempt) before touching the real suite.
+   Screenshot/error-text capture stays in `pytest_runtest_makereport`
+   instead, since by the time `logreport` fires for a given attempt the
+   `driver` fixture has already been torn down.
+3. **A second, real CI run surfaced further contention-related flakiness**
+   (~35% pass rate, all genuine `FAILED` — no more `ERROR`s, confirming fix
+   #1 above held). Investigating the failure screenshots showed most
+   failures were stuck on `/login` with the form correctly filled in but
+   never navigating to the dashboard — even though `AuthContext.login()` and
+   the mock API's login handler are simple, fast (~260ms simulated latency),
+   and don't have any conditional failure paths for valid input. That points
+   at CI resource contention (`pytest -n auto` was spawning one real headless
+   Chrome process per CPU, competing with the app server on a standard
+   2-vCPU runner) rather than an app or suite bug. Two changes address this:
+   - `login_as_analyst`/`login_as_admin`/`login_as_client`/
+     `login_as_any_role` now **assert** the login actually landed on the
+     dashboard, instead of silently returning an unauthenticated driver.
+     Previously, a login that never completed surfaced 10+ tests downstream
+     as confusing "couldn't find element X" failures against whatever page
+     the test tried next — each hiding the same root cause a layer down,
+     and each burning a second full wait-timeout on top. Now it fails once,
+     clearly, at the step that actually broke.
+   - The workflow pins `-n 2` (matching a standard runner's 2 vCPUs) instead
+     of `-n auto`, bumps `--reruns` from 1 to 2, and `DEFAULT_WAIT` moved
+     from 12s to 20s (`config.py`) — headroom for CI contention, not a sign
+     the app itself is slow.
+   This is a mitigation, not a certainty — if failures still cluster on
+   login after this, the new fixture assertions will say so directly and
+   that's the next thing to dig into, rather than a locator on an unrelated
+   page.
 
 
 

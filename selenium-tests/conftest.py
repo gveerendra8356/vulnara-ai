@@ -104,12 +104,31 @@ def _unique_email(prefix: str) -> str:
     return f"{prefix}-{uuid.uuid4().hex[:10]}@vulnara.dev"
 
 
+def _assert_landed_on_dashboard(page: LoginPage, context: str):
+    """Fail loudly and specifically HERE if login didn't complete, instead
+    of silently returning an unauthenticated driver. Without this, a login
+    that never navigated away from /login surfaces 10+ tests downstream as
+    confusing, unrelated "couldn't find element X" failures against
+    whatever page the test happens to try next -- all with the same root
+    cause hidden a layer down. This fixture is the one place that actually
+    knows what should have happened, so it's the right place to say so."""
+    if not page.on_route(""):
+        current = page.driver.current_url
+        raise AssertionError(
+            f"{context}: login did not land on the dashboard within the wait "
+            f"window (still at {current}). This fixture failing here -- "
+            f"rather than a downstream test failing on an unrelated locator "
+            f"-- means the problem is the login step itself, not the page "
+            f"the test actually wanted to exercise."
+        )
+
+
 @pytest.fixture
 def login_as_analyst(driver):
     page = LoginPage(driver)
     page.open()
     page.login(CREDENTIALS["analyst"]["email"], CREDENTIALS["analyst"]["password"])
-    page.on_route("")
+    _assert_landed_on_dashboard(page, "login_as_analyst")
     return driver
 
 
@@ -118,7 +137,7 @@ def login_as_admin(driver):
     page = LoginPage(driver)
     page.open()
     page.login(CREDENTIALS["admin"]["email"], CREDENTIALS["admin"]["password"])
-    page.on_route("")
+    _assert_landed_on_dashboard(page, "login_as_admin")
     return driver
 
 
@@ -131,8 +150,7 @@ def login_as_client(driver):
     reg = RegisterPage(driver)
     reg.open()
     reg.register(full_name="QA Client", email=email, password=MOCK_PASSWORD, role="client")
-    login = LoginPage(driver)
-    login.on_route("")
+    _assert_landed_on_dashboard(reg, "login_as_client")
     return driver
 
 
@@ -144,66 +162,112 @@ def login_as_any_role(request, driver):
         reg = RegisterPage(driver)
         reg.open()
         reg.register(full_name="QA Client", email=email, password=MOCK_PASSWORD, role="client")
+        _assert_landed_on_dashboard(reg, f"login_as_any_role[{role}]")
     else:
         page = LoginPage(driver)
         page.open()
         page.login(CREDENTIALS[role]["email"], CREDENTIALS[role]["password"])
-    LoginPage(driver).on_route("")
+        _assert_landed_on_dashboard(page, f"login_as_any_role[{role}]")
     return driver, role
 
 
 # --------------------------------------------------------------------- hooks
+#
+# Why this is split across two hooks (and why the split matters):
+#
+# pytest-rerunfailures reruns a failed test by calling
+# `runtestprotocol(item, ..., log=False)` internally -- which runs setup,
+# call, and teardown (including the `driver` fixture's teardown, i.e.
+# driver.quit()) and triggers `pytest_runtest_makereport` for each phase --
+# and only AFTER that full protocol call returns does it decide whether to
+# mark a report `outcome = "rerun"` and hand it to
+# `item.ihook.pytest_runtest_logreport(report=report)`.
+#
+# That ordering means:
+#   - `pytest_runtest_makereport` fires too EARLY to ever see
+#     `report.outcome == "rerun"` -- by the time that hook runs, the
+#     rerun-vs-final decision hasn't been made yet. A first attempt at
+#     filtering on this hook (an earlier revision of this file) silently
+#     recorded every rerun attempt as a normal pass/fail, doubling the
+#     reported test count whenever a rerun actually fired.
+#   - `pytest_runtest_logreport` fires at exactly the right time to see
+#     `report.outcome == "rerun"` on superseded attempts -- but by then the
+#     `driver` fixture has ALREADY been torn down for that attempt, so a
+#     screenshot can no longer be captured from within it.
+#
+# So: screenshots/error text are captured eagerly in `makereport` (while the
+# driver is still alive), keyed by nodeid and overwritten on each attempt so
+# only the final attempt's data survives; the actual pass/fail/error
+# bookkeeping -- where double-counting would happen -- is done in
+# `logreport`, which is rerun-aware.
 
-@pytest.hookimpl(hookwrapper=True, tryfirst=True)
+_meta_by_nodeid = {}
+_last_screenshot = {}
+_last_error = {}
+
+
+def pytest_collection_modifyitems(session, config, items):
+    for item in items:
+        _meta_by_nodeid[item.nodeid] = {
+            "test_id": item.name.split("[")[0],
+            "full_name": item.name,
+            "module": item.nodeid.split("::")[0].split("/")[-1].replace("test_", "").replace(".py", ""),
+            "markers": [m.name for m in item.iter_markers()],
+        }
+
+
+@pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call):
     outcome = yield
     report = outcome.get_result()
     setattr(item, f"rep_{report.when}", report)
 
+    if report.failed and report.when in ("setup", "call"):
+        driver = item.funcargs.get("driver")
+        if driver is not None:
+            _last_screenshot[report.nodeid] = capture(driver, item.nodeid, SCREENSHOTS_DIR)
+        _last_error[report.nodeid] = str(report.longrepr)
+
+
+def pytest_runtest_logreport(report):
+    # Superseded attempts (about to be retried) are marked "rerun" -- skip
+    # them so a retried test is recorded exactly once, using its final
+    # outcome. See the module-level comment above for why this can't be
+    # done in pytest_runtest_makereport.
+    if getattr(report, "outcome", None) == "rerun":
+        return
+
+    meta = _meta_by_nodeid.get(report.nodeid, {
+        "test_id": report.nodeid.split("::")[-1].split("[")[0],
+        "full_name": report.nodeid.split("::")[-1],
+        "module": report.nodeid.split("::")[0].split("/")[-1].replace("test_", "").replace(".py", ""),
+        "markers": [],
+    })
+
     if report.when == "call":
-        # pytest-rerunfailures re-executes setup+call+teardown on a failed
-        # test and marks the SUPERSEDED attempt(s) with report.outcome ==
-        # "rerun" -- only the final attempt has a real passed/failed/skipped
-        # outcome. Recording every attempt double- (or triple-) counts
-        # reruns in the report; only the final outcome should be kept.
-        if getattr(report, "outcome", None) == "rerun":
-            return
-
         status = "PASSED" if report.passed else ("FAILED" if report.failed else "SKIPPED")
-        duration = round(report.duration, 3)
-        markers = [m.name for m in item.iter_markers()]
-        module = item.nodeid.split("::")[0].split("/")[-1].replace("test_", "").replace(".py", "")
-
-        screenshot_path = None
-        if report.failed:
-            driver = item.funcargs.get("driver")
-            if driver is not None:
-                screenshot_path = capture(driver, item.nodeid, SCREENSHOTS_DIR)
-
         _session_results.append({
-            "nodeid": item.nodeid,
-            "test_id": item.name.split("[")[0],
-            "full_name": item.name,
-            "module": module,
-            "markers": markers,
+            "nodeid": report.nodeid,
+            "test_id": meta["test_id"],
+            "full_name": meta["full_name"],
+            "module": meta["module"],
+            "markers": meta["markers"],
             "status": status,
-            "duration": duration,
-            "screenshot": screenshot_path,
-            "error": str(report.longrepr) if report.failed else None,
+            "duration": round(report.duration, 3),
+            "screenshot": _last_screenshot.get(report.nodeid) if report.failed else None,
+            "error": _last_error.get(report.nodeid) if report.failed else None,
         })
     elif report.when == "setup" and report.failed:
-        if getattr(report, "outcome", None) == "rerun":
-            return
         _session_results.append({
-            "nodeid": item.nodeid,
-            "test_id": item.name.split("[")[0],
-            "full_name": item.name,
-            "module": item.nodeid.split("::")[0].split("/")[-1].replace("test_", "").replace(".py", ""),
-            "markers": [m.name for m in item.iter_markers()],
+            "nodeid": report.nodeid,
+            "test_id": meta["test_id"],
+            "full_name": meta["full_name"],
+            "module": meta["module"],
+            "markers": meta["markers"],
             "status": "ERROR",
             "duration": round(report.duration, 3),
-            "screenshot": None,
-            "error": str(report.longrepr),
+            "screenshot": _last_screenshot.get(report.nodeid),
+            "error": _last_error.get(report.nodeid, str(report.longrepr)),
         })
 
 

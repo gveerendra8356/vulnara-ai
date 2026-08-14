@@ -135,9 +135,17 @@ jobs:
           CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
           HEADLESS: "true"
           BASE_URL: "http://127.0.0.1:4173/vulnara-ai/"
+        # -n 2 (not `auto`): standard GitHub-hosted runners are 2 vCPUs, and
+        # each xdist worker drives its own real headless Chrome process
+        # against the SAME app instance -- `auto` risks over-subscribing on
+        # bigger/self-hosted runners and starving each Chrome instance of
+        # CPU, which shows up as the app "hanging" past a wait timeout even
+        # though the underlying login/render logic itself is well under 1s.
+        # --reruns 2 (not 1) gives genuinely CPU-contention-flaky tests two
+        # extra chances before being counted as a real failure.
         run: |
-          pytest -n auto \
-            --reruns 1 --reruns-delay 2 \
+          pytest -n 2 \
+            --reruns 2 --reruns-delay 3 \
             --splits 4 --group ${{ matrix.shard }} \
             -p no:cacheprovider \
             || true
