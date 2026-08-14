@@ -44,11 +44,36 @@ jobs:
         # takes priority over .env.production's VITE_USE_MOCK=false.
         run: VITE_USE_MOCK=true npm run build
 
+      - name: Lay out the build under its real base path
+        working-directory: vulnara-web
+        # vite.config.js sets base: "/vulnara-ai/", so index.html references
+        # assets as absolute paths like /vulnara-ai/assets/main.js. A plain
+        # static server rooted at dist/ (e.g. `serve -s dist`) serves those
+        # same files at /assets/main.js instead -- one directory level off --
+        # so the JS bundle 404s, React never mounts, and every page renders
+        # as a permanently blank white shell (this is exactly what happened
+        # on the first CI run: only checks against the raw HTML shell, like
+        # `<html lang>` or the favicon link, passed). Placing dist/ inside a
+        # vulnara-ai/ subfolder makes every asset path resolve correctly,
+        # and serve.json's rewrite sends any sub-route (e.g. /vulnara-ai/scans)
+        # that isn't a real file back to /vulnara-ai/index.html, replicating
+        # BrowserRouter's history-fallback the same way `vite preview` does.
+        run: |
+          mkdir -p site/vulnara-ai
+          cp -r dist/. site/vulnara-ai/
+          cat > site/serve.json << 'EOF'
+          {
+            "rewrites": [
+              { "source": "/vulnara-ai/**", "destination": "/vulnara-ai/index.html" }
+            ]
+          }
+          EOF
+
       - name: Upload build output
         uses: actions/upload-artifact@v4
         with:
-          name: vulnara-web-dist
-          path: vulnara-web/dist
+          name: vulnara-web-site
+          path: vulnara-web/site
           retention-days: 7
 
   selenium-tests:
@@ -65,8 +90,8 @@ jobs:
       - name: Download build output
         uses: actions/download-artifact@v4
         with:
-          name: vulnara-web-dist
-          path: vulnara-web/dist
+          name: vulnara-web-site
+          path: vulnara-web/site
 
       - uses: actions/setup-python@v5
         with:
@@ -89,17 +114,20 @@ jobs:
 
       - name: Serve the built app (background)
         working-directory: vulnara-web
-        # `serve -s` gives SPA history-fallback (any unmatched path serves
-        # index.html), matching what `vite preview` does for BrowserRouter.
-        # Using `serve` instead of `vite preview` here avoids re-installing
-        # the full node_modules tree in every shard job.
+        # `serve.json` (written in the build job, uploaded inside site/)
+        # is auto-discovered because it sits at the root of the directory
+        # being served -- no -s flag here, since -s's blanket rewrite-to-
+        # root-index.html would bypass the /vulnara-ai/ subpath entirely.
         run: |
-          npx serve -s dist -l 4173 --no-clipboard &
+          npx serve site -l 4173 --no-clipboard &
           echo "Waiting for preview server..."
           for i in $(seq 1 30); do
             curl -sf http://127.0.0.1:4173/vulnara-ai/ > /dev/null && break
             sleep 2
           done
+          echo "--- sanity check: confirm the JS bundle actually resolves ---"
+          curl -sf http://127.0.0.1:4173/vulnara-ai/ | grep -o '/vulnara-ai/assets/[^"]*\.js' | head -1 | \
+            xargs -I{} curl -sf -o /dev/null -w "%{http_code} {}\n" "http://127.0.0.1:4173{}"
 
       - name: Run Selenium suite (this shard)
         working-directory: selenium-tests

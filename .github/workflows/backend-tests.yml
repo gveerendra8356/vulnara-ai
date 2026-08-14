@@ -1,0 +1,76 @@
+name: Backend Tests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - "backend-tests/**"
+  pull_request:
+    paths:
+      - "backend/**"
+      - "backend-tests/**"
+  workflow_dispatch: {}
+
+jobs:
+  backend-tests:
+    name: Backend regression suite (400 cases)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend-tests/requirements.txt
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install test dependencies
+        working-directory: backend-tests
+        run: pip install -r requirements.txt
+
+      - name: Run the 400-case backend suite
+        working-directory: backend-tests
+        run: |
+          python -m pytest -q \
+            --json-report --json-report-file=reports/full_run.json \
+            --junitxml=reports/junit.xml
+
+      - name: Generate reports (test-cases.xlsx, findings.xlsx, etc.)
+        if: always()
+        working-directory: backend-tests
+        run: |
+          python scripts/generate_reports.py \
+            --base-url "CI ephemeral instance (${{ github.sha }})"
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-reports
+          path: |
+            backend-tests/reports/*.xlsx
+            backend-tests/reports/*.md
+            backend-tests/reports/full_run.json
+            backend-tests/reports/junit.xml
+          retention-days: 30
+
+      - name: Fail the build on any test failure
+        if: failure()
+        run: |
+          echo "::error::One or more backend tests failed. See the uploaded"
+          echo "::error::backend-test-reports artifact -- particularly"
+          echo "::error::findings.xlsx and Automation_Test_Report.xlsx's"
+          echo "::error::'Failed' and 'Defect Summary' sheets -- for details."
+          exit 1
