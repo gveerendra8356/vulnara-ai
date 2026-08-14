@@ -161,6 +161,14 @@ def pytest_runtest_makereport(item, call):
     setattr(item, f"rep_{report.when}", report)
 
     if report.when == "call":
+        # pytest-rerunfailures re-executes setup+call+teardown on a failed
+        # test and marks the SUPERSEDED attempt(s) with report.outcome ==
+        # "rerun" -- only the final attempt has a real passed/failed/skipped
+        # outcome. Recording every attempt double- (or triple-) counts
+        # reruns in the report; only the final outcome should be kept.
+        if getattr(report, "outcome", None) == "rerun":
+            return
+
         status = "PASSED" if report.passed else ("FAILED" if report.failed else "SKIPPED")
         duration = round(report.duration, 3)
         markers = [m.name for m in item.iter_markers()]
@@ -184,6 +192,8 @@ def pytest_runtest_makereport(item, call):
             "error": str(report.longrepr) if report.failed else None,
         })
     elif report.when == "setup" and report.failed:
+        if getattr(report, "outcome", None) == "rerun":
+            return
         _session_results.append({
             "nodeid": item.nodeid,
             "test_id": item.name.split("[")[0],

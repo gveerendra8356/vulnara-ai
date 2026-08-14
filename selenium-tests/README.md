@@ -37,9 +37,11 @@ selenium-tests/requirements.txt && pytest --collect-only -q` from inside
 `selenium-tests/` doesn't need Chrome or a running server — but this is
 optional, not required for CI to work.
 
-## Why the app is built with Mock Mode ON, served by `vite preview`/`serve` — not tested against GitHub Pages
+## Why the app is built with Mock Mode ON, served from a real `/vulnara-ai/` subpath — not tested against GitHub Pages
 
-This wasn't assumed — it came out of reading the actual source:
+This wasn't assumed — it came out of reading the actual source (and, as of
+this revision, out of a real CI run that failed and got root-caused — see
+"Postmortem" below):
 
 - `vulnara-web` has a built-in **Mock Mode** (`VITE_USE_MOCK`), which the
   repo's own `docs/testing_guide.md` describes as what makes the app "fully
@@ -51,12 +53,45 @@ This wasn't assumed — it came out of reading the actual source:
 - So the workflow builds the app with `VITE_USE_MOCK=true` **overriding**
   `.env.production`, then serves the static build from *inside* the GitHub
   Actions runner (`http://127.0.0.1:4173/vulnara-ai/`) — no external network
-  calls, fully deterministic, fast. This mirrors the base-URL pattern already
-  visible in your own sample `Automation_Test_Report.xlsx`
-  (`http://localhost:4173/fitfuel-final/`).
+  calls, fully deterministic, fast.
+- `vite.config.js` sets `base: "/vulnara-ai/"`, so the build's `index.html`
+  references every asset as an absolute path under `/vulnara-ai/`. The
+  workflow copies `dist/` into a `site/vulnara-ai/` subfolder before serving
+  it, so those paths resolve correctly, and a `serve.json` rewrite sends any
+  sub-route that isn't a real file (e.g. `/vulnara-ai/scans`) back to
+  `/vulnara-ai/index.html` — the same history-fallback behavior
+  `BrowserRouter` needs, which `vite preview` gives for free but a plain
+  static server rooted at `dist/` does not.
 - Every seeded id/credential the tests use (`scan-1001`, `vuln-2001`,
   `rem-4001`, `analyst@vulnara.dev`, `admin@vulnara.dev`, etc.) comes
   directly from `vulnara-web/src/lib/mockData.js` — nothing is invented.
+
+### Postmortem: first CI run was ~1% pass rate, and why
+
+The first real run of this suite came back with 8/832 passing. Both
+problems traced to the CI setup, not the tests:
+
+1. **Blank-page bug.** The original workflow served `dist/` directly at the
+   server root (`serve -s dist`), so `/vulnara-ai/assets/main.js` (what
+   `index.html` actually asks for) 404'd and React never mounted — every
+   page was a permanently blank white shell. The only tests that passed
+   were ones checking the *static* HTML shell itself (`<html lang>`, the
+   `.dark` class, the favicon `<link>`) rather than anything React-rendered
+   — that pattern in the results is what pointed at the fix. Confirmed via
+   screenshot review and reproduced/fixed locally with `curl`: the JS bundle
+   went from `404` to `200` once `dist/` was placed under a real
+   `vulnara-ai/` subpath with a scoped SPA rewrite (see above). The workflow
+   now also runs a one-line sanity curl against the JS bundle right after
+   starting the server, so this exact failure mode shows up immediately in
+   the CI log instead of silently producing a wall of failures.
+2. **Double-counted reruns.** `--reruns 1` re-executes a failed test, and
+   `pytest-rerunfailures` marks the superseded attempt with a special
+   `rerun` outcome — the report hook in `conftest.py` wasn't filtering that
+   out, so every retried test got logged twice (832 total entries against
+   420 actually-unique tests). Fixed by skipping any report whose outcome is
+   `"rerun"`.
+
+
 
 ## What's actually being tested (and two real findings along the way)
 
