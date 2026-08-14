@@ -1,0 +1,237 @@
+name: Selenium Web Test Suite (vulnara-web)
+
+# Everything runs inside the GitHub Actions runner -- no local execution,
+# no dependency on the deployed GitHub Pages site or the real Render
+# backend. See selenium-tests/README.md "Why vite preview, not GitHub
+# Pages" for the reasoning.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      gate_threshold:
+        description: "Minimum pass rate (%) required for the job to succeed"
+        required: false
+        default: "70"
+
+env:
+  GATE_THRESHOLD: ${{ github.event.inputs.gate_threshold || '70' }}
+
+jobs:
+  build-web-app:
+    name: Build web app (Mock Mode)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: vulnara-web/package-lock.json
+
+      - name: Install web app dependencies
+        working-directory: vulnara-web
+        run: npm ci || npm install
+
+      - name: Build with Mock Mode forced ON
+        working-directory: vulnara-web
+        # Mock Mode is what makes this app fully clickable without a real
+        # backend (see docs/testing_guide.md). Overriding VITE_USE_MOCK here
+        # takes priority over .env.production's VITE_USE_MOCK=false.
+        run: VITE_USE_MOCK=true npm run build
+
+      - name: Upload build output
+        uses: actions/upload-artifact@v4
+        with:
+          name: vulnara-web-dist
+          path: vulnara-web/dist
+          retention-days: 7
+
+  selenium-tests:
+    name: Selenium shard ${{ matrix.shard }}/${{ strategy.job-total }}
+    needs: build-web-app
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download build output
+        uses: actions/download-artifact@v4
+        with:
+          name: vulnara-web-dist
+          path: vulnara-web/dist
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: selenium-tests/requirements.txt
+
+      - name: Install Python dependencies
+        working-directory: selenium-tests
+        run: pip install -r requirements.txt
+
+      - name: Set up Chrome
+        uses: browser-actions/setup-chrome@v1
+        id: setup-chrome
+        with:
+          chrome-version: stable
+
+      - name: Install a static file server
+        run: npm install -g serve@14
+
+      - name: Serve the built app (background)
+        working-directory: vulnara-web
+        # `serve -s` gives SPA history-fallback (any unmatched path serves
+        # index.html), matching what `vite preview` does for BrowserRouter.
+        # Using `serve` instead of `vite preview` here avoids re-installing
+        # the full node_modules tree in every shard job.
+        run: |
+          npx serve -s dist -l 4173 --no-clipboard &
+          echo "Waiting for preview server..."
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:4173/vulnara-ai/ > /dev/null && break
+            sleep 2
+          done
+
+      - name: Run Selenium suite (this shard)
+        working-directory: selenium-tests
+        env:
+          CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
+          HEADLESS: "true"
+          BASE_URL: "http://127.0.0.1:4173/vulnara-ai/"
+        run: |
+          pytest -n auto \
+            --reruns 1 --reruns-delay 2 \
+            --splits 4 --group ${{ matrix.shard }} \
+            -p no:cacheprovider \
+            || true
+        continue-on-error: true
+
+      - name: Upload shard results
+        uses: actions/upload-artifact@v4
+        with:
+          name: shard-results-${{ matrix.shard }}
+          path: |
+            selenium-tests/reports/execution-results*.json
+            selenium-tests/reports/screenshots
+            selenium-tests/reports/logs
+          retention-days: 14
+          if-no-files-found: warn
+
+  merge-and-report:
+    name: Merge results & build reports
+    needs: selenium-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install report dependencies
+        run: pip install openpyxl
+
+      - name: Download all shard results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: shard-results-*
+          path: selenium-tests/reports/_shards
+          merge-multiple: false
+
+      - name: Merge shard JSON into one execution-results.json
+        working-directory: selenium-tests
+        run: |
+          python3 - <<'PY'
+          import json, glob, os, time
+
+          results = []
+          for path in glob.glob("reports/_shards/*/execution-results*.json"):
+              with open(path) as f:
+                  data = json.load(f)
+              # Each shard already produces a merged payload (its own
+              # xdist workers merged internally); pull out .results if the
+              # shard finished cleanly, otherwise treat the file itself as
+              # a flat list (per-worker partial that never got merged).
+              if isinstance(data, dict) and "results" in data:
+                  results.extend(data["results"])
+                  base_url = data.get("base_url")
+                  run_at = data.get("run_at")
+              elif isinstance(data, list):
+                  results.extend(data)
+
+          os.makedirs("reports", exist_ok=True)
+          for kind in ("screenshots", "logs"):
+              os.makedirs(f"reports/{kind}", exist_ok=True)
+          for path in glob.glob(f"reports/_shards/*/screenshots/*"):
+              os.rename(path, f"reports/screenshots/{os.path.basename(path)}")
+          for path in glob.glob(f"reports/_shards/*/logs/*"):
+              os.rename(path, f"reports/logs/{os.path.basename(path)}")
+
+          total = len(results)
+          passed = sum(1 for r in results if r["status"] == "PASSED")
+          failed = sum(1 for r in results if r["status"] in ("FAILED", "ERROR"))
+          skipped = sum(1 for r in results if r["status"] == "SKIPPED")
+          errors = sum(1 for r in results if r["status"] == "ERROR")
+          pass_rate = round((passed / total) * 100, 2) if total else 0.0
+          duration = sum(r["duration"] for r in results)
+
+          payload = {
+              "run_at": time.strftime("%Y-%m-%dT%H:%M:%S+00:00", time.gmtime()),
+              "base_url": "http://127.0.0.1:4173/vulnara-ai/",
+              "duration_seconds": round(duration, 2),
+              "total": total,
+              "passed": passed,
+              "failed": failed,
+              "skipped": skipped,
+              "errors": errors,
+              "pass_rate": pass_rate,
+              "results": results,
+          }
+          with open("reports/execution-results.json", "w") as f:
+              json.dump(payload, f, indent=2)
+          print(f"Merged {total} test results ({passed} passed, {failed} failed)")
+          PY
+
+      - name: Generate Excel/HTML/Markdown reports
+        id: reports
+        working-directory: selenium-tests
+        env:
+          GATE_THRESHOLD: ${{ env.GATE_THRESHOLD }}
+        run: |
+          python3 reports/generate_reports.py
+          echo "gate_exit=$?" >> "$GITHUB_OUTPUT"
+        continue-on-error: true
+
+      - name: Write job summary
+        if: always()
+        run: cat selenium-tests/reports/summary.md >> "$GITHUB_STEP_SUMMARY" || true
+
+      - name: Upload final reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vulnara-selenium-report
+          path: |
+            selenium-tests/reports/Automation_Test_Report.xlsx
+            selenium-tests/reports/dashboard.html
+            selenium-tests/reports/execution-report.html
+            selenium-tests/reports/execution-results.json
+            selenium-tests/reports/summary.md
+            selenium-tests/reports/screenshots
+            selenium-tests/reports/logs
+          retention-days: 30
+
+      - name: Enforce quality gate
+        if: steps.reports.outcome == 'failure'
+        run: |
+          echo "Pass rate fell below GATE_THRESHOLD=${GATE_THRESHOLD}% -- see summary.md / dashboard.html for the breakdown."
+          exit 1
