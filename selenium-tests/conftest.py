@@ -37,9 +37,25 @@ LOGS_DIR = os.path.join(REPORTS_DIR, "logs")
 _session_results = []
 _session_start = None
 
+# Set once in pytest_configure. True only for the process that is the xdist
+# CONTROLLER of an actively-distributed run (numprocesses set, and this
+# process is not itself a worker). See the long comment on
+# pytest_runtest_logreport below for why this matters -- getting this wrong
+# is exactly what caused a real CI run to report 840 results for a 420-test
+# suite (every test recorded once by its worker, and once more by the
+# controller's relayed copy of the same report).
+_am_xdist_controller = False
+
 
 def pytest_addoption(parser):
     parser.addoption("--base-url", action="store", default=None, help="Override BASE_URL for this run")
+
+
+def pytest_configure(config):
+    global _am_xdist_controller
+    is_worker = hasattr(config, "workerinput")
+    numprocesses = getattr(config.option, "numprocesses", None)
+    _am_xdist_controller = (not is_worker) and bool(numprocesses)
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -230,6 +246,22 @@ def pytest_runtest_makereport(item, call):
 
 
 def pytest_runtest_logreport(report):
+    # Under pytest-xdist, the CONTROLLER process also receives a relayed
+    # copy of every report a worker already recorded -- that relay is what
+    # powers live terminal output (dots/progress), but it means this hook
+    # fires TWICE per test if left unguarded: once for real on the worker
+    # that ran it, once again for the controller's relayed copy. This was
+    # the actual, confirmed cause of a real CI run reporting 840 results
+    # for a 420-test suite -- verified by instrumenting a minimal
+    # reproduction under real `-n 2` execution and observing the
+    # controller's own `_session_results` fill up to the full test count on
+    # its own, in addition to the two workers' partial files it then merged
+    # on top. Skip entirely on the controller; the controller's own final
+    # tally is assembled purely from the workers' partial JSON files in
+    # pytest_sessionfinish below.
+    if _am_xdist_controller:
+        return
+
     # Superseded attempts (about to be retried) are marked "rerun" -- skip
     # them so a retried test is recorded exactly once, using its final
     # outcome. See the module-level comment above for why this can't be

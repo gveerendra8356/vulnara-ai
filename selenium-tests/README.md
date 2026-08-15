@@ -126,6 +126,36 @@ problems traced to the CI setup, not the tests:
    login after this, the new fixture assertions will say so directly and
    that's the next thing to dig into, rather than a locator on an unrelated
    page.
+4. **A third CI run came back at 840 total (again exactly 2× the real 420),
+   with every single nodeid duplicated exactly once** — a much cleaner
+   pattern than the earlier rerun-related doubling, which pointed
+   somewhere more structural. Root-caused by instrumenting a minimal
+   reproduction under real `pytest -n 2` execution (not just reading code):
+   **pytest-xdist's controller process also receives a relayed copy of
+   every report a worker already recorded** — that relay is what powers
+   live terminal output (the dots/progress you see scroll by), and it
+   fires the exact same `pytest_runtest_logreport` hook a second time. The
+   previous fix (moving recording out of `pytest_runtest_makereport` and
+   into `pytest_runtest_logreport` to correctly see rerun outcomes — see
+   point 2 above) was correct on its own, but exposed this second issue:
+   without a guard, the hook now recorded every test once via the worker
+   that actually ran it, and once more via the controller's relayed copy —
+   which the controller's own `pytest_sessionfinish` then merged **on top
+   of**, on top of the two workers' own partial files. Fixed with a flag
+   set once in `pytest_configure` (`_am_xdist_controller`, true only for a
+   controller process actively distributing work, i.e. not a worker and
+   `-n`/`numprocesses` is set) that makes `pytest_runtest_logreport` a
+   no-op on the controller entirely; the controller's tally comes purely
+   from merging the workers' own partial JSON files, as designed.
+   Confirmed via three separate checks before repackaging: (a) a minimal
+   reproduction under real `-n 2` showing exactly 20 results for 20 tests,
+   not 40; (b) the same reproduction with `--reruns` and under `-n 1` and
+   with no xdist at all, all giving results matching pytest's own summary
+   line exactly; (c) a full end-to-end dry run using the actual project's
+   `conftest.py` unmodified (a throwaway local HTTP server standing in for
+   the app so the real health-check fixture could pass, with dummy
+   non-Selenium tests standing in for the real suite) under real `-n 2`
+   with reruns, landing on exactly 51 results for 51 tests.
 
 
 
