@@ -156,6 +156,55 @@ problems traced to the CI setup, not the tests:
    the app so the real health-check fixture could pass, with dummy
    non-Selenium tests standing in for the real suite) under real `-n 2`
    with reruns, landing on exactly 51 results for 51 tests.
+5. **A clean CI run (420 total, matching the suite exactly) came back at
+   52.6% pass rate, with failures concentrated almost entirely in modules
+   that navigate between pages after logging in** (crud_operations 34/40
+   failed, ui_validation 31/56, forms 25/36, authorization 20/47,
+   search_filter 17/19, navigation 16/34) while modules that either don't
+   navigate post-login or deliberately test session-loss-on-reload stayed
+   mostly green (authentication 3/56 failed, session_management 4/19).
+   That pattern -- not random, not evenly spread, cleanly split along "does
+   this test call `.goto()` after already being logged in" -- pointed
+   straight at `BasePage.goto()`. It used `driver.get()` (a real browser
+   navigation) for every single call, including ones made after a
+   successful login. Mock Mode's session lives only in an in-memory JS
+   variable (`state.currentUser` in `src/lib/mockApi.js`, confirmed never
+   written to `localStorage`), so a real navigation -- exactly the same as
+   a user retyping the URL and hitting Enter -- reloads the whole JS module
+   tree and wipes it, bouncing back to `/login`. Every `.goto()` call made
+   after the initial login was silently logging the test back out, and the
+   test then failed on whatever locator it expected on the page it thought
+   it was still authenticated on.
+   `BasePage.goto()` now uses the browser's History API (`pushState` +
+   dispatching a synthetic `popstate` event) instead of `driver.get()` for
+   any navigation after the first one in a tab -- the standard technique
+   for driving an SPA's client-side router without a full page reload,
+   since React Router's `history` listener reacts to `popstate` the same
+   way it would to a browser back/forward button press. This preserves the
+   in-memory session exactly the way clicking a real link would. A
+   `hard=True` override remains for tests where a genuine full navigation
+   is the actual point (the very first navigation in a fresh tab always
+   uses it automatically, since there's no JS context yet for `pushState`
+   to act on). The three tests in `test_session_management.py` that
+   deliberately test reload-drops-session behavior were untouched by this
+   change -- they already called `driver.refresh()` directly, a real
+   Selenium method entirely separate from `.goto()`.
+   Two further, unrelated, smaller issues surfaced once this was isolated
+   from the noise: two entries in `test_authentication.py`'s
+   `MALFORMED_EMAILS` list (`"user@example"` and
+   `".leadingdot@example.com"`) were actually miscategorized -- verified
+   directly against the WHATWG HTML5 living-standard email regex that
+   browsers implement for `input[type=email]` validation, both are
+   genuinely spec-valid (no TLD is required, and the local-part character
+   class doesn't restrict where a `.` can appear), so asserting they should
+   fail native validation was a bug in the test, not the app. They moved to
+   a new `VALID_BUT_SURPRISING_EMAILS` list with a test that documents the
+   real, permissive spec behavior instead. Separately,
+   `test_registered_client_sees_client_role_in_sidebar` was silently
+   ignoring whether registration actually completed before checking the
+   sidebar; it now asserts that explicitly, so if it fails again the
+   reason will be immediately clear rather than reading as an unrelated
+   "text not found" failure.
 
 
 

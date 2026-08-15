@@ -25,9 +25,53 @@ class BasePage:
         self.short_wait = WebDriverWait(driver, SHORT_WAIT)
 
     # ------------------------------------------------------------------ nav
-    def goto(self, route: str):
-        """Navigate directly to BASE_URL + route (BrowserRouter path)."""
-        self.driver.get(BASE_URL + route)
+    def goto(self, route: str, hard: bool = False):
+        """Navigate to BASE_URL + route.
+
+        Uses client-side navigation (History API pushState + a synthetic
+        popstate event) whenever the app is already loaded in this tab, so
+        an authenticated Mock Mode session survives the hop -- the same way
+        it would for a real user clicking a link, rather than typing a URL
+        and hitting Enter.
+
+        This matters because Mock Mode's session lives ONLY in an in-memory
+        JS variable (verified directly in src/lib/mockApi.js:
+        `state.currentUser`, never written to localStorage -- see
+        test_authentication.py::TestTokenBehaviorInMockMode and
+        test_session_management.py for the confirmed behavior this
+        produces). A real browser navigation -- driver.get(), same as
+        typing a URL and hitting Enter, or a hard reload -- tears down and
+        reloads the whole JS module tree, which resets that variable to
+        null and bounces to /login. That's the CORRECT thing to test
+        deliberately (see driver.refresh() in
+        test_session_management.py's TestMockModeSessionDoesNotSurviveReload),
+        but goto() using driver.get() unconditionally meant nearly every
+        OTHER test that just wanted to move from one authenticated page to
+        another was accidentally logging itself out first -- the actual
+        root cause behind a real CI run reporting 199 failures across
+        exactly the modules that navigate between pages after logging in
+        (crud_operations, forms, ui_validation, search_filter, navigation,
+        authorization, input_validation), while modules that either don't
+        navigate post-login or deliberately test the reload-drops-session
+        behavior (authentication, session_management) stayed mostly green.
+
+        Pass hard=True to force a real full navigation when a fresh/
+        bookmarked/unauthenticated visit is genuinely the point of the
+        test. The very first navigation in a brand-new browser tab always
+        uses a real navigation regardless of `hard`, since there's no JS
+        context loaded yet for pushState to act on.
+        """
+        target_url = BASE_URL + route
+        is_first_navigation = self.driver.current_url.startswith(("data:", "about:"))
+
+        if hard or is_first_navigation:
+            self.driver.get(target_url)
+        else:
+            self.driver.execute_script(
+                "window.history.pushState({}, '', arguments[0]);"
+                "window.dispatchEvent(new PopStateEvent('popstate'));",
+                target_url,
+            )
         return self
 
     def current_path(self) -> str:

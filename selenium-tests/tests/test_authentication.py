@@ -208,9 +208,21 @@ MALFORMED_EMAILS = [
     "@no-local-part.com",
     "user name@example.com",
     "user@@example.com",
-    "user@example",
     "user@.com",
     "user@exa mple.com",
+]
+
+# These look malformed to a human but are genuinely VALID per the WHATWG
+# HTML5 living-standard email regex that browsers actually implement for
+# input[type=email] constraint validation -- confirmed against the spec
+# regex directly (not just observed in CI): the regex doesn't require a TLD
+# (so "user@example" with no dot in the domain passes), and its local-part
+# character class allows "." anywhere, including a leading position (so
+# ".leadingdot@example.com" also passes). A real CI run caught both of
+# these as test bugs, not app bugs -- they were originally miscategorized
+# as MALFORMED_EMAILS above.
+VALID_BUT_SURPRISING_EMAILS = [
+    "user@example",
     ".leadingdot@example.com",
 ]
 
@@ -229,6 +241,17 @@ class TestEmailFormatHandling:
         page.type_into(*page.EMAIL_INPUT, bad_email)
         page.type_into(*page.PASSWORD_INPUT, MOCK_PASSWORD)
         assert page.email_is_valid() is False
+
+    @pytest.mark.parametrize("surprising_email", VALID_BUT_SURPRISING_EMAILS)
+    def test_html5_email_validation_is_more_permissive_than_it_looks(self, driver, surprising_email):
+        """Documents real, spec-correct browser behavior rather than
+        asserting what a human would intuitively expect: the native
+        email regex requires no TLD and doesn't restrict dot position in
+        the local part, so both of these pass constraint validation."""
+        page = LoginPage(driver).open()
+        page.type_into(*page.EMAIL_INPUT, surprising_email)
+        page.type_into(*page.PASSWORD_INPUT, MOCK_PASSWORD)
+        assert page.email_is_valid() is True
 
     @pytest.mark.parametrize("good_email", VALID_LOOKING_EMAILS)
     def test_valid_looking_emails_pass_native_validation(self, driver, good_email):
@@ -266,7 +289,7 @@ class TestRegisterFlow:
         email = f"newclient-{uuid.uuid4().hex[:8]}@vulnara.dev"
         page = RegisterPage(driver).open()
         page.register(full_name="Fresh Client", email=email, password=MOCK_PASSWORD, role="client")
-        page.on_route("")
+        assert page.on_route(""), "registration did not land on the dashboard within the wait window"
         layout = AppLayout(driver)
         assert layout.text_present("client")
 
