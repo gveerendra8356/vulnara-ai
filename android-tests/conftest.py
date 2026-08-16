@@ -30,7 +30,7 @@ import uuid
 import pytest
 
 import config
-from utils.adb_helpers import clear_app_data, force_stop_app
+from utils.adb_helpers import bring_to_foreground, clear_app_data, force_stop_app
 from utils.driver_factory import new_driver
 from utils.screenshot import capture
 from pages.login_page import LoginPage
@@ -140,6 +140,7 @@ def _login_fixture_factory(role: str):
     def _fixture(driver):
         clear_app_data(driver)
         force_stop_app(driver)
+        bring_to_foreground(driver)
         page = LoginPage(driver)
         assert page.is_loaded(), f"login_as_{role}: login screen never appeared"
         account = config.ACCOUNTS[role]
@@ -159,6 +160,7 @@ def login_as_any_role(request, driver):
     role = request.param
     clear_app_data(driver)
     force_stop_app(driver)
+    bring_to_foreground(driver)
     page = LoginPage(driver)
     assert page.is_loaded(), f"login_as_any_role[{role}]: login screen never appeared"
     account = config.ACCOUNTS[role]
