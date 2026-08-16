@@ -22,8 +22,8 @@ FORGOT_LABEL = "FORGOT CREDENTIALS?"
 
 
 class LoginPage(BasePage):
-    def is_loaded(self) -> bool:
-        return self.is_present(self.by_text(TITLE_LABEL), timeout=15)
+    def is_loaded(self, timeout: float = 15) -> bool:
+        return self.is_present(self.by_text(TITLE_LABEL), timeout=timeout)
 
     def enter_email(self, email: str):
         self.enter_text(EMAIL_FIELD, email)

@@ -55,6 +55,15 @@ def new_driver():
     # silently stalling on Flutter's continuous animation ticker.
     options.set_capability("waitForIdleTimeout", 0)
     options.set_capability("disableWindowAnimation", True)
+    # Defensive addition after a real CI run surfaced "instrumentation
+    # process cannot be initialized" failures (root cause: `pytest -n 2`
+    # racing two sessions onto one emulator -- fixed in the CI workflow,
+    # not here). Bumping this is cheap insurance against the same class of
+    # error under any future genuine slow-start condition (cold emulator,
+    # first-launch APK install), since the default 20s launch timeout has
+    # little margin on a freshly-booted CI emulator.
+    options.set_capability("uiautomator2ServerLaunchTimeout", 60000)
+    options.set_capability("uiautomator2ServerInstallTimeout", 60000)
 
     # --- final_year.md item 4: AppiumConnection timeout wiring ---
     # A bare AppiumConnection.set_timeout(N) classmethod call at import time

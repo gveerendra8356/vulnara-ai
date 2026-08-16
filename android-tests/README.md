@@ -210,3 +210,31 @@ development, not recalled from training data — consistent with
 - `test_error_handling.py`'s airplane-mode tests assume the AVD image
   supports `cmd connectivity airplane-mode` — true for all standard
   Google APIs images on API 30+, not guaranteed on every custom image.
+
+## CI debugging log
+
+**2026-08-16, first real CI run (405 total, 9 passed, 386 failed, 341 as
+setup ERROR):** Nearly every test that touches the `driver` fixture failed
+with `WebDriverException: The instrumentation process cannot be
+initialized`. The only 9 passing tests were the ones with zero Appium
+dependency (`test_authorization.test_remediation_action_buttons_visible_regardless_of_role`),
+which was the tell — this wasn't scattered flakiness, every session-start
+attempt was failing, uniformly across all 4 independent shards.
+
+Root cause: `.github/workflows/android-tests.yml` ran
+`pytest -n 2 ...` (2 parallel xdist workers) against a single emulator per
+shard. UiAutomator2 can run exactly one instrumentation session per
+device — two workers racing to start sessions on the same device lose
+almost every time. Fixed by dropping `-n 2` (the emulator-runner step now
+runs serially per shard); true parallelism would require one emulator per
+worker, not a shared one. `uiautomator2ServerLaunchTimeout`/
+`uiautomator2ServerInstallTimeout` were also bumped to 60s in
+`utils/driver_factory.py` as cheap insurance against slow-start conditions
+on a cold CI emulator, independent of the root cause above.
+
+Also fixed: `pages/login_page.py`'s `is_loaded()` was missing the
+`timeout` parameter every other page object has, which
+`test_authorization.py` called with `timeout=15` — a real
+`TypeError`, caught in the same run (2 occurrences, masked by the larger
+failure above for everything else).
+

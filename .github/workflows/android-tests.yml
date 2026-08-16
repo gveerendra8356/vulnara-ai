@@ -218,6 +218,16 @@ jobs:
       # DSL) survives into this step fine since it's a background process
       # from an earlier, ordinary run: step -- this constraint is only
       # about bare lines *within* android-emulator-runner's own script:.
+      # --- Fix, 2026-08-16, based on a real CI run: "instrumentation process
+      # cannot be initialized" on ~95% of tests, uniformly across all 4
+      # shards, with the ONLY passing tests being the handful that never
+      # open an Appium session at all. UiAutomator2 can run exactly one
+      # instrumentation session per device at a time -- `pytest -n 2` here
+      # ran two xdist workers against this shard's single emulator, so the
+      # two workers were constantly racing to start sessions on the same
+      # device and losing. Running serially (no -n flag) is the correct
+      # fix for a one-emulator-per-shard layout; true parallelism within a
+      # shard would need one emulator per worker, not one shared emulator.
       - name: Run Android emulator + Appium test suite (this shard)
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -227,7 +237,7 @@ jobs:
           profile: pixel_6
           disable-animations: true
           script: |
-            cd android-tests && export APK_PATH=$GITHUB_WORKSPACE/android-tests/apk/app-debug.apk && export APPIUM_SERVER_URL=http://127.0.0.1:4723 && export BACKEND_BASE_URL=http://127.0.0.1:8000 && pytest -n 2 --reruns 2 --reruns-delay 3 -p no:cacheprovider ${{ matrix.paths }} || true
+            cd android-tests && export APK_PATH=$GITHUB_WORKSPACE/android-tests/apk/app-debug.apk && export APPIUM_SERVER_URL=http://127.0.0.1:4723 && export BACKEND_BASE_URL=http://127.0.0.1:8000 && pytest --reruns 2 --reruns-delay 3 -p no:cacheprovider ${{ matrix.paths }} || true
 
       - uses: actions/upload-artifact@v4
         with:
