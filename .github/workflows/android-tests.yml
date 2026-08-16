@@ -1,0 +1,338 @@
+name: Android Test Suite (vulnara-mobile)
+
+# Every lesson-doc reference in the comments below points at the specific
+# item in final_year.md this step exists to satisfy -- kept inline rather
+# than in a separate doc so the reasoning doesn't drift out of sync with
+# the workflow as it's edited.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      gate_threshold:
+        description: "Minimum pass rate (%) required for the job to succeed"
+        required: false
+        default: "70"
+
+env:
+  GATE_THRESHOLD: ${{ github.event.inputs.gate_threshold || '70' }}
+
+jobs:
+  build-apk:
+    name: Build debug APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # --- final_year.md item 1: secrets check ---
+      # Grepped .gitignore and android/app for firebase_options,
+      # google-services, *.keystore, *.jks: none are gitignored, and
+      # lib/firebase_options.dart is committed directly (Firebase is
+      # initialized via DefaultFirebaseOptions.currentPlatform in Dart,
+      # not the com.google.gms.google-services Gradle plugin -- confirmed
+      # no such plugin is applied in android/app/build.gradle.kts either).
+      # There is nothing this build depends on that's missing from the
+      # checked-out repo, so no "write <file> from secret" step is needed
+      # here. If that ever changes (a real google-services.json/keystore
+      # gets introduced), this comment is the first place to update.
+
+      - uses: subosito/flutter-action@v2
+        with:
+          # --- final_year.md item 2: SDK/toolchain compatibility ---
+          # pubspec.yaml: environment.sdk: '>=3.3.0 <4.0.0'. Flutter 3.19.x
+          # is the first stable series shipping Dart 3.3.x (confirmed via
+          # Flutter's own release notes). firebase_core ^2.31.0 and
+          # firebase_messaging ^14.9.2 (the app's only two SDK-floor-
+          # relevant packages -- no cloud_firestore/other Firebase
+          # products in this app) both declare lower Dart floors than the
+          # app's own >=3.3.0, so the app's own constraint is already the
+          # highest floor in the dependency graph. channel: stable (no
+          # fixed version) always resolves at or above that floor,
+          # avoiding the "pinned below the highest package floor" trap
+          # this lesson warns about.
+          channel: "stable"
+          cache: true
+
+      - name: Patch backend base URL for CI
+        working-directory: vulnara_mobile_scaffold
+        # lib/core/constants.dart hardcodes ApiConfig.baseUrl to the
+        # production Render URL with no --dart-define override point (grepped
+        # for String.fromEnvironment: none found). 10.0.2.2 is the Android
+        # emulator's fixed alias for the host loopback interface, so this
+        # reaches the backend service started on the SAME runner in the
+        # android-tests job below, the same way KrishiIQ's Appium suite
+        # reaches its own locally-run backend.
+        run: |
+          sed -i "s#https://[a-zA-Z0-9.-]*\.onrender\.com#http://10.0.2.2:8000#g" lib/core/constants.dart
+          grep -n "10.0.2.2" lib/core/constants.dart
+
+      - name: flutter pub get
+        working-directory: vulnara_mobile_scaffold
+        run: flutter pub get
+
+      - name: Build debug APK
+        working-directory: vulnara_mobile_scaffold
+        run: flutter build apk --debug
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vulnara-mobile-debug-apk
+          path: vulnara_mobile_scaffold/build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 7
+
+  android-tests:
+    name: Android shard ${{ matrix.shard }}/4
+    needs: build-apk
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # --- final_year.md item 7: matrix file-list expansion ---
+          # Full relative paths baked into each matrix entry itself, not a
+          # `tests/${{ matrix.paths }}` prefix applied once outside the
+          # matrix -- string concatenation onto a space-separated value
+          # only prefixes the first filename, leaving every other one bare.
+          - shard: 1
+            paths: "tests/test_authentication.py tests/test_authorization.py tests/test_navigation.py"
+          - shard: 2
+            paths: "tests/test_scan_creation_forms.py tests/test_scan_lifecycle_crud.py tests/test_remediation_workflow.py"
+          - shard: 3
+            paths: "tests/test_notifications.py tests/test_profile.py tests/test_audit_log.py tests/test_session_management.py"
+          - shard: 4
+            paths: "tests/test_input_validation.py tests/test_error_handling.py tests/test_accessibility.py tests/test_responsive_orientation.py"
+    steps:
+      - uses: actions/checkout@v4
+
+      # --- final_year.md item 5: emulator runner OS/arch ---
+      # ubuntu-latest + arch: x86_64 + explicit KVM enable, NOT
+      # macos-latest (Apple Silicon hosted runners have long-standing
+      # HVF/QEMU stability issues with this action regardless of the
+      # arch: value chosen). This is the officially recommended setup per
+      # the action's own README as of this writing -- re-check that
+      # README if hosted-runner capabilities change.
+      - name: Enable KVM group perms
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: vulnara-mobile-debug-apk
+          path: android-tests/apk
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: |
+            android-tests/requirements.txt
+            backend/requirements.txt
+
+      - name: Install test-suite Python dependencies
+        working-directory: android-tests
+        run: pip install -r requirements.txt
+
+      - name: Install backend Python dependencies
+        working-directory: backend
+        run: pip install -r requirements.txt
+
+      # The exact bootstrap sequence below mirrors backend-tests/conftest.py's
+      # own ephemeral-server fixture line for line (schema creation, secret
+      # key, then the two seed scripts, THEN the live server) -- that fixture
+      # is the one other place in this repo that has already solved "how do
+      # you get this backend from an empty checkout to a servable, seeded
+      # state," so this reuses it rather than re-deriving a startup order.
+      - name: Bootstrap ephemeral backend DB schema
+        working-directory: backend
+        env:
+          DATABASE_URL: "sqlite+aiosqlite:///./vulnara.db"
+        run: python3 apply_migration.py
+
+      - name: Seed QA test accounts + fixture scan/vulnerability/remediation data
+        # This is an ordinary GitHub Actions run: step (a single shell
+        # script, not android-emulator-runner's per-line-independent-
+        # subprocess script: DSL from final_year.md item 6) -- cd and env
+        # persist normally across these two lines, no re-exporting needed.
+        working-directory: backend
+        env:
+          DATABASE_URL: "sqlite+aiosqlite:///./vulnara.db"
+          VULNARA_SECRET_KEY: "ci-ephemeral-secret-key-do-not-use-in-prod"
+          PYTHONPATH: "${{ github.workspace }}/backend"
+        run: |
+          python3 "${{ github.workspace }}/backend-tests/seed_test_accounts.py"
+          python3 "${{ github.workspace }}/backend-tests/seed_fixture_data.py"
+
+      - name: Start backend service (background)
+        working-directory: backend
+        env:
+          DATABASE_URL: "sqlite+aiosqlite:///./vulnara.db"
+          VULNARA_SECRET_KEY: "ci-ephemeral-secret-key-do-not-use-in-prod"
+          ENVIRONMENT: "development"
+        run: |
+          nohup python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --log-level info > backend.log 2>&1 &
+          echo "Waiting for backend health..."
+          for i in $(seq 1 20); do
+            curl -sf http://127.0.0.1:8000/health > /dev/null && break
+            sleep 1.5
+          done
+          curl -sf http://127.0.0.1:8000/health || (echo "::error::backend never became healthy" && cat backend.log && exit 1)
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # --- final_year.md item 3: npm/pip package pins ---
+      # Versions checked against the npm registry on 2026-08-15:
+      # appium-uiautomator2-driver@8.4.0 declares peerDependencies.appium
+      # "^3.0.0-rc.2", which appium@3.6.0 satisfies. This suite
+      # deliberately does NOT install appium-flutter-driver -- see
+      # utils/driver_factory.py's docstring for why automationName:
+      # 'Flutter' was rejected outright, not just deprioritized.
+      - name: Install Appium server + UiAutomator2 driver
+        run: |
+          npm install -g appium@3.6.0
+          appium driver install uiautomator2@8.4.0
+          appium driver list --installed
+
+      - name: Start Appium server (background)
+        run: |
+          nohup appium --address 127.0.0.1 --port 4723 --relaxed-security > appium.log 2>&1 &
+          echo "Waiting for Appium server..."
+          for i in $(seq 1 20); do
+            curl -sf http://127.0.0.1:4723/status > /dev/null && break
+            sleep 1.5
+          done
+          curl -sf http://127.0.0.1:4723/status || (echo "::error::Appium server never came up" && cat appium.log && exit 1)
+
+      # --- final_year.md item 6: script: block execution model ---
+      # Everything the emulator needs to do in one line, chained with &&,
+      # NOT split across separate bare script lines -- cd/export/pytest's
+      # own cwd-dependent behavior would otherwise silently run from the
+      # wrong directory or with the wrong env on a later, independent
+      # sh -c line. appium (started above, outside this action's script:
+      # DSL) survives into this step fine since it's a background process
+      # from an earlier, ordinary run: step -- this constraint is only
+      # about bare lines *within* android-emulator-runner's own script:.
+      - name: Run Android emulator + Appium test suite (this shard)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          script: |
+            cd android-tests && export APK_PATH=$GITHUB_WORKSPACE/android-tests/apk/app-debug.apk && export APPIUM_SERVER_URL=http://127.0.0.1:4723 && export BACKEND_BASE_URL=http://127.0.0.1:8000 && pytest -n 2 --reruns 2 --reruns-delay 3 -p no:cacheprovider ${{ matrix.paths }} || true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: shard-results-${{ matrix.shard }}
+          path: |
+            android-tests/reports/execution-results*.json
+            android-tests/reports/screenshots
+            android-tests/reports/logs
+          retention-days: 14
+          if-no-files-found: warn
+
+  merge-and-report:
+    name: Merge results & build reports
+    needs: android-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install report dependencies
+        run: pip install openpyxl==3.1.5
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: shard-results-*
+          path: android-tests/reports/_shards
+          merge-multiple: false
+
+      - name: Merge shard JSON into one execution-results.json
+        working-directory: android-tests
+        run: |
+          python3 - <<'PY'
+          import json, glob, os, time
+
+          results = []
+          for path in glob.glob("reports/_shards/*/execution-results*.json"):
+              with open(path) as f:
+                  data = json.load(f)
+              if isinstance(data, dict) and "results" in data:
+                  results.extend(data["results"])
+              elif isinstance(data, list):
+                  results.extend(data)
+
+          os.makedirs("reports", exist_ok=True)
+          for kind in ("screenshots", "logs"):
+              os.makedirs(f"reports/{kind}", exist_ok=True)
+          for path in glob.glob("reports/_shards/*/screenshots/*"):
+              os.rename(path, f"reports/screenshots/{os.path.basename(path)}")
+          for path in glob.glob("reports/_shards/*/logs/*"):
+              os.rename(path, f"reports/logs/{os.path.basename(path)}")
+
+          total = len(results)
+          passed = sum(1 for r in results if r["status"] == "PASSED")
+          failed = sum(1 for r in results if r["status"] in ("FAILED", "ERROR"))
+          skipped = sum(1 for r in results if r["status"] == "SKIPPED")
+          errors = sum(1 for r in results if r["status"] == "ERROR")
+          pass_rate = round((passed / total) * 100, 2) if total else 0.0
+          duration = sum(r["duration"] for r in results)
+
+          payload = {
+              "run_at": time.strftime("%Y-%m-%dT%H:%M:%S+00:00", time.gmtime()),
+              "base_url": "android emulator (CI) @ http://127.0.0.1:4723",
+              "duration_seconds": round(duration, 2),
+              "total": total, "passed": passed, "failed": failed,
+              "skipped": skipped, "errors": errors, "pass_rate": pass_rate,
+              "results": results,
+          }
+          with open("reports/execution-results.json", "w") as f:
+              json.dump(payload, f, indent=2)
+          print(f"Merged {total} test results ({passed} passed, {failed} failed)")
+          PY
+
+      - name: Generate Excel/HTML/Markdown reports
+        id: reports
+        working-directory: android-tests
+        env:
+          GATE_THRESHOLD: ${{ env.GATE_THRESHOLD }}
+        run: |
+          python3 reports/generate_reports.py
+          echo "gate_exit=$?" >> "$GITHUB_OUTPUT"
+        continue-on-error: true
+
+      - name: Write job summary
+        if: always()
+        run: cat android-tests/reports/summary.md >> "$GITHUB_STEP_SUMMARY" || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vulnara-android-report
+          path: |
+            android-tests/reports/Automation_Test_Report.xlsx
+            android-tests/reports/dashboard.html
+            android-tests/reports/execution-report.html
+            android-tests/reports/execution-results.json
+            android-tests/reports/summary.md
+            android-tests/reports/screenshots
+            android-tests/reports/logs
+          retention-days: 30
+
+      - name: Enforce quality gate
+        if: steps.reports.outcome == 'failure'
+        run: |
+          echo "Pass rate fell below GATE_THRESHOLD=${GATE_THRESHOLD}% -- see summary.md / dashboard.html for the breakdown."
+          exit 1

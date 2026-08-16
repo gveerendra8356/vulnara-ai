@@ -30,6 +30,13 @@ class VulnaraBottomNav extends StatelessWidget {
     VulnaraTab.profile: Icons.person_outline,
   };
 
+  static const _labels = {
+    VulnaraTab.dashboard: 'Dashboard',
+    VulnaraTab.scans: 'Scans',
+    VulnaraTab.alerts: 'Alerts',
+    VulnaraTab.profile: 'Profile',
+  };
+
   @override
   Widget build(BuildContext context) {
     return ClipRect(
@@ -46,6 +53,7 @@ class VulnaraBottomNav extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: VulnaraTab.values.map((tab) => _NavItem(
                   tab: tab,
+                  label: _labels[tab]!,
                   active: tab == current,
                   icon: _icons[tab]!,
                   onTap: () {
@@ -60,9 +68,10 @@ class VulnaraBottomNav extends StatelessWidget {
 }
 
 class _NavItem extends StatelessWidget {
-  const _NavItem({required this.tab, required this.active, required this.icon, required this.onTap});
+  const _NavItem({required this.tab, required this.label, required this.active, required this.icon, required this.onTap});
 
   final VulnaraTab tab;
+  final String label;
   final bool active;
   final IconData icon;
   final VoidCallback onTap;
@@ -71,16 +80,19 @@ class _NavItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = active ? VulnaraColors.primary : VulnaraColors.onSurfaceVariant;
     return Expanded(
-      child: InkWell(
-        onTap: onTap,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 24, color: color),
-            const SizedBox(height: 4),
-            if (active)
-              Container(width: 4, height: 4, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
-          ],
+      child: Tooltip(
+        message: label,
+        child: InkWell(
+          onTap: onTap,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 24, color: color, semanticLabel: label),
+              const SizedBox(height: 4),
+              if (active)
+                Container(width: 4, height: 4, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+            ],
+          ),
         ),
       ),
     );

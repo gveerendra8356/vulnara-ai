@@ -1,0 +1,12 @@
+# Versions verified against PyPI on 2026-08-15 (`pip index versions <pkg>`)
+# per final_year.md item 3 -- do not bump without re-checking. Appium's
+# server-side pieces (appium, appium-uiautomator2-driver) are npm packages
+# installed by the CI workflow, not here -- see requirements-check.md.
+
+# pytest-rerunfailures 16.5 requires pytest>=8.2,!=8.2.2 (checked via PyPI
+# JSON API) -- 9.1.1 satisfies that.
+pytest==9.1.1
+pytest-rerunfailures==16.5
+pytest-xdist==3.8.0
+Appium-Python-Client==5.3.1
+openpyxl==3.1.5
