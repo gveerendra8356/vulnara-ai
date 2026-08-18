@@ -15,6 +15,8 @@ import { RemediationQueuePage } from "./pages/RemediationQueuePage";
 import { RemediationReviewPage } from "./pages/RemediationReviewPage";
 import { AdminConfigPage } from "./pages/AdminConfigPage";
 import { AdminCvePage } from "./pages/AdminCvePage";
+import { AdminUsersPage } from "./pages/AdminUsersPage";
+import { ProfilePage } from "./pages/ProfilePage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 
 const queryClient = new QueryClient({
@@ -49,6 +51,15 @@ export default function App() {
               <Route path="/vulnerabilities/:vulnId" element={<VulnerabilityDetailPage />} />
               <Route path="/remediations" element={<RemediationQueuePage />} />
               <Route path="/remediations/:remediationId" element={<RemediationReviewPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route
+                path="/admin/users"
+                element={
+                  <ProtectedRoute requireAdmin>
+                    <AdminUsersPage />
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/admin/config"
                 element={

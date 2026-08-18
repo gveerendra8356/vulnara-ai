@@ -10,6 +10,7 @@ const navItems = [
 ];
 
 const adminItems = [
+  { to: "/admin/users", label: "User Management", icon: "group" },
   { to: "/admin/config", label: "Admin Config", icon: "settings" },
   { to: "/admin/cve", label: "CVE Database", icon: "database" },
 ];
@@ -75,13 +76,27 @@ export function AppLayout() {
 
         <div className="px-3 flex flex-col gap-1 border-t border-outline-variant/30 pt-4 mx-3">
           {user && (
-            <div className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-on-surface-variant">
-              <span className="material-symbols-outlined">account_circle</span>
-              <div className="flex flex-col leading-tight">
-                <span className="text-sm text-on-surface font-medium truncate max-w-[150px]">{user.full_name}</span>
-                <span className="text-[10px] uppercase tracking-wider text-on-surface-variant/70">{user.role}</span>
+            <NavLink
+              to="/profile"
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors group ${
+                  isActive
+                    ? "bg-primary/10 border border-primary/20"
+                    : "hover:bg-surface-variant/50"
+                }`
+              }
+            >
+              <div className="w-8 h-8 rounded-full border border-primary/30 bg-primary/10 flex items-center justify-center text-xs font-bold text-primary shrink-0">
+                {user.full_name?.slice(0, 1)?.toUpperCase() || "U"}
               </div>
-            </div>
+              <div className="flex flex-col leading-tight">
+                <span className="text-sm text-on-surface font-medium truncate max-w-[140px]">{user.full_name}</span>
+                <span className="text-[10px] uppercase tracking-wider text-on-surface-variant/70 flex items-center gap-1">
+                  {user.role}
+                  <span className="material-symbols-outlined text-[10px] opacity-0 group-hover:opacity-60 transition-opacity">edit</span>
+                </span>
+              </div>
+            </NavLink>
           )}
           <button
             className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-error font-medium hover:bg-surface-variant/50 transition-colors duration-200 text-left"

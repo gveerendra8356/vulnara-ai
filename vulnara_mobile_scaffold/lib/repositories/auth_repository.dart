@@ -60,4 +60,58 @@ class AuthRepository {
       if (e.response?.statusCode != 401) rethrow;
     }
   }
+
+  Future<User> updateProfile({
+    String? fullName,
+    String? email,
+    String? currentPassword,
+    String? newPassword,
+  }) async {
+    try {
+      final body = <String, dynamic>{};
+      if (fullName != null) body['full_name'] = fullName;
+      if (email != null) body['email'] = email;
+      if (currentPassword != null) body['current_password'] = currentPassword;
+      if (newPassword != null) body['new_password'] = newPassword;
+      final response = await _client.dio.patch('/auth/me', data: body);
+      return User.fromJson(response.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw ApiClient.toApiException(e);
+    }
+  }
 }
+
+// ── Admin user management ──────────────────────────────────────────────────
+
+class AdminRepository {
+  AdminRepository(this._client);
+  final ApiClient _client;
+
+  Future<List<Map<String, dynamic>>> listUsers() async {
+    try {
+      final response = await _client.dio.get('/admin/users');
+      return (response.data as List).cast<Map<String, dynamic>>();
+    } on DioException catch (e) {
+      throw ApiClient.toApiException(e);
+    }
+  }
+
+  Future<Map<String, dynamic>> getUserScans(String userId) async {
+    try {
+      final response = await _client.dio.get('/admin/users/$userId/scans');
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      throw ApiClient.toApiException(e);
+    }
+  }
+
+  Future<Map<String, dynamic>> toggleUserActive(String userId, {required bool isActive}) async {
+    try {
+      final response = await _client.dio.patch('/admin/users/$userId', data: {'is_active': isActive});
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      throw ApiClient.toApiException(e);
+    }
+  }
+}
+

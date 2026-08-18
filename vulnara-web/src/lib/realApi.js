@@ -157,11 +157,32 @@ function connectScanSocket(scanId, onMessage) {
   };
 }
 
+async function updateProfile(payload) {
+  const { data } = await http.patch("/auth/me", payload);
+  return data;
+}
+
+async function listUsers() {
+  const { data } = await http.get("/admin/users");
+  return data;
+}
+
+async function getUserScans(userId) {
+  const { data } = await http.get(`/admin/users/${userId}/scans`);
+  return data;
+}
+
+async function toggleUserActive(userId, isActive) {
+  const { data } = await http.patch(`/admin/users/${userId}`, { is_active: isActive });
+  return data;
+}
+
 export const realApi = {
   login,
   register,
   me,
   logout,
+  updateProfile,
   listScans,
   createScan,
   getScan,
@@ -182,4 +203,7 @@ export const realApi = {
   listCveDefs,
   syncCveDefs,
   connectScanSocket,
+  listUsers,
+  getUserScans,
+  toggleUserActive,
 };

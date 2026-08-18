@@ -489,11 +489,52 @@ function iso() {
   return new Date().toISOString();
 }
 
+
+
+// ---------------- Profile & Admin User Management (stubs for mock mode) ----------------
+
+async function updateProfile(payload) {
+  await delay();
+  const user = requireAuth();
+  if (payload.full_name) user.full_name = payload.full_name;
+  if (payload.email) user.email = payload.email;
+  state.currentUser = user;
+  return { ...user };
+}
+
+async function listUsers() {
+  await delay();
+  requireAuth();
+  return state.users.map((u) => ({
+    ...u,
+    scan_count: state.scans.filter((s) => s.user_id === u.user_id).length,
+  }));
+}
+
+async function getUserScans(userId) {
+  await delay();
+  requireAuth();
+  const user = state.users.find((u) => u.user_id === userId);
+  if (!user) throw new Error("User not found");
+  const scans = state.scans.filter((s) => s.user_id === userId);
+  return { user, scans };
+}
+
+async function toggleUserActive(userId, isActive) {
+  await delay();
+  requireAuth();
+  const user = state.users.find((u) => u.user_id === userId);
+  if (!user) throw new Error("User not found");
+  user.is_active = isActive;
+  return { ...user };
+}
+
 export const mockApi = {
   login,
   register,
   me,
   logout,
+  updateProfile,
   listScans,
   createScan,
   getScan,
@@ -514,4 +555,8 @@ export const mockApi = {
   listCveDefs,
   syncCveDefs,
   connectScanSocket,
+  listUsers,
+  getUserScans,
+  toggleUserActive,
 };
+

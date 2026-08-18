@@ -38,3 +38,7 @@ final deviceRepositoryProvider = Provider<DeviceRepository>((ref) {
 final pushNotificationServiceProvider = Provider<PushNotificationService>((ref) {
   return PushNotificationService(ref.watch(deviceRepositoryProvider));
 });
+
+final adminRepositoryProvider = Provider<AdminRepository>((ref) {
+  return AdminRepository(ref.watch(apiClientProvider));
+});

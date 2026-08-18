@@ -23,6 +23,7 @@ from app.schemas.auth import (
     UserLoginRequest,
     RefreshTokenRequest,
     AdminCreateUserRequest,
+    UpdateProfileRequest,
     TokenResponse,
     UserResponse
 )
@@ -159,6 +160,41 @@ async def get_me(
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
+@router.patch("/auth/me", response_model=UserResponse)
+async def update_profile(
+    payload: UpdateProfileRequest,
+    current_user: CurrentUser = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session)
+):
+    result = await session.execute(select(User).where(User.user_id == current_user.user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Password change: require current password verification
+    if payload.new_password:
+        if not payload.current_password:
+            raise HTTPException(status_code=400, detail="current_password is required to set a new password")
+        if not verify_password(payload.current_password, user.password_hash):
+            raise HTTPException(status_code=400, detail="Current password is incorrect")
+        user.password_hash = get_password_hash(payload.new_password)
+
+    # Email uniqueness check
+    if payload.email and payload.email != user.email:
+        existing = await session.execute(select(User).where(User.email == payload.email))
+        if existing.scalar_one_or_none() is not None:
+            raise HTTPException(status_code=400, detail="Email already in use")
+        user.email = payload.email
+
+    if payload.full_name:
+        user.full_name = payload.full_name
+
+    session.add(user)
+    await session.commit()
+    await session.refresh(user)
     return user
 
 

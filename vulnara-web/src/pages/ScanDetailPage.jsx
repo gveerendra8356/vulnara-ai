@@ -75,12 +75,26 @@ export function ScanDetailPage() {
     );
   }
 
-  const vulns = vulnData?.items ?? [];
-  const logs = logsData?.items ?? [];
-  const remediations = remData?.items ?? [];
+  const vulns = vulnData?.items ?? (Array.isArray(vulnData) ? vulnData : []);
+  const logs = logsData?.items ?? (Array.isArray(logsData) ? logsData : []);
+  const remediations = remData?.items ?? (Array.isArray(remData) ? remData : []);
   const counts = scan.vuln_count_by_severity || {};
   const canCancel = ["PENDING", "IN_PROGRESS"].includes(scan.status);
   const progressPct = scan.progress_percent ?? (scan.status === "COMPLETED" ? 100 : scan.status === "IN_PROGRESS" ? 50 : 0);
+
+  const SEVERITY_ORDER = ["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"];
+  const SEVERITY_STYLES = {
+    CRITICAL: { bg: "bg-red-500/15", border: "border-red-500/40", text: "text-red-400", dot: "bg-red-500", bar: "bg-red-500" },
+    HIGH: { bg: "bg-orange-500/15", border: "border-orange-500/40", text: "text-orange-400", dot: "bg-orange-500", bar: "bg-orange-500" },
+    MEDIUM: { bg: "bg-yellow-500/15", border: "border-yellow-500/40", text: "text-yellow-400", dot: "bg-yellow-500", bar: "bg-yellow-500" },
+    LOW: { bg: "bg-blue-500/15", border: "border-blue-500/40", text: "text-blue-400", dot: "bg-blue-500", bar: "bg-blue-500" },
+    INFO: { bg: "bg-slate-500/15", border: "border-slate-500/40", text: "text-slate-400", dot: "bg-slate-400", bar: "bg-slate-400" },
+  };
+
+  const sortedVulns = [...vulns].sort(
+    (a, b) => SEVERITY_ORDER.indexOf(a.severity) - SEVERITY_ORDER.indexOf(b.severity)
+  );
+  const totalVulns = vulns.length || 1;
 
   return (
     <div className="p-container-padding max-w-[1600px] mx-auto">
@@ -242,7 +256,44 @@ export function ScanDetailPage() {
         </div>
       )}
 
-      {tab === "matrix" && <VulnTable vulnerabilities={vulns} />}
+      {tab === "matrix" && (
+        <div className="flex flex-col gap-4">
+          {/* Risk Summary Bar */}
+          {vulns.length > 0 && (
+            <div className="glass-panel rounded-xl p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-semibold text-on-surface flex items-center gap-2">
+                  <span className="material-symbols-outlined text-error text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>crisis_alert</span>
+                  Risk Summary — {vulns.length} finding{vulns.length !== 1 ? "s" : ""}
+                </h3>
+                <span className="text-xs text-on-surface-variant">Sorted by exploitability severity</span>
+              </div>
+              {/* Stacked severity bar */}
+              <div className="flex rounded-full overflow-hidden h-3 mb-4 bg-surface-container-highest">
+                {SEVERITY_ORDER.filter(s => counts[s] > 0).map(s => (
+                  <div
+                    key={s}
+                    className={`${SEVERITY_STYLES[s].bar} transition-all`}
+                    style={{ width: `${(counts[s] / totalVulns) * 100}%` }}
+                    title={`${s}: ${counts[s]}`}
+                  />
+                ))}
+              </div>
+              {/* Severity legend */}
+              <div className="flex flex-wrap gap-3">
+                {SEVERITY_ORDER.map(s => (
+                  <div key={s} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${SEVERITY_STYLES[s].bg} ${SEVERITY_STYLES[s].border}`}>
+                    <span className={`w-2 h-2 rounded-full ${SEVERITY_STYLES[s].dot}`} />
+                    <span className={`text-xs font-bold uppercase tracking-wider ${SEVERITY_STYLES[s].text}`}>{s}</span>
+                    <span className="text-on-surface font-mono text-xs font-bold">{counts[s] ?? 0}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          <VulnTable vulnerabilities={sortedVulns} />
+        </div>
+      )}
 
       {tab === "testing" && (
         <div className="glass-panel rounded-xl overflow-hidden">

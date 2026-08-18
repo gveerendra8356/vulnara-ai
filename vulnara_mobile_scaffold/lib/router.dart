@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'providers/auth_provider.dart';
+import 'screens/admin_users_screen.dart';
 import 'screens/audit_log_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/login_screen.dart';
@@ -42,6 +43,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/notifications', builder: (context, state) => const NotificationsScreen()),
       GoRoute(path: '/profile', builder: (context, state) => const ProfileScreen()),
       GoRoute(path: '/audit-log', builder: (context, state) => const AuditLogScreen()),
+      GoRoute(path: '/admin/users', builder: (context, state) => const AdminUsersScreen()),
       GoRoute(
         path: '/scans/:scanId',
         builder: (context, state) => ScanStatusScreen(scanId: state.pathParameters['scanId']!),

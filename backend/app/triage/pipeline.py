@@ -34,8 +34,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import AsyncSessionLocal
 from app.core.push_notifications import send_critical_alert
+from app.core.email_alert import send_vulnerability_alert
 from app.models.scan import Scan
 from app.models.triage_models import CVEDefinition, Vulnerability
+from app.models.user import User
 from app.triage.gemini_client import GeminiTriageError, run_triage_call
 from app.triage.nvd_client import NVDClient
 from app.triage.prompts import build_triage_prompt
@@ -54,13 +56,16 @@ async def run_triage(scan_id: uuid.UUID, normalized_payload: dict[str, Any]) -> 
 
     try:
         async with AsyncSessionLocal() as session:
-            # Fetched once up front (not per-finding) purely so a
-            # CRITICAL finding can trigger a push notification below --
-            # the scan owner doesn't change mid-scan, so one lookup here
-            # avoids re-querying Scan on every critical hit.
-            scan_owner_id = await session.scalar(
-                select(Scan.user_id).where(Scan.scan_id == scan_id)
+            # Fetch scan owner details once (email + name for email alerts)
+            scan_owner_row = await session.execute(
+                select(Scan.user_id, User.email, User.full_name)
+                .join(User, Scan.user_id == User.user_id)
+                .where(Scan.scan_id == scan_id)
             )
+            owner = scan_owner_row.one_or_none()
+            scan_owner_id = owner.user_id if owner else None
+            scan_owner_email = owner.email if owner else None
+            scan_owner_name = owner.full_name if owner else "User"
 
             for host_entry in normalized_payload["hosts"]:
                 if not host_entry["ports"]:
@@ -99,6 +104,26 @@ async def run_triage(scan_id: uuid.UUID, normalized_payload: dict[str, Any]) -> 
                             "confidence_score": finding.confidence_score,
                         },
                     )
+
+                    if finding.severity in ("CRITICAL", "HIGH"):
+                        # Email alert (best-effort, runs in thread to not block)
+                        if scan_owner_email:
+                            import asyncio as _asyncio
+                            _asyncio.get_event_loop().run_in_executor(
+                                None,
+                                lambda f=finding, e=scan_owner_email, n=scan_owner_name: send_vulnerability_alert(
+                                    recipient_email=e,
+                                    recipient_name=n,
+                                    scan_target=scan_target,
+                                    scan_id=scan_id,
+                                    severity=f.severity,
+                                    service_name=f.service_name or "unknown",
+                                    host=f.host,
+                                    port=f.port,
+                                    cvss_score=f.cvss_score,
+                                    explanation=f.explanation,
+                                )
+                            )
 
                     if finding.severity == "CRITICAL":
                         await scan_connection_manager.broadcast(

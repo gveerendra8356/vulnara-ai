@@ -11,6 +11,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../models/scan.dart';
+import '../providers/auth_provider.dart';
 import '../providers/scan_providers.dart';
 import '../theme/vulnara_theme.dart';
 import '../widgets/glass_panel.dart';
@@ -23,6 +24,8 @@ class ScanListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scansAsync = ref.watch(scanListProvider);
+    final authState = ref.watch(authProvider);
+    final isAdmin = authState is AuthLoggedIn && authState.user.role == 'admin';
 
     return Scaffold(
       backgroundColor: VulnaraColors.pageBackground,
@@ -59,7 +62,10 @@ class ScanListScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Active Scans', style: VulnaraFonts.headlineMd()),
+                      Text(
+                        isAdmin ? 'All Scans' : 'Active Scans',
+                        style: VulnaraFonts.headlineMd(),
+                      ),
                       const SizedBox(height: 8),
                       Text(
                         'Monitoring ${scans.length} target${scans.length == 1 ? '' : 's'}.',
@@ -91,7 +97,7 @@ class ScanListScreen extends ConsumerWidget {
                   sliver: SliverList.separated(
                     itemCount: scans.length,
                     separatorBuilder: (_, __) => const SizedBox(height: VulnaraSpacing.stackMd),
-                    itemBuilder: (context, index) => _ScanCard(scan: scans[index]),
+                    itemBuilder: (context, index) => _ScanCard(scan: scans[index], showUser: isAdmin),
                   ),
                 ),
             ],
@@ -103,9 +109,10 @@ class ScanListScreen extends ConsumerWidget {
 }
 
 class _ScanCard extends StatelessWidget {
-  const _ScanCard({required this.scan});
+  const _ScanCard({required this.scan, this.showUser = false});
 
   final Scan scan;
+  final bool showUser;
 
   (Color, String, IconData) _statusMeta() => switch (scan.status) {
         ScanStatus.inProgress => (VulnaraColors.primary, 'IN PROGRESS', Icons.dns_outlined),
@@ -164,6 +171,38 @@ class _ScanCard extends StatelessWidget {
                           VulnaraChip(label: label, color: accent, dot: scan.status == ScanStatus.inProgress),
                         ],
                       ),
+                      // Admin: show who initiated this scan
+                      if (showUser && scan.userEmail != null) ...[
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            const Icon(Icons.person_outline, size: 12, color: VulnaraColors.onSurfaceVariant),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                scan.userEmail!,
+                                style: VulnaraFonts.codeSm(color: VulnaraColors.onSurfaceVariant)
+                                    .copyWith(fontSize: 10),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (scan.userRole != null)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: VulnaraColors.primary.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(VulnaraRadius.full),
+                                  border: Border.all(color: VulnaraColors.primary.withValues(alpha: 0.25)),
+                                ),
+                                child: Text(
+                                  scan.userRole!.toUpperCase(),
+                                  style: VulnaraFonts.labelCaps(color: VulnaraColors.primary)
+                                      .copyWith(fontSize: 8),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
                       const SizedBox(height: VulnaraSpacing.stackMd),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.end,

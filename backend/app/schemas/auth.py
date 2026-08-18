@@ -43,6 +43,13 @@ class UserResponse(BaseModel):
     last_login_at: datetime | None = None
 
 
+class UpdateProfileRequest(BaseModel):
+    full_name: str | None = None
+    email: EmailStr | None = None
+    current_password: str | None = None
+    new_password: str | None = Field(default=None, min_length=8)
+
+
 class TokenResponse(BaseModel):
     access_token: str
     refresh_token: str

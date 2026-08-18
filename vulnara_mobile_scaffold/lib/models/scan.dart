@@ -49,6 +49,9 @@ class Scan {
     required this.activeTestingEnabled,
     required this.createdAt,
     this.severityCounts,
+    this.userEmail,
+    this.userFullName,
+    this.userRole,
   });
 
   final String scanId;
@@ -58,6 +61,10 @@ class Scan {
   final DateTime createdAt;
   /// Null on the list endpoint (2.3), populated on the detail endpoint (2.2).
   final SeverityCounts? severityCounts;
+  /// Admin-only: populated when admin fetches all scans with attribution.
+  final String? userEmail;
+  final String? userFullName;
+  final String? userRole;
 
   factory Scan.fromJson(Map<String, dynamic> json) => Scan(
         scanId: json['scan_id'] as String,
@@ -68,5 +75,9 @@ class Scan {
         severityCounts: json['vuln_count_by_severity'] != null
             ? SeverityCounts.fromJson(json['vuln_count_by_severity'] as Map<String, dynamic>)
             : null,
+        userEmail: json['user_email'] as String?,
+        userFullName: json['user_full_name'] as String?,
+        userRole: json['user_role'] as String?,
       );
 }
+

@@ -82,6 +82,30 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await storage.clearTokens();
     state = const AuthLoggedOut();
   }
+
+  /// Update the user's profile (name / email / password). Returns null on
+  /// success or an error message string on failure.
+  Future<String?> updateProfile({
+    String? fullName,
+    String? email,
+    String? currentPassword,
+    String? newPassword,
+  }) async {
+    try {
+      final updated = await _ref.read(authRepositoryProvider).updateProfile(
+            fullName: fullName,
+            email: email,
+            currentPassword: currentPassword,
+            newPassword: newPassword,
+          );
+      state = AuthLoggedIn(updated);
+      return null; // success
+    } on ApiException catch (e) {
+      return e.message;
+    } catch (e) {
+      return e.toString();
+    }
+  }
 }
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) => AuthNotifier(ref));
