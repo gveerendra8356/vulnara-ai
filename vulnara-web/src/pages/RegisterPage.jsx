@@ -17,7 +17,7 @@ export function RegisterPage() {
     setBusy(true);
     try {
       await register(form);
-      await login({ email: form.email, password: form.password });
+      await login(form.email, form.password);
       navigate("/");
     } catch (err) {
       setError(err.message || "Registration failed");

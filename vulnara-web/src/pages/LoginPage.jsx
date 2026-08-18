@@ -41,7 +41,7 @@ export function LoginPage() {
           <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-primary to-transparent opacity-50" />
 
           <div className="mb-8 flex flex-col items-center w-full">
-            <img src="/logo.png" alt="Vulnara Logo" className="h-20 object-contain mb-4" />
+            <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Vulnara Logo" className="h-20 object-contain mb-4" />
             <h1 className="font-headline-md text-headline-md text-on-surface tracking-wider uppercase">Terminal Access</h1>
             <p className="font-code-sm text-code-sm text-on-surface-variant mt-2 tracking-widest uppercase">
               Vulnara Analyst Console
