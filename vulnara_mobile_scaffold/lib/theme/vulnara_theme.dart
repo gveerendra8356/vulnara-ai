@@ -5,7 +5,6 @@
 // config) so the Flutter app renders pixel-for-pixel the same UI.
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// Raw design-token colors, named exactly as in the Stitch color system
 /// so it's easy to cross-reference against the original HTML/Tailwind.
@@ -70,7 +69,8 @@ class VulnaraFonts {
     double? letterSpacing,
     Color? color,
   }) =>
-      GoogleFonts.outfit(
+      TextStyle(
+        fontFamily: 'Outfit',
         fontSize: fontSize,
         fontWeight: fontWeight,
         height: height,
@@ -85,7 +85,8 @@ class VulnaraFonts {
     double? letterSpacing,
     Color? color,
   }) =>
-      GoogleFonts.inter(
+      TextStyle(
+        fontFamily: 'Inter',
         fontSize: fontSize,
         fontWeight: fontWeight,
         height: height,
@@ -100,7 +101,8 @@ class VulnaraFonts {
     double? letterSpacing,
     Color? color,
   }) =>
-      GoogleFonts.jetBrainsMono(
+      TextStyle(
+        fontFamily: 'JetBrainsMono',
         fontSize: fontSize,
         fontWeight: fontWeight,
         height: height,

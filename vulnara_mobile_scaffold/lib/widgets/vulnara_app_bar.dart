@@ -20,29 +20,43 @@ class VulnaraAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Widget? leading;
   final List<Widget>? actions;
 
+  static const double _barHeight = 64;
+
   @override
-  Size get preferredSize => const Size.fromHeight(64);
+  Size get preferredSize {
+    final view = WidgetsBinding.instance.platformDispatcher.views.first;
+    final statusBarHeight = view.padding.top / view.devicePixelRatio;
+    return Size.fromHeight(_barHeight + statusBarHeight);
+  }
 
   @override
   Widget build(BuildContext context) {
+    final topPadding = MediaQuery.of(context).padding.top;
     return ClipRect(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
-          height: 64,
-          padding: const EdgeInsets.symmetric(horizontal: VulnaraSpacing.containerPadding),
+          height: _barHeight + topPadding,
+          padding: EdgeInsets.only(
+            top: topPadding,
+            left: VulnaraSpacing.containerPadding,
+            right: VulnaraSpacing.containerPadding,
+          ),
           decoration: BoxDecoration(
             color: VulnaraColors.surface.withValues(alpha: 0.8),
             border: const Border(bottom: BorderSide(color: Colors.white10)),
           ),
-          child: Row(
-            children: [
-              if (leading != null) leading!,
-              if (showWordmark)
-                Image.asset('assets/logo.png', height: 32, fit: BoxFit.contain),
-              const Spacer(),
-              if (actions != null) ...actions!,
-            ],
+          child: SizedBox(
+            height: _barHeight,
+            child: Row(
+              children: [
+                if (leading != null) leading!,
+                if (showWordmark)
+                  Image.asset('assets/logo.png', height: 32, fit: BoxFit.contain),
+                const Spacer(),
+                if (actions != null) ...actions!,
+              ],
+            ),
           ),
         ),
       ),

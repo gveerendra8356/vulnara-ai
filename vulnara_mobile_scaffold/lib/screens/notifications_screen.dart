@@ -66,89 +66,86 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       extendBody: true,
       appBar: VulnaraAppBar(actions: [VulnaraAvatar(onTap: () => context.go('/profile'))]),
       bottomNavigationBar: const VulnaraBottomNav(current: VulnaraTab.alerts),
-      body: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-            VulnaraSpacing.containerPadding,
-            80,
-            VulnaraSpacing.containerPadding,
-            0,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text('Alerts Hub', style: VulnaraFonts.headlineMd()),
-                  const Spacer(),
-                  _FilterPill(label: 'ALL', selected: !_criticalOnly, onTap: () => setState(() => _criticalOnly = false)),
-                  const SizedBox(width: 8),
-                  _FilterPill(
-                      label: 'CRITICAL', selected: _criticalOnly, onTap: () => setState(() => _criticalOnly = true)),
-                ],
-              ),
-              const SizedBox(height: VulnaraSpacing.stackLg),
-              Expanded(
-                child: items.isEmpty
-                    ? Center(
-                        child: Text('No alerts.', style: VulnaraFonts.codeSm(color: VulnaraColors.onSurfaceVariant)),
-                      )
-                    : Container(
-                        decoration: BoxDecoration(
-                          color: VulnaraColors.surface.withValues(alpha: 0.4),
-                          borderRadius: BorderRadius.circular(VulnaraRadius.xl),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-                        ),
-                        child: ListView.separated(
-                          padding: EdgeInsets.zero,
-                          itemCount: items.length,
-                          separatorBuilder: (_, __) => const Divider(height: 1),
-                          itemBuilder: (context, index) {
-                            final a = items[index];
-                            final (icon, color) = _meta(a.kind);
-                            return Container(
-                              padding: const EdgeInsets.all(VulnaraSpacing.containerPadding),
-                              decoration: a.critical
-                                  ? BoxDecoration(border: Border(left: BorderSide(color: color, width: 3)))
-                                  : null,
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Icon(icon, color: color, size: 22),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: Text(a.title,
-                                                  style: VulnaraFonts.bodyBase(fontWeight: FontWeight.w700)),
-                                            ),
-                                            Text(a.time,
-                                                style: VulnaraFonts.labelCaps(
-                                                    color: a.critical ? color : VulnaraColors.onSurfaceVariant)),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(a.body,
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: VulnaraFonts.codeSm(color: VulnaraColors.onSurfaceVariant)),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
+      body: Padding(
+        padding: EdgeInsets.fromLTRB(
+          VulnaraSpacing.containerPadding,
+          MediaQuery.of(context).padding.top + 64 + 16,
+          VulnaraSpacing.containerPadding,
+          0,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text('Alerts Hub', style: VulnaraFonts.headlineMd()),
+                const Spacer(),
+                _FilterPill(label: 'ALL', selected: !_criticalOnly, onTap: () => setState(() => _criticalOnly = false)),
+                const SizedBox(width: 8),
+                _FilterPill(
+                    label: 'CRITICAL', selected: _criticalOnly, onTap: () => setState(() => _criticalOnly = true)),
+              ],
+            ),
+            const SizedBox(height: VulnaraSpacing.stackLg),
+            Expanded(
+              child: items.isEmpty
+                  ? Center(
+                      child: Text('No alerts.', style: VulnaraFonts.codeSm(color: VulnaraColors.onSurfaceVariant)),
+                    )
+                  : Container(
+                      decoration: BoxDecoration(
+                        color: VulnaraColors.surface.withValues(alpha: 0.4),
+                        borderRadius: BorderRadius.circular(VulnaraRadius.xl),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
                       ),
-              ),
-            ],
-          ),
+                      child: ListView.separated(
+                        padding: EdgeInsets.zero,
+                        itemCount: items.length,
+                        separatorBuilder: (_, __) => const Divider(height: 1),
+                        itemBuilder: (context, index) {
+                          final a = items[index];
+                          final (icon, color) = _meta(a.kind);
+                          return Container(
+                            padding: const EdgeInsets.all(VulnaraSpacing.containerPadding),
+                            decoration: a.critical
+                                ? BoxDecoration(border: Border(left: BorderSide(color: color, width: 3)))
+                                : null,
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Icon(icon, color: color, size: 22),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(a.title,
+                                                style: VulnaraFonts.bodyBase(fontWeight: FontWeight.w700)),
+                                          ),
+                                          Text(a.time,
+                                              style: VulnaraFonts.labelCaps(
+                                                  color: a.critical ? color : VulnaraColors.onSurfaceVariant)),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(a.body,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: VulnaraFonts.codeSm(color: VulnaraColors.onSurfaceVariant)),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+            ),
+          ],
         ),
       ),
     );

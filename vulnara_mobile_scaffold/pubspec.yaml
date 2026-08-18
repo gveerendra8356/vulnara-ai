@@ -31,9 +31,6 @@ dependencies:
 
   intl: ^0.19.0
 
-  # Fonts matching the Vulnara design system (Outfit / Inter / JetBrains Mono)
-  google_fonts: ^6.2.1
-
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -57,3 +54,51 @@ flutter:
   uses-material-design: true
   assets:
     - assets/logo.png
+
+  # Bundled locally (see assets/fonts/README.md) instead of the previous
+  # google_fonts runtime-HTTP-fetch approach -- fetching over the network
+  # on every cold start was the root cause of the near-100% Appium/
+  # UiAutomator2 failure rate in CI: android-tests/conftest.py's driver
+  # fixture uses noReset: False and the login_as_* fixtures additionally
+  # `pm clear` + force-stop the app, so every single test was a genuine
+  # first-ever-launch from google_fonts' point of view (its on-device
+  # cache never survived between tests). Each screen's Text widgets then
+  # rendered with a fallback font and rebuilt again whenever a fetch
+  # landed (or timed out), which kept the window continuously "dirty"
+  # for long enough that UiAutomator2's hardcoded, non-configurable 10s
+  # root-AccessibilityNodeInfo-dump timeout
+  # (appium-uiautomator2-server's AXWindowHelpers.AX_ROOT_RETRIEVAL_TIMEOUT)
+  # was blown on nearly every single element lookup -- even though the
+  # screen was, per the failure screenshots, already fully and correctly
+  # rendered. Bundling removes the network dependency entirely, for CI
+  # and for real users on a slow connection alike.
+  #
+  # Outfit and Inter and JetBrains Mono are shipped upstream as single
+  # variable-weight files; declaring the same file under multiple
+  # `weight:` entries is the standard Flutter pattern for pinning
+  # specific static instances out of a variable font.
+  fonts:
+    - family: Outfit
+      fonts:
+        - asset: assets/fonts/Outfit.ttf
+          weight: 400
+        - asset: assets/fonts/Outfit.ttf
+          weight: 600
+        - asset: assets/fonts/Outfit.ttf
+          weight: 700
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter.ttf
+          weight: 400
+        - asset: assets/fonts/Inter.ttf
+          weight: 500
+        - asset: assets/fonts/Inter.ttf
+          weight: 600
+        - asset: assets/fonts/Inter.ttf
+          weight: 700
+    - family: JetBrainsMono
+      fonts:
+        - asset: assets/fonts/JetBrainsMono.ttf
+          weight: 400
+        - asset: assets/fonts/JetBrainsMono.ttf
+          weight: 700

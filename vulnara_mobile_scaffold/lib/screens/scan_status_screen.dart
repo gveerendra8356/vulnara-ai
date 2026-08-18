@@ -44,9 +44,9 @@ class ScanStatusScreen extends ConsumerWidget {
       ),
       bottomNavigationBar: const VulnaraBottomNav(current: VulnaraTab.scans),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(
+        padding: EdgeInsets.fromLTRB(
           VulnaraSpacing.containerPadding,
-          80,
+          MediaQuery.of(context).padding.top + 64 + 16,
           VulnaraSpacing.containerPadding,
           100,
         ),
@@ -153,7 +153,7 @@ class _StatusHero extends StatelessWidget {
                     Text(label,
                         style: VulnaraFonts.headlineMd(color: color).copyWith(letterSpacing: 0.5)),
                     const SizedBox(height: 4),
-                    Text('Target: scan $scanId', style: VulnaraFonts.codeSm(color: VulnaraColors.onSurfaceVariant)),
+                    Text('Target: ${status.targetUrl ?? scanId}', style: VulnaraFonts.codeSm(color: VulnaraColors.onSurfaceVariant)),
                   ],
                 ),
               ),

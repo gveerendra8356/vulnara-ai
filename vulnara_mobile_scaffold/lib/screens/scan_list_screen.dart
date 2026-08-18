@@ -52,9 +52,9 @@ class ScanListScreen extends ConsumerWidget {
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(
+                padding: EdgeInsets.fromLTRB(
                   VulnaraSpacing.containerPadding,
-                  80,
+                  MediaQuery.of(context).padding.top + 64 + 16,
                   VulnaraSpacing.containerPadding,
                   0,
                 ),

@@ -42,9 +42,9 @@ class DashboardScreen extends ConsumerWidget {
       ),
       bottomNavigationBar: const VulnaraBottomNav(current: VulnaraTab.dashboard),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(
+        padding: EdgeInsets.fromLTRB(
           VulnaraSpacing.containerPadding,
-          80,
+          MediaQuery.of(context).padding.top + 64 + 16,
           VulnaraSpacing.containerPadding,
           32,
         ),

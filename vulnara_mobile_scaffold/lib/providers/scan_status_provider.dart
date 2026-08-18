@@ -20,6 +20,7 @@ class ScanStatusState {
     required this.severityCounts,
     required this.reconPercent,
     required this.topFindings,
+    this.targetUrl,
     this.errorMessage,
   });
 
@@ -27,6 +28,7 @@ class ScanStatusState {
   final SeverityCounts severityCounts;
   final int? reconPercent;
   final List<VulnerabilitySummary> topFindings;
+  final String? targetUrl;
   final String? errorMessage;
 
   static const _severityRank = {'CRITICAL': 0, 'HIGH': 1, 'MEDIUM': 2, 'LOW': 3, 'INFO': 4};
@@ -43,6 +45,7 @@ class ScanStatusState {
     SeverityCounts? severityCounts,
     int? reconPercent,
     List<VulnerabilitySummary>? topFindings,
+    String? targetUrl,
     String? errorMessage,
   }) {
     return ScanStatusState(
@@ -50,6 +53,7 @@ class ScanStatusState {
       severityCounts: severityCounts ?? this.severityCounts,
       reconPercent: reconPercent ?? this.reconPercent,
       topFindings: topFindings ?? this.topFindings,
+      targetUrl: targetUrl ?? this.targetUrl,
       errorMessage: errorMessage ?? this.errorMessage,
     );
   }
@@ -83,6 +87,7 @@ class ScanStatusNotifier extends StateNotifier<ScanStatusState> {
       state = state.copyWith(
         status: scan.status,
         severityCounts: scan.severityCounts ?? SeverityCounts.zero,
+        targetUrl: scan.target,
         topFindings: vulns.take(_maxTopFindings).toList(),
       );
       if (scan.status == ScanStatus.completed ||
