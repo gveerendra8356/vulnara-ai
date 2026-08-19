@@ -211,6 +211,16 @@ async def _persist_cve_if_new(
     Upserts the matched CVE into CVE_Definitions if we haven't cached it
     yet, using the raw NVD data we already fetched during candidate
     gathering (no extra API call needed).
+
+    Vulnerability.cve_id is a hard foreign key into this table, so every
+    cve_id the AI hands back in a finding MUST have a row here before
+    _write_vulnerability() inserts -- otherwise the insert throws a
+    ForeignKeyViolationError that isn't caught anywhere in this pipeline
+    and takes down the *entire* scan (see FALSE_POSITIVES.md history).
+    The AI (or its mock-fallback when the Groq API errors) can return a
+    cve_id that was never in our NVD candidate list, so we always fall
+    back to a minimal AI-sourced stub row rather than silently skipping
+    the upsert.
     """
     if not finding.cve_id:
         return
@@ -219,19 +229,32 @@ async def _persist_cve_if_new(
         (c for port_list in candidate_cves.values() for c in port_list if c["cve_id"] == finding.cve_id),
         None,
     )
-    if raw is None:
-        return
 
-    stmt = pg_insert(CVEDefinition).values(
-        cve_id=raw["cve_id"],
-        description=raw["description"],
-        cvss_v3_score=raw["cvss_v3_score"],
-        severity=raw["severity"],
-        published_date=raw["published_date"],
-        last_modified_date=raw["last_modified_date"],
-        source="NVD",
-        raw_data=raw["raw_data"],
-    ).on_conflict_do_nothing(index_elements=["cve_id"])
+    if raw is not None:
+        stmt = pg_insert(CVEDefinition).values(
+            cve_id=raw["cve_id"],
+            description=raw["description"],
+            cvss_v3_score=raw["cvss_v3_score"],
+            severity=raw["severity"],
+            published_date=raw["published_date"],
+            last_modified_date=raw["last_modified_date"],
+            source="NVD",
+            raw_data=raw["raw_data"],
+        ).on_conflict_do_nothing(index_elements=["cve_id"])
+    else:
+        logger.warning(
+            "Triage returned cve_id %s which isn't in the NVD candidates we "
+            "fetched for this host -- persisting a minimal AI-sourced stub "
+            "so the finding can still be written.",
+            finding.cve_id,
+        )
+        stmt = pg_insert(CVEDefinition).values(
+            cve_id=finding.cve_id,
+            description=finding.explanation or f"AI-flagged finding referencing {finding.cve_id}.",
+            cvss_v3_score=finding.cvss_score,
+            severity=finding.severity,
+            source="AI",
+        ).on_conflict_do_nothing(index_elements=["cve_id"])
 
     await session.execute(stmt)
 

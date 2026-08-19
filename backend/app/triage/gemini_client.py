@@ -23,7 +23,7 @@ from app.triage.schemas import ActiveTestVerdict, RemediationResponse, TriageRes
 logger = logging.getLogger("vulnara.triage.groq")
 
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "your-groq-api-key")
-GROQ_MODEL_NAME = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
+GROQ_MODEL_NAME = os.environ.get("GROQ_MODEL", "openai/gpt-oss-120b")
 
 _client = AsyncGroq(api_key=GROQ_API_KEY)
 

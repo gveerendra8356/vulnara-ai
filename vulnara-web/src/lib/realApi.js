@@ -123,7 +123,7 @@ async function updateConfig(key, value) {
 
 async function listCveDefs(filters = {}) {
   const { data } = await http.get("/admin/cve-definitions", { params: filters });
-  return data;
+  return Array.isArray(data) ? { items: data } : data;
 }
 
 async function syncCveDefs() {
