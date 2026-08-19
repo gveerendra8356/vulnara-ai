@@ -13,7 +13,7 @@ from datetime import datetime
 
 from sqlalchemy import String, Numeric, ForeignKey, DateTime, Integer, Boolean, Text, func
 from sqlalchemy import Uuid as UUID, JSON as JSONB
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.scan import Base  # shared declarative base from Task 3
 
@@ -58,6 +58,11 @@ class Vulnerability(Base):
     discovered_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
+
+    # Eagerly joined so the API can return the matched CVE definition inline
+    # (VulnerabilityResponse.cve) without an extra round trip or lazy-load
+    # under async SQLAlchemy (which would raise MissingGreenlet).
+    cve: Mapped["CVEDefinition | None"] = relationship("CVEDefinition", lazy="joined", viewonly=True)
 
 
 class Remediation(Base):

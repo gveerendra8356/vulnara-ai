@@ -53,7 +53,7 @@ export function AppLayout() {
       >
         <div>
           <div className="px-6 mb-8 flex items-center gap-3">
-            <img src="/logo.png" alt="Vulnara" className="h-14 object-contain" />
+            <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Vulnara" className="h-14 object-contain" />
           </div>
 
           <div className="px-3 flex flex-col gap-1">

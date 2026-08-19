@@ -17,6 +17,10 @@ export function ScansListPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
+  // Analysts see every scan across all users too (triage duty isn't limited
+  // to scans they personally kicked off) -- the backend returns the same
+  // user-attributed shape for both roles, see GET /scans in scans.py.
+  const seesAllScans = user?.role === "admin" || user?.role === "analyst";
   const [status, setStatus] = useState("ALL");
   const [search, setSearch] = useState("");
 
@@ -38,10 +42,10 @@ export function ScansListPage() {
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
         <div>
           <h2 className="font-display-lg text-display-lg text-on-surface">
-            {isAdmin ? "All Scans" : "My Scans"}
+            {seesAllScans ? "All Scans" : "My Scans"}
           </h2>
           <p className="text-on-surface-variant mt-2 font-body-md max-w-2xl">
-            {isAdmin
+            {seesAllScans
               ? "Every scan across all users — with the initiating user shown for audit purposes."
               : "Every scan Vulnara has run for your account — authorization on record, current status, and active testing."}
           </p>
@@ -85,10 +89,10 @@ export function ScansListPage() {
               {s}
             </button>
           ))}
-          {isAdmin && (
+          {seesAllScans && (
             <span className="ml-auto flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-primary bg-primary/10 border border-primary/20 px-2.5 py-1 rounded-full font-bold">
               <span className="material-symbols-outlined text-[12px]">admin_panel_settings</span>
-              Admin View — All Users
+              {isAdmin ? "Admin View — All Users" : "Analyst View — All Users"}
             </span>
           )}
         </div>
@@ -105,7 +109,7 @@ export function ScansListPage() {
                   <th className="p-table-cell-padding font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider border-b border-outline-variant">
                     Target
                   </th>
-                  {isAdmin && (
+                  {seesAllScans && (
                     <th className="p-table-cell-padding font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider border-b border-outline-variant">
                       Initiated By
                     </th>
@@ -132,7 +136,7 @@ export function ScansListPage() {
                     className="data-table-row transition-colors cursor-pointer group hover:bg-white/[0.02]"
                   >
                     <td className="p-table-cell-padding text-primary font-bold">{s.target}</td>
-                    {isAdmin && (
+                    {seesAllScans && (
                       <td className="p-table-cell-padding">
                         <div className="flex flex-col">
                           <span className="text-on-surface text-xs font-medium">{s.user_full_name || "—"}</span>

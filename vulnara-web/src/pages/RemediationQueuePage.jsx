@@ -2,12 +2,15 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
+import { useAuth } from "../context/AuthContext";
 import { StatusPill, ConfidenceBar, LoadingRow, EmptyState } from "../components/Primitives";
 
 const STATUSES = ["ALL", "PENDING", "APPROVED", "REJECTED", "EXECUTED"];
 
 export function RemediationQueuePage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isClient = user?.role === "client";
   const [status, setStatus] = useState("PENDING");
 
   const { data, isLoading } = useQuery({
@@ -22,9 +25,11 @@ export function RemediationQueuePage() {
       <div>
         <h2 className="font-display-lg text-display-lg text-on-surface">Remediation Queue</h2>
         <p className="text-on-surface-variant mt-2 font-body-md max-w-2xl">
-          Every AI-generated fix, across every scan. Nothing here executes on its own — a human reviews the full
-          script and explicitly approves before <span className="font-code-sm text-primary">mark-executed</span> can
-          even be called.
+          {isClient
+            ? "AI-generated fixes for your own scans. Nothing here executes on its own — once an analyst approves a script, apply it and use "
+            : "Every AI-generated fix, across every scan. Nothing here executes on its own — a human reviews the full script and explicitly approves before "}
+          <span className="font-code-sm text-primary">mark-executed</span>
+          {isClient ? " to record it." : " can even be called."}
         </p>
       </div>
 

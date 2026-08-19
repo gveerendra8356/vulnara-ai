@@ -105,12 +105,14 @@ async def list_scans(
     """
     RBAC:
       admin   -> all scans with user attribution (email, name, role)
-      analyst -> own scans only
+      analyst -> all scans with user attribution (triage duty spans every
+                 user's targets, per the product spec -- analysts are not
+                 limited to scans they personally kicked off)
       client  -> own scans only
     """
     from app.models.user import User as UserModel
 
-    if current_user.role == "admin":
+    if current_user.role in ("admin", "analyst"):
         stmt = (
             select(Scan, UserModel.email, UserModel.full_name, UserModel.role)
             .join(UserModel, Scan.user_id == UserModel.user_id)
@@ -157,7 +159,7 @@ async def get_scan(
     if scan is None:
         raise HTTPException(status_code=404, detail="Scan not found")
 
-    if scan.user_id != current_user.user_id and current_user.role != "admin":
+    if scan.user_id != current_user.user_id and current_user.role not in ("admin", "analyst"):
         raise HTTPException(status_code=403, detail="Not authorized to view this scan")
 
     from sqlalchemy import func
@@ -216,7 +218,7 @@ async def list_scan_vulnerabilities(
     scan = scan_result.scalar_one_or_none()
     if not scan:
         raise HTTPException(status_code=404, detail="Scan not found")
-    if scan.user_id != current_user.user_id and current_user.role != "admin":
+    if scan.user_id != current_user.user_id and current_user.role not in ("admin", "analyst"):
         raise HTTPException(status_code=403, detail="Not authorized")
 
     stmt = select(Vulnerability).where(Vulnerability.scan_id == scan_id)
@@ -236,7 +238,7 @@ async def list_scan_threat_logs(
 ):
     scan_result = await session.execute(select(Scan).where(Scan.scan_id == scan_id))
     scan = scan_result.scalar_one_or_none()
-    if not scan or (scan.user_id != current_user.user_id and current_user.role != "admin"):
+    if not scan or (scan.user_id != current_user.user_id and current_user.role not in ("admin", "analyst")):
         raise HTTPException(status_code=404, detail="Scan not found")
 
     stmt = select(ThreatLog).where(ThreatLog.scan_id == scan_id).order_by(ThreatLog.executed_at.desc())
@@ -247,12 +249,13 @@ async def list_scan_threat_logs(
 @router.get("/scans/{scan_id}/remediations", response_model=list[RemediationResponse])
 async def list_scan_remediations(
     scan_id: uuid.UUID,
+    status: str | None = None,
     current_user: CurrentUser = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ):
     scan_result = await session.execute(select(Scan).where(Scan.scan_id == scan_id))
     scan = scan_result.scalar_one_or_none()
-    if not scan or (scan.user_id != current_user.user_id and current_user.role != "admin"):
+    if not scan or (scan.user_id != current_user.user_id and current_user.role not in ("admin", "analyst")):
         raise HTTPException(status_code=404, detail="Scan not found")
 
     stmt = (
@@ -261,6 +264,8 @@ async def list_scan_remediations(
         .where(Vulnerability.scan_id == scan_id)
         .order_by(Remediation.created_at.desc())
     )
+    if status:
+        stmt = stmt.where(Remediation.status == status.strip().upper())
     result = await session.execute(stmt)
     return result.scalars().all()
 
@@ -302,7 +307,7 @@ async def scan_status_ws(websocket: WebSocket, scan_id: uuid.UUID):
             await websocket.close(code=4004)
             return
 
-        if scan.user_id != user.user_id and user.role != "admin":
+        if scan.user_id != user.user_id and user.role not in ("admin", "analyst"):
             await websocket.close(code=4003)
             return
 

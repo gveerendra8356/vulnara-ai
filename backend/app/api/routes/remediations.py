@@ -46,8 +46,24 @@ async def create_remediation(
 from fastapi import HTTPException
 from sqlalchemy import select
 from datetime import datetime, timezone
-from app.models.triage_models import Remediation
+from app.models.scan import Scan
+from app.models.triage_models import Remediation, Vulnerability
 from app.schemas.triage import RemediationResponse, RemediationRejectRequest
+
+# Clients are restricted to their own infrastructure everywhere else in the
+# app (own scans, own findings) -- the remediation queue must honor the same
+# boundary instead of exposing every org's AI-generated fix scripts and
+# vulnerability context to every client. Admins and analysts triage globally
+# by design, so only "client" gets the ownership join below.
+def _scope_to_own_scans(stmt, current_user: CurrentUser):
+    if current_user.role == "client":
+        stmt = (
+            stmt.join(Vulnerability, Remediation.vuln_id == Vulnerability.vuln_id)
+            .join(Scan, Vulnerability.scan_id == Scan.scan_id)
+            .where(Scan.user_id == current_user.user_id)
+        )
+    return stmt
+
 
 @router.get("/remediations", response_model=list[RemediationResponse])
 async def list_remediations(
@@ -56,6 +72,7 @@ async def list_remediations(
     session: AsyncSession = Depends(get_session),
 ):
     stmt = select(Remediation).order_by(Remediation.created_at.desc())
+    stmt = _scope_to_own_scans(stmt, current_user)
     if status:
         stmt = stmt.where(Remediation.status == status.strip().upper())
     result = await session.execute(stmt)
@@ -67,7 +84,10 @@ async def get_remediation(
     current_user: CurrentUser = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ):
-    result = await session.execute(select(Remediation).where(Remediation.remediation_id == rem_id))
+    stmt = _scope_to_own_scans(
+        select(Remediation).where(Remediation.remediation_id == rem_id), current_user
+    )
+    result = await session.execute(stmt)
     rem = result.scalar_one_or_none()
     if not rem:
         raise HTTPException(status_code=404, detail="Remediation not found")
@@ -123,11 +143,14 @@ async def mark_remediation_executed(
     current_user: CurrentUser = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ):
-    result = await session.execute(select(Remediation).where(Remediation.remediation_id == rem_id))
+    stmt = _scope_to_own_scans(
+        select(Remediation).where(Remediation.remediation_id == rem_id), current_user
+    )
+    result = await session.execute(stmt)
     rem = result.scalar_one_or_none()
     if not rem:
         raise HTTPException(status_code=404, detail="Remediation not found")
-        
+
     if rem.status != "APPROVED":
         raise HTTPException(status_code=400, detail="Remediation must be approved before execution")
         
