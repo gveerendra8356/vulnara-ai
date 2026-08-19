@@ -249,6 +249,7 @@ async def list_scan_threat_logs(
 @router.get("/scans/{scan_id}/remediations", response_model=list[RemediationResponse])
 async def list_scan_remediations(
     scan_id: uuid.UUID,
+    status: str | None = None,
     current_user: CurrentUser = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ):
@@ -263,6 +264,8 @@ async def list_scan_remediations(
         .where(Vulnerability.scan_id == scan_id)
         .order_by(Remediation.created_at.desc())
     )
+    if status:
+        stmt = stmt.where(Remediation.status == status.strip().upper())
     result = await session.execute(stmt)
     return result.scalars().all()
 
