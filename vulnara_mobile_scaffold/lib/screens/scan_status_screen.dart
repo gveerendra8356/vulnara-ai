@@ -13,6 +13,7 @@ import 'package:go_router/go_router.dart';
 
 import '../models/scan.dart';
 import '../models/vulnerability.dart';
+import '../providers/auth_provider.dart';
 import '../providers/scan_status_provider.dart';
 import '../theme/vulnara_theme.dart';
 import '../widgets/vulnara_app_bar.dart';
@@ -26,6 +27,9 @@ class ScanStatusScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final status = ref.watch(scanStatusProvider(scanId));
+    final authState = ref.watch(authProvider);
+    final isClient =
+        authState is AuthLoggedIn && authState.user.role == 'client';
 
     return Scaffold(
       backgroundColor: VulnaraColors.pageBackground,
@@ -33,11 +37,14 @@ class ScanStatusScreen extends ConsumerWidget {
       extendBody: true,
       appBar: VulnaraAppBar(
         actions: [
-          IconButton(
-            icon: const Icon(Icons.fact_check_outlined, color: VulnaraColors.onSurfaceVariant),
-            tooltip: 'Pending remediations',
-            onPressed: () => context.push('/scans/$scanId/remediations'),
-          ),
+          // Only analysts and admins can triage remediations.
+          if (!isClient)
+            IconButton(
+              icon: const Icon(Icons.fact_check_outlined,
+                  color: VulnaraColors.onSurfaceVariant),
+              tooltip: 'Pending remediations',
+              onPressed: () => context.push('/scans/$scanId/remediations'),
+            ),
           const SizedBox(width: 4),
           const VulnaraAvatar(),
         ],

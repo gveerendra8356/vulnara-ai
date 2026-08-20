@@ -1,17 +1,25 @@
-// widgets/vulnara_bottom_nav.dart -- the 4-tab bottom nav shown on the
-// app's primary destinations: Dashboard, Scans (radar), Alerts, Profile.
-// Matches the BottomNavBar block repeated across the Stitch screens.
+// widgets/vulnara_bottom_nav.dart -- the bottom nav bar shown on the
+// app's primary destinations. Tab set is role-aware:
+//
+//   admin / analyst  →  Dashboard · Scans · Alerts · Profile  (4 tabs)
+//   client           →  Scans · Alerts · Profile               (3 tabs)
+//
+// Clients are not shown the Dashboard because it displays org-wide
+// analytics (all users' scans + global vulnerability totals) that they
+// should not have visibility into.
 
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../providers/auth_provider.dart';
 import '../theme/vulnara_theme.dart';
 
 enum VulnaraTab { dashboard, scans, alerts, profile }
 
-class VulnaraBottomNav extends StatelessWidget {
+class VulnaraBottomNav extends ConsumerWidget {
   const VulnaraBottomNav({super.key, required this.current});
 
   final VulnaraTab current;
@@ -38,7 +46,16 @@ class VulnaraBottomNav extends StatelessWidget {
   };
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authProvider);
+    final role =
+        authState is AuthLoggedIn ? authState.user.role : 'client';
+
+    // Clients don't get the Dashboard tab — it shows org-wide analytics.
+    final tabs = role == 'client'
+        ? [VulnaraTab.scans, VulnaraTab.alerts, VulnaraTab.profile]
+        : VulnaraTab.values;
+
     return ClipRect(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
@@ -51,15 +68,17 @@ class VulnaraBottomNav extends StatelessWidget {
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: VulnaraTab.values.map((tab) => _NavItem(
-                  tab: tab,
-                  label: _labels[tab]!,
-                  active: tab == current,
-                  icon: _icons[tab]!,
-                  onTap: () {
-                    if (tab != current) context.go(_routes[tab]!);
-                  },
-                )).toList(),
+            children: tabs
+                .map((tab) => _NavItem(
+                      tab: tab,
+                      label: _labels[tab]!,
+                      active: tab == current,
+                      icon: _icons[tab]!,
+                      onTap: () {
+                        if (tab != current) context.go(_routes[tab]!);
+                      },
+                    ))
+                .toList(),
           ),
         ),
       ),
@@ -68,7 +87,12 @@ class VulnaraBottomNav extends StatelessWidget {
 }
 
 class _NavItem extends StatelessWidget {
-  const _NavItem({required this.tab, required this.label, required this.active, required this.icon, required this.onTap});
+  const _NavItem(
+      {required this.tab,
+      required this.label,
+      required this.active,
+      required this.icon,
+      required this.onTap});
 
   final VulnaraTab tab;
   final String label;
@@ -78,7 +102,8 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = active ? VulnaraColors.primary : VulnaraColors.onSurfaceVariant;
+    final color =
+        active ? VulnaraColors.primary : VulnaraColors.onSurfaceVariant;
     return Expanded(
       child: Tooltip(
         message: label,
@@ -90,7 +115,11 @@ class _NavItem extends StatelessWidget {
               Icon(icon, size: 24, color: color, semanticLabel: label),
               const SizedBox(height: 4),
               if (active)
-                Container(width: 4, height: 4, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+                Container(
+                    width: 4,
+                    height: 4,
+                    decoration:
+                        BoxDecoration(color: color, shape: BoxShape.circle)),
             ],
           ),
         ),

@@ -1,33 +1,40 @@
-// screens/dashboard_screen.dart -- new screen (no existing route in
-// lib_me) added for the "Dashboard" tab of the bottom nav.
+// screens/dashboard_screen.dart
 //
-// UI matches the Stitch "global_analytics_dashboard" mock: stat cards
-// (open critical vulns, remediations pending, system integrity ring)
-// and a "Threats Over Time" line chart.
+// "Global Analytics" dashboard tab — all values now sourced from real
+// backend data via dashboardStatsProvider (providers/dashboard_providers.dart).
 //
-// Data note: lib_me's API surface (contract 2.x/5.x) has no dedicated
-// analytics/aggregate endpoint yet. "Open Critical Vulnerabilities" is
-// derived client-side from the real scan list (sum of severityCounts
-// across completed scans); "Remediations Pending" and the time-series
-// chart use representative placeholder data, called out below, until a
-// backend aggregate endpoint exists.
+// Data sources:
+//   GET /scans              → scan status counts, integrity %, recent scans
+//   GET /scans/{id}         → per-severity counts (enriched for completed scans)
+//   GET /remediations        → pending / approved remediation counts
+//   "Threats Over Time"     → client-side bucketing of (critical + high)
+//                             findings per completed scan by calendar day
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../models/scan.dart';
-import '../providers/scan_providers.dart';
+import '../providers/auth_provider.dart';
+import '../providers/dashboard_providers.dart';
 import '../theme/vulnara_theme.dart';
 import '../widgets/vulnara_app_bar.dart';
 import '../widgets/vulnara_bottom_nav.dart';
+
+// Returns the accent colour associated with a role string.
+Color _roleColor(String role) => switch (role) {
+      'admin' => VulnaraColors.error,
+      'analyst' => VulnaraColors.primary,
+      _ => VulnaraColors.secondaryFixedDim,
+    };
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final scansAsync = ref.watch(scanListProvider);
+    final statsAsync = ref.watch(dashboardStatsProvider);
+    final authState = ref.watch(authProvider);
+    final role = authState is AuthLoggedIn ? authState.user.role : 'client';
 
     return Scaffold(
       backgroundColor: VulnaraColors.pageBackground,
@@ -35,95 +42,172 @@ class DashboardScreen extends ConsumerWidget {
       extendBody: true,
       appBar: VulnaraAppBar(
         actions: [
-          IconButton(icon: const Icon(Icons.search, color: VulnaraColors.onSurfaceVariant), onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.search,
+                color: VulnaraColors.onSurfaceVariant),
+            onPressed: () {},
+          ),
           const SizedBox(width: 4),
           VulnaraAvatar(onTap: () => context.go('/profile')),
         ],
       ),
       bottomNavigationBar: const VulnaraBottomNav(current: VulnaraTab.dashboard),
-      body: ListView(
-        padding: EdgeInsets.fromLTRB(
-          VulnaraSpacing.containerPadding,
-          MediaQuery.of(context).padding.top + 64 + 16,
-          VulnaraSpacing.containerPadding,
-          32,
+      body: statsAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, _) => _ErrorBody(
+          message: err.toString(),
+          onRetry: () => ref.invalidate(dashboardStatsProvider),
         ),
-        children: [
-          Text('Global Analytics', style: VulnaraFonts.headlineMd()),
-          const SizedBox(height: 8),
-          Text(
-            'Real-time threat telemetry and remediation tracking across all monitored environments.',
-            style: VulnaraFonts.codeSm(color: VulnaraColors.onSurfaceVariant),
-          ),
-          const SizedBox(height: VulnaraSpacing.stackLg),
-          scansAsync.when(
-            loading: () => const Padding(
-              padding: EdgeInsets.symmetric(vertical: 32),
-              child: Center(child: CircularProgressIndicator()),
+        data: (stats) => RefreshIndicator(
+          onRefresh: () async => ref.invalidate(dashboardStatsProvider),
+          child: ListView(
+            padding: EdgeInsets.fromLTRB(
+              VulnaraSpacing.containerPadding,
+              MediaQuery.of(context).padding.top + 64 + 16,
+              VulnaraSpacing.containerPadding,
+              32,
             ),
-            error: (err, _) => Text(err.toString(), style: VulnaraFonts.bodyBase()),
-            data: (scans) {
-              final criticalTotal = scans
-                  .where((s) => s.status == ScanStatus.completed && s.severityCounts != null)
-                  .fold<int>(0, (sum, s) => sum + s.severityCounts!.critical);
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Role badge
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                margin: const EdgeInsets.only(bottom: 10),
+                decoration: BoxDecoration(
+                  color: _roleColor(role).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(VulnaraRadius.full),
+                  border: Border.all(color: _roleColor(role).withValues(alpha: 0.3)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.shield_outlined, size: 11, color: _roleColor(role)),
+                    const SizedBox(width: 5),
+                    Text(role.toUpperCase(),
+                        style: VulnaraFonts.labelCaps(color: _roleColor(role), fontSize: 9)),
+                  ],
+                ),
+              ),
+              Text(
+                role == 'admin' ? 'Global Analytics' : 'Threat Analytics',
+                style: VulnaraFonts.headlineMd(),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                role == 'admin'
+                    ? 'Org-wide threat telemetry and remediation tracking across all users and environments.'
+                    : 'Real-time threat telemetry and remediation tracking across all monitored environments.',
+                style: VulnaraFonts.codeSm(color: VulnaraColors.onSurfaceVariant),
+              ),
+              const SizedBox(height: VulnaraSpacing.stackLg),
+
+              // ── Stat cards row ─────────────────────────────────────────────
+              Row(
                 children: [
-                  _StatCard(
-                    label: 'OPEN CRITICAL VULNERABILITIES',
-                    value: '$criticalTotal',
-                    delta: '24H',
-                    deltaValue: '+${scans.where((s) => s.status == ScanStatus.inProgress).length}',
-                    up: true,
-                    watermark: Icons.warning_amber_rounded,
+                  Expanded(
+                    child: _StatCard(
+                      label: 'CRITICAL VULNS',
+                      value: '${stats.totalCritical}',
+                      badge: stats.totalHigh > 0
+                          ? '+${stats.totalHigh} HIGH'
+                          : null,
+                      badgeUp: stats.totalHigh > 0,
+                      watermark: Icons.warning_amber_rounded,
+                      accentColor: VulnaraColors.error,
+                    ),
                   ),
-                  const SizedBox(height: VulnaraSpacing.stackMd),
-                  const _StatCard(
-                    label: 'REMEDIATIONS PENDING',
-                    value: '--',
-                    delta: '24H',
-                    deltaValue: 'per-scan',
-                    up: false,
-                    watermark: Icons.build_outlined,
-                    footnote: 'Open a scan to view its pending remediations.',
+                  const SizedBox(width: VulnaraSpacing.stackMd),
+                  Expanded(
+                    child: _StatCard(
+                      label: 'REMEDIATIONS PENDING',
+                      value: '${stats.remediationsPending}',
+                      badge: stats.remediationsApproved > 0
+                          ? '${stats.remediationsApproved} READY'
+                          : 'NONE READY',
+                      badgeUp: false,
+                      watermark: Icons.build_outlined,
+                      accentColor: VulnaraColors.primary,
+                    ),
                   ),
-                  const SizedBox(height: VulnaraSpacing.stackMd),
-                  _IntegrityCard(scans: scans),
-                  const SizedBox(height: VulnaraSpacing.stackMd),
-                  const _ThreatsChartCard(),
                 ],
-              );
-            },
+              ),
+              const SizedBox(height: VulnaraSpacing.stackMd),
+
+              // ── Active scans + integrity row ───────────────────────────────
+              Row(
+                children: [
+                  Expanded(
+                    child: _StatCard(
+                      label: 'ACTIVE SCANS',
+                      value: '${stats.inProgressScans}',
+                      badge: '${stats.totalScans} TOTAL',
+                      badgeUp: stats.inProgressScans > 0,
+                      watermark: Icons.radar,
+                      accentColor: VulnaraColors.secondaryFixedDim,
+                    ),
+                  ),
+                  const SizedBox(width: VulnaraSpacing.stackMd),
+                  Expanded(
+                    child: _StatCard(
+                      label: 'MEDIUM VULNS',
+                      value: '${stats.totalMedium}',
+                      badge: stats.totalMedium > 0 ? 'REVIEW' : 'CLEAN',
+                      badgeUp: stats.totalMedium > 0,
+                      watermark: Icons.info_outline,
+                      accentColor: VulnaraColors.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: VulnaraSpacing.stackMd),
+
+              // ── System integrity ring ──────────────────────────────────────
+              _IntegrityCard(stats: stats),
+              const SizedBox(height: VulnaraSpacing.stackMd),
+
+              // ── Threats over time chart (real data) ───────────────────────
+              _ThreatsChartCard(
+                series: stats.chartSeries,
+                labels: stats.chartLabels,
+              ),
+              const SizedBox(height: VulnaraSpacing.stackMd),
+
+              // ── Recent scans quick-access ──────────────────────────────────
+              if (stats.recentScans.isNotEmpty) ...[
+                _RecentScansCard(
+                  scans: stats.recentScans,
+                  onTap: (scanId) => context.go('/scans/$scanId'),
+                ),
+              ],
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 }
 
+// ── Stat card ─────────────────────────────────────────────────────────────────
+
 class _StatCard extends StatelessWidget {
   const _StatCard({
     required this.label,
     required this.value,
-    required this.delta,
-    required this.deltaValue,
-    required this.up,
     required this.watermark,
-    this.footnote,
+    required this.accentColor,
+    this.badge,
+    this.badgeUp = false,
   });
 
   final String label;
   final String value;
-  final String delta;
-  final String deltaValue;
-  final bool up;
+  final String? badge;
+  final bool badgeUp;
   final IconData watermark;
-  final String? footnote;
+  final Color accentColor;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
       padding: const EdgeInsets.all(VulnaraSpacing.containerPadding),
       decoration: BoxDecoration(
         color: VulnaraColors.surface.withValues(alpha: 0.4),
@@ -135,38 +219,52 @@ class _StatCard extends StatelessWidget {
           Positioned(
             right: -8,
             top: -8,
-            child: Icon(watermark, size: 64, color: Colors.white.withValues(alpha: 0.04)),
+            child: Icon(watermark,
+                size: 56, color: Colors.white.withValues(alpha: 0.04)),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: VulnaraFonts.labelCaps()),
-              const SizedBox(height: 24),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(value, style: VulnaraFonts.outfit(fontSize: 34, fontWeight: FontWeight.w700, color: VulnaraColors.tertiary)),
-                  const SizedBox(width: 10),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: VulnaraColors.surfaceContainerHigh,
-                      borderRadius: BorderRadius.circular(VulnaraRadius.sm),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(up ? Icons.arrow_upward : Icons.arrow_downward, size: 12, color: VulnaraColors.onSurfaceVariant),
-                        const SizedBox(width: 3),
-                        Text('$deltaValue $delta', style: VulnaraFonts.codeSm(fontSize: 11, color: VulnaraColors.onSurfaceVariant)),
-                      ],
-                    ),
-                  ),
-                ],
+              Text(label,
+                  style: VulnaraFonts.labelCaps(fontSize: 9)),
+              const SizedBox(height: 12),
+              Text(
+                value,
+                style: VulnaraFonts.outfit(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w700,
+                    color: accentColor),
               ),
-              if (footnote != null) ...[
-                const SizedBox(height: 8),
-                Text(footnote!, style: VulnaraFonts.codeSm(color: VulnaraColors.onSurfaceVariant, fontSize: 11)),
+              if (badge != null) ...[
+                const SizedBox(height: 6),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: VulnaraColors.surfaceContainerHigh,
+                    borderRadius: BorderRadius.circular(VulnaraRadius.sm),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        badgeUp ? Icons.arrow_upward : Icons.arrow_downward,
+                        size: 10,
+                        color: VulnaraColors.onSurfaceVariant,
+                      ),
+                      const SizedBox(width: 3),
+                      Flexible(
+                        child: Text(
+                          badge!,
+                          style: VulnaraFonts.codeSm(
+                              fontSize: 9,
+                              color: VulnaraColors.onSurfaceVariant),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ],
           ),
@@ -176,16 +274,21 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-class _IntegrityCard extends StatelessWidget {
-  const _IntegrityCard({required this.scans});
+// ── Integrity card ────────────────────────────────────────────────────────────
 
-  final List<Scan> scans;
+class _IntegrityCard extends StatelessWidget {
+  const _IntegrityCard({required this.stats});
+
+  final DashboardStats stats;
 
   @override
   Widget build(BuildContext context) {
-    final completed = scans.where((s) => s.status == ScanStatus.completed).toList();
-    final failed = scans.where((s) => s.status == ScanStatus.failed).length;
-    final integrity = scans.isEmpty ? 100 : (((completed.length) / scans.length) * 100).round();
+    final score = stats.integrityScore;
+    final Color ringColor = score >= 90
+        ? VulnaraColors.primary
+        : score >= 60
+            ? VulnaraColors.secondaryFixedDim
+            : VulnaraColors.error;
 
     return Container(
       width: double.infinity,
@@ -200,33 +303,160 @@ class _IntegrityCard extends StatelessWidget {
         children: [
           Text('SYSTEM INTEGRITY', style: VulnaraFonts.labelCaps()),
           const SizedBox(height: 16),
-          Center(
-            child: SizedBox(
-              width: 120,
-              height: 120,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  SizedBox(
-                    width: 120,
-                    height: 120,
-                    child: CircularProgressIndicator(
-                      value: integrity / 100,
-                      strokeWidth: 8,
-                      backgroundColor: VulnaraColors.surfaceContainerHighest,
-                      valueColor: const AlwaysStoppedAnimation(VulnaraColors.primary),
+          Row(
+            children: [
+              // Ring
+              SizedBox(
+                width: 100,
+                height: 100,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    SizedBox(
+                      width: 100,
+                      height: 100,
+                      child: CircularProgressIndicator(
+                        value: score / 100,
+                        strokeWidth: 8,
+                        backgroundColor: VulnaraColors.surfaceContainerHighest,
+                        valueColor: AlwaysStoppedAnimation(ringColor),
+                      ),
                     ),
-                  ),
-                  Text('$integrity%', style: VulnaraFonts.headlineMd()),
-                ],
+                    Text('$score%', style: VulnaraFonts.headlineMd()),
+                  ],
+                ),
               ),
-            ),
+              const SizedBox(width: 20),
+              // Breakdown legend
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _LegendRow(
+                        label: 'Completed',
+                        count: stats.completedScans,
+                        color: VulnaraColors.primary),
+                    const SizedBox(height: 6),
+                    _LegendRow(
+                        label: 'In Progress',
+                        count: stats.inProgressScans,
+                        color: VulnaraColors.secondaryFixedDim),
+                    const SizedBox(height: 6),
+                    _LegendRow(
+                        label: 'Failed',
+                        count: stats.failedScans,
+                        color: VulnaraColors.error),
+                    const SizedBox(height: 6),
+                    _LegendRow(
+                        label: 'Total Scans',
+                        count: stats.totalScans,
+                        color: VulnaraColors.onSurfaceVariant),
+                  ],
+                ),
+              ),
+            ],
           ),
-          if (failed > 0) ...[
-            const SizedBox(height: 12),
+        ],
+      ),
+    );
+  }
+}
+
+class _LegendRow extends StatelessWidget {
+  const _LegendRow(
+      {required this.label, required this.count, required this.color});
+
+  final String label;
+  final int count;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(label,
+              style: VulnaraFonts.codeSm(
+                  fontSize: 11, color: VulnaraColors.onSurfaceVariant)),
+        ),
+        Text('$count',
+            style: VulnaraFonts.codeSm(
+                fontSize: 11, fontWeight: FontWeight.w700)),
+      ],
+    );
+  }
+}
+
+// ── Threats chart card ────────────────────────────────────────────────────────
+
+class _ThreatsChartCard extends StatelessWidget {
+  const _ThreatsChartCard({
+    required this.series,
+    required this.labels,
+  });
+
+  final List<double> series;
+  final List<String> labels;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasData = series.any((v) => v > 0);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(VulnaraSpacing.containerPadding),
+      decoration: BoxDecoration(
+        color: VulnaraColors.surface.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(VulnaraRadius.xl),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.show_chart,
+                  size: 16, color: VulnaraColors.onSurfaceVariant),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text('Critical + High Findings — Last 7 Days',
+                    style: VulnaraFonts.bodyBase(fontWeight: FontWeight.w700)),
+              ),
+            ],
+          ),
+          const SizedBox(height: VulnaraSpacing.stackLg),
+          if (!hasData)
             Center(
-              child: Text('$failed failed scan${failed == 1 ? '' : 's'} in history',
-                  style: VulnaraFonts.codeSm(color: VulnaraColors.onSurfaceVariant)),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: Text(
+                  'No completed scans in the last 7 days.',
+                  style: VulnaraFonts.codeSm(
+                      color: VulnaraColors.onSurfaceVariant),
+                ),
+              ),
+            )
+          else ...[
+            SizedBox(
+              height: 160,
+              width: double.infinity,
+              child: CustomPaint(painter: _LineChartPainter(series)),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: labels
+                  .map((l) => Text(l,
+                      style: VulnaraFonts.codeSm(
+                          color: VulnaraColors.onSurfaceVariant,
+                          fontSize: 10)))
+                  .toList(),
             ),
           ],
         ],
@@ -235,13 +465,13 @@ class _IntegrityCard extends StatelessWidget {
   }
 }
 
-class _ThreatsChartCard extends StatelessWidget {
-  const _ThreatsChartCard();
+// ── Recent scans card ─────────────────────────────────────────────────────────
 
-  // Representative series matching the mock's shape -- swap for real
-  // telemetry once a `/analytics/threats-over-time` endpoint exists.
-  static const _series = [12.0, 22.0, 18.0, 30.0, 26.0, 40.0, 34.0, 52.0];
-  static const _labels = ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', 'NOW'];
+class _RecentScansCard extends StatelessWidget {
+  const _RecentScansCard({required this.scans, required this.onTap});
+
+  final List scans;
+  final void Function(String scanId) onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -258,51 +488,79 @@ class _ThreatsChartCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.show_chart, size: 16, color: VulnaraColors.onSurfaceVariant),
+              const Icon(Icons.history,
+                  size: 16, color: VulnaraColors.onSurfaceVariant),
               const SizedBox(width: 8),
-              Expanded(child: Text('Threats Over Time', style: VulnaraFonts.bodyBase(fontWeight: FontWeight.w700))),
-              const _Toggle(label: '24H', selected: false),
-              const SizedBox(width: 6),
-              const _Toggle(label: '7D', selected: true),
+              Text('Recent Scans',
+                  style: VulnaraFonts.bodyBase(fontWeight: FontWeight.w700)),
             ],
           ),
-          const SizedBox(height: VulnaraSpacing.stackLg),
-          SizedBox(
-            height: 160,
-            width: double.infinity,
-            child: CustomPaint(painter: _LineChartPainter(_series)),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: _labels
-                .map((l) => Text(l, style: VulnaraFonts.codeSm(color: VulnaraColors.onSurfaceVariant, fontSize: 10)))
-                .toList(),
-          ),
+          const SizedBox(height: 12),
+          ...scans.map((scan) {
+            final (icon, color) = _scanMeta(scan.status);
+            return InkWell(
+              onTap: () => onTap(scan.scanId),
+              borderRadius: BorderRadius.circular(VulnaraRadius.lg),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  children: [
+                    Icon(icon, size: 16, color: color),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        scan.target,
+                        style: VulnaraFonts.codeSm(),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    if (scan.severityCounts != null &&
+                        scan.severityCounts!.critical > 0)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: VulnaraColors.error.withValues(alpha: 0.15),
+                          borderRadius:
+                              BorderRadius.circular(VulnaraRadius.sm),
+                        ),
+                        child: Text(
+                          '${scan.severityCounts!.critical}C',
+                          style: VulnaraFonts.codeSm(
+                              fontSize: 10, color: VulnaraColors.error),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            );
+          }),
         ],
       ),
     );
   }
-}
 
-class _Toggle extends StatelessWidget {
-  const _Toggle({required this.label, required this.selected});
-  final String label;
-  final bool selected;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: selected ? VulnaraColors.surfaceContainerHighest : Colors.transparent,
-        borderRadius: BorderRadius.circular(VulnaraRadius.sm),
-        border: Border.all(color: VulnaraColors.outlineVariant),
-      ),
-      child: Text(label, style: VulnaraFonts.labelCaps(fontSize: 10)),
-    );
+  (IconData, Color) _scanMeta(dynamic status) {
+    // Using string comparison to avoid importing models here.
+    final s = status.toString();
+    if (s.contains('completed')) {
+      return (Icons.check_circle_outline, VulnaraColors.primary);
+    }
+    if (s.contains('inProgress')) {
+      return (Icons.sync, VulnaraColors.secondaryFixedDim);
+    }
+    if (s.contains('failed')) {
+      return (Icons.error_outline, VulnaraColors.error);
+    }
+    if (s.contains('cancelled')) {
+      return (Icons.cancel_outlined, VulnaraColors.onSurfaceVariant);
+    }
+    return (Icons.hourglass_top_outlined, VulnaraColors.onSurfaceVariant);
   }
 }
+
+// ── Line chart painter ────────────────────────────────────────────────────────
 
 class _LineChartPainter extends CustomPainter {
   _LineChartPainter(this.values);
@@ -310,9 +568,10 @@ class _LineChartPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (values.isEmpty) return;
+    if (values.isEmpty || values.length < 2) return;
+
     final maxV = values.reduce((a, b) => a > b ? a : b);
-    final minV = values.reduce((a, b) => a < b ? a : b);
+    const minV = 0.0; // Always start from zero for meaningful chart.
     final range = (maxV - minV).clamp(1, double.infinity);
 
     // Gridlines
@@ -348,7 +607,10 @@ class _LineChartPainter extends CustomPainter {
         ..shader = LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [VulnaraColors.primary.withValues(alpha: 0.25), VulnaraColors.primary.withValues(alpha: 0)],
+          colors: [
+            VulnaraColors.primary.withValues(alpha: 0.25),
+            VulnaraColors.primary.withValues(alpha: 0),
+          ],
         ).createShader(Rect.fromLTWH(0, 0, size.width, size.height)),
     );
 
@@ -362,9 +624,54 @@ class _LineChartPainter extends CustomPainter {
         ..strokeCap = StrokeCap.round,
     );
 
+    // Live dot on the last data point.
     canvas.drawCircle(points.last, 4, Paint()..color = Colors.white);
   }
 
   @override
-  bool shouldRepaint(covariant _LineChartPainter oldDelegate) => oldDelegate.values != values;
+  bool shouldRepaint(covariant _LineChartPainter oldDelegate) =>
+      oldDelegate.values != values;
+}
+
+// ── Error body ────────────────────────────────────────────────────────────────
+
+class _ErrorBody extends StatelessWidget {
+  const _ErrorBody({required this.message, required this.onRetry});
+
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.cloud_off_outlined,
+                size: 48, color: VulnaraColors.error),
+            const SizedBox(height: 12),
+            Text('Failed to load analytics',
+                style: VulnaraFonts.bodyBase(fontWeight: FontWeight.w700)),
+            const SizedBox(height: 6),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: VulnaraFonts.codeSm(
+                  color: VulnaraColors.onSurfaceVariant),
+            ),
+            const SizedBox(height: 16),
+            FilledButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Retry'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

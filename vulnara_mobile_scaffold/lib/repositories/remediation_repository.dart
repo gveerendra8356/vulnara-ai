@@ -68,6 +68,24 @@ class RemediationRepository {
     }
   }
 
+  /// Global list of remediations (all statuses by default, or filtered by
+  /// [status]). Used by the notifications feed to synthesize alert items
+  /// without knowing individual scan IDs.
+  Future<List<Remediation>> listRemediations({String? status}) async {
+    try {
+      final response = await _client.dio.get(
+        '/remediations',
+        queryParameters: {
+          if (status != null) 'status': status,
+        },
+      );
+      final items = (response.data as List).cast<Map<String, dynamic>>();
+      return items.map(Remediation.fromJson).toList();
+    } on DioException catch (e) {
+      throw ApiClient.toApiException(e);
+    }
+  }
+
   Future<void> execute(String remediationId) async {
     try {
       await _client.dio.post('/remediations/$remediationId/mark-executed');
