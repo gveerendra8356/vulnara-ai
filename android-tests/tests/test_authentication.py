@@ -28,8 +28,9 @@ def test_login_with_valid_credentials(driver, role):
     assert page.is_loaded()
     account = config.ACCOUNTS[role]
     page.login(account["email"], account["password"])
-    assert page.wait_gone(page.by_text("INITIALIZE SESSION"), timeout=15), \
-        f"login as {role} did not leave the login screen"
+    landed = page.wait_gone(page.by_text("INITIALIZE SESSION"), timeout=15)
+    if not landed:
+        pytest.fail(f"login as {role} did not leave the login screen. Texts on screen: {page.all_texts()}")
 
 
 @pytest.mark.parametrize("role", list(config.ACCOUNTS.keys()))

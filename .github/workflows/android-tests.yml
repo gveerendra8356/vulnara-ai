@@ -163,6 +163,7 @@ jobs:
           DATABASE_URL: "sqlite+aiosqlite:///./vulnara.db"
           VULNARA_SECRET_KEY: "ci-ephemeral-secret-key-do-not-use-in-prod"
           PYTHONPATH: "${{ github.workspace }}/backend"
+          PYTHONIOENCODING: "utf-8"
         run: |
           python3 "${{ github.workspace }}/backend-tests/seed_test_accounts.py"
           python3 "${{ github.workspace }}/backend-tests/seed_fixture_data.py"

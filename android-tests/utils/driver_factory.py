@@ -1,32 +1,5 @@
-"""
-utils/driver_factory.py
-
-Builds one Appium session per test (function-scoped, see conftest.py --
-same isolation rationale as selenium-tests/conftest.py: re-using a driver
-across tests would leak login/session state between tests unpredictably).
-
-Automation engine: UiAutomator2, NOT the Flutter driver.
-------------------------------------------------------
-final_year.md (the KrishiIQ/FitFuel lessons doc this suite was built
-against) documents that automationName: 'Flutter' + appium-flutter-driver
-is fragile in CI: it needs its own separately-pinned npm driver package,
-fails every single test identically at session-start if that package or
-its Appium-server-version peer dependency is even slightly off, and its
-key_visible()/is_present() helpers do not behave the way their names
-suggest. vulnara_mobile_scaffold's widgets also don't declare any
-ValueKeys (grep for "Key(" under lib/ returns nothing), which
-appium-flutter-driver's finders depend on -- so that driver would need
-every screen re-instrumented with keys before a single test could run.
-
-UiAutomator2 avoids all of that: Flutter always builds and exposes an
-Android accessibility (semantics) tree once an accessibility service --
-which UiAutomator2/instrumentation counts as -- attaches, so every Text,
-button label, and TextField hint in this app is reachable as a normal
-Android accessibility node by text/content-desc, with zero app code
-changes. See pages/base_page.py for the resulting locator strategy.
-"""
-
 import logging
+import time
 
 from appium import webdriver
 from appium.options.android import UiAutomator2Options
@@ -64,6 +37,16 @@ def new_driver():
     # little margin on a freshly-booted CI emulator.
     options.set_capability("uiautomator2ServerLaunchTimeout", 60000)
     options.set_capability("uiautomator2ServerInstallTimeout", 60000)
+    # CRITICAL for Flutter + UiAutomator2: Flutter only populates its
+    # accessibility/semantics tree when an accessibility service is attached.
+    # ensureSemanticsEnabled tells UiAutomator2 to explicitly trigger
+    # Flutter's semantic node build before returning the session, which
+    # prevents the race condition where element searches return empty even
+    # though the app is visually rendered on screen.
+    options.set_capability("ensureSemanticsEnabled", True)
+    # Allow UiAutomator2 to see elements that are off-screen or not yet
+    # fully visible -- useful for Flutter's first-frame rendering.
+    options.set_capability("allowInvisibleElements", True)
 
     # --- final_year.md item 4: AppiumConnection timeout wiring ---
     # A bare AppiumConnection.set_timeout(N) classmethod call at import time
@@ -79,4 +62,10 @@ def new_driver():
 
     driver = webdriver.Remote(command_executor=connection, options=options)
     driver.implicitly_wait(config.IMPLICIT_WAIT_SECONDS)
+    # Give Flutter time to fully build its semantics/accessibility tree.
+    # On a local emulator cold start, the app renders visually in ~2s but
+    # the semantics tree can take 8-10s to propagate to UiAutomator2.
+    # ensureSemanticsEnabled above helps, but a brief sleep is still needed.
+    time.sleep(8)
     return driver
+

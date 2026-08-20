@@ -22,7 +22,7 @@ FORGOT_LABEL = "FORGOT CREDENTIALS?"
 
 
 class LoginPage(BasePage):
-    def is_loaded(self, timeout: float = 15) -> bool:
+    def is_loaded(self, timeout: float = 30) -> bool:
         return self.is_present(self.by_text(TITLE_LABEL), timeout=timeout)
 
     def enter_email(self, email: str):
@@ -37,6 +37,13 @@ class LoginPage(BasePage):
     def login(self, email: str, password: str):
         self.enter_email(email)
         self.enter_password(password)
+        try:
+            self.driver.hide_keyboard()
+        except Exception:
+            pass
+        # Wait a moment for keyboard animation to finish
+        import time
+        time.sleep(1)
         self.submit()
 
     def error_text(self) -> str | None:
