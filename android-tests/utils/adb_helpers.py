@@ -66,30 +66,41 @@ def clear_app_data(driver):
     shared_prefs directory (where flutter_secure_storage writes the JWT token)
     via a targeted `rm -rf` -- leaving UiAutomator2's data untouched.
 
-    NOTE: Do NOT pass multiple paths to a single `sh -c 'rm -rf a b'`
-    invocation via mobile:shell. Appium wraps the -c argument in single
-    quotes when constructing the adb shell command line, which causes
-    Android's /system/bin/sh to mis-parse a multi-argument rm call and
-    report "rm: Needs 1 argument". Issue two separate rm calls instead --
-    one per directory -- to avoid this quoting ambiguity entirely.
+    PERMISSION NOTE: On Android API 34 with SELinux enforcing, the ADB
+    shell user (uid=2000) cannot write to /data/data/<package>/ even with
+    `-rf`. We use `run-as <package>` to re-execute rm as the app's own
+    UID -- this is only available on debuggable (debug) builds, which is
+    exactly what CI produces. Each path is deleted in a separate call
+    because mobile:shell's args array maps 1-to-1 onto execv() tokens, so
+    passing two paths to a single rm call would need sh -c, which adds the
+    shell-quoting ambiguity we want to avoid entirely.
+
+    The calls are wrapped in try/except so a fresh emulator (where the
+    directories have never been created yet) doesn't crash the fixture.
     """
     import config
     # Force-stop clears all in-memory state including Riverpod providers
     driver.execute_script("mobile: shell", {
         "command": "am", "args": ["force-stop", config.APP_PACKAGE],
     })
-    # Clear the app's shared_prefs (flutter_secure_storage JWT location)
-    # without touching io.appium.uiautomator2.server data.
-    # Two separate rm calls -- one per path -- to avoid the multi-argument
-    # quoting issue described above.
-    driver.execute_script("mobile: shell", {
-        "command": "rm",
-        "args": ["-rf", f"/data/data/{config.APP_PACKAGE}/shared_prefs"],
-    })
-    driver.execute_script("mobile: shell", {
-        "command": "rm",
-        "args": ["-rf", f"/data/data/{config.APP_PACKAGE}/files"],
-    })
+    # Delete persistent JWT storage as the app's own UID via run-as, so
+    # SELinux enforcement on API 34 doesn't block the deletion.
+    for subdir in ("shared_prefs", "files"):
+        try:
+            driver.execute_script("mobile: shell", {
+                "command": "run-as",
+                "args": [
+                    config.APP_PACKAGE,
+                    "rm", "-rf",
+                    f"/data/data/{config.APP_PACKAGE}/{subdir}",
+                ],
+            })
+        except Exception:
+            # Directory may not exist yet on a freshly-booted emulator
+            # (first test run before the app has ever written any data).
+            # Silently continue -- force-stop above already cleared
+            # all in-memory auth state.
+            pass
 
 
 def rotate_device(driver, orientation: str):
