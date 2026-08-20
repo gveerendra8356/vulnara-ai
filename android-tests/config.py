@@ -30,7 +30,7 @@ APP_ACTIVITY = os.environ.get("APP_ACTIVITY", ".MainActivity")
 
 APPIUM_SERVER_URL = os.environ.get("APPIUM_SERVER_URL", "http://127.0.0.1:4723")
 DEVICE_NAME = os.environ.get("DEVICE_NAME", "Android Emulator")
-PLATFORM_VERSION = os.environ.get("PLATFORM_VERSION", "14")
+PLATFORM_VERSION = os.environ.get("PLATFORM_VERSION", "16")
 NEW_COMMAND_TIMEOUT = int(os.environ.get("NEW_COMMAND_TIMEOUT", "240"))
 
 # CI builds the APK with ApiConfig.baseUrl patched to point at the backend
