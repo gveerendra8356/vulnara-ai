@@ -65,17 +65,30 @@ def clear_app_data(driver):
     the app (which clears in-memory Riverpod auth state) and clear only the
     shared_prefs directory (where flutter_secure_storage writes the JWT token)
     via a targeted `rm -rf` -- leaving UiAutomator2's data untouched.
+
+    NOTE: Do NOT pass multiple paths to a single `sh -c 'rm -rf a b'`
+    invocation via mobile:shell. Appium wraps the -c argument in single
+    quotes when constructing the adb shell command line, which causes
+    Android's /system/bin/sh to mis-parse a multi-argument rm call and
+    report "rm: Needs 1 argument". Issue two separate rm calls instead --
+    one per directory -- to avoid this quoting ambiguity entirely.
     """
     import config
     # Force-stop clears all in-memory state including Riverpod providers
     driver.execute_script("mobile: shell", {
         "command": "am", "args": ["force-stop", config.APP_PACKAGE],
     })
-    # Clear only the app's shared_prefs (flutter_secure_storage JWT location)
+    # Clear the app's shared_prefs (flutter_secure_storage JWT location)
     # without touching io.appium.uiautomator2.server data.
+    # Two separate rm calls -- one per path -- to avoid the multi-argument
+    # quoting issue described above.
     driver.execute_script("mobile: shell", {
-        "command": "sh",
-        "args": ["-c", f"rm -rf /data/data/{config.APP_PACKAGE}/shared_prefs /data/data/{config.APP_PACKAGE}/files"],
+        "command": "rm",
+        "args": ["-rf", f"/data/data/{config.APP_PACKAGE}/shared_prefs"],
+    })
+    driver.execute_script("mobile: shell", {
+        "command": "rm",
+        "args": ["-rf", f"/data/data/{config.APP_PACKAGE}/files"],
     })
 
 

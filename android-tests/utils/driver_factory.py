@@ -52,6 +52,12 @@ def new_driver():
     # little margin on a freshly-booted CI emulator.
     options.set_capability("uiautomator2ServerLaunchTimeout", 120000)
     options.set_capability("uiautomator2ServerInstallTimeout", 120000)
+    # The default adbExecTimeout is 20000ms. On a cold CI emulator, the first
+    # `am start-activity` call can take longer than this, producing:
+    #   "Command '...adb shell am start-activity -W ...' timed out after 20000ms"
+    # 60s gives the emulator enough headroom for first-launch APK startup
+    # without the risk of hanging indefinitely on a genuine failure.
+    options.set_capability("adbExecTimeout", 60000)
 
     # --- final_year.md item 4: AppiumConnection timeout wiring ---
     # A bare AppiumConnection.set_timeout(N) classmethod call at import time
