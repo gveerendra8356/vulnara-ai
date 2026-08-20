@@ -237,7 +237,33 @@ jobs:
           arch: x86_64
           profile: pixel_6
           disable-animations: true
+          # pre-launch-emulator-commands runs before the emulator boots,
+          # so we use script: for post-boot setup instead.
+          # CRITICAL: The script lines below are each run as independent
+          # sh -c invocations by android-emulator-runner. We chain with &&
+          # for the pytest line but keep setup lines separate (they are
+          # independent adb commands that can each run in their own shell).
           script: |
+            # Ensure ADB sees the emulator before issuing settings commands.
+            adb wait-for-device
+            adb shell 'while [ "$(getprop sys.boot_completed)" != "1" ]; do sleep 1; done'
+            # Wait for the emulator to be fully stable (beyond just sys.boot_completed).
+            # Without this, the accessibility service set commands race against
+            # Android's own boot-time service initialization and can be ignored.
+            sleep 10
+            # Enable TalkBack BEFORE any Appium session is created.
+            # Flutter only builds its semantics/accessibility tree when an
+            # accessibility service is attached. UiAutomator2 instrumentation
+            # will crash ("process cannot be initialized") if TalkBack is
+            # enabled AFTER the first session starts because they fight over
+            # the same instrumentation slot. Doing this here (before pytest
+            # creates its first session) mirrors exactly how run_local.ps1
+            # works: TalkBack is enabled once, before Appium is even started.
+            adb shell settings put secure enabled_accessibility_services com.google.android.marvin.talkback/com.google.android.marvin.talkback.TalkBackService
+            adb shell settings put secure accessibility_enabled 1
+            # Give TalkBack time to fully initialize. On CI emulators this
+            # takes 5-8s; 15s is conservative but avoids the race completely.
+            sleep 15
             cd android-tests && export APK_PATH=$GITHUB_WORKSPACE/android-tests/apk/app-debug.apk && export APPIUM_SERVER_URL=http://127.0.0.1:4723 && export BACKEND_BASE_URL=http://127.0.0.1:8000 && pytest --reruns 2 --reruns-delay 3 -p no:cacheprovider ${{ matrix.paths }} || true
 
       - uses: actions/upload-artifact@v4

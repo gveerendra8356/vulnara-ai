@@ -35,18 +35,8 @@ def new_driver():
     # error under any future genuine slow-start condition (cold emulator,
     # first-launch APK install), since the default 20s launch timeout has
     # little margin on a freshly-booted CI emulator.
-    options.set_capability("uiautomator2ServerLaunchTimeout", 60000)
-    options.set_capability("uiautomator2ServerInstallTimeout", 60000)
-    # CRITICAL for Flutter + UiAutomator2: Flutter only populates its
-    # accessibility/semantics tree when an accessibility service is attached.
-    # ensureSemanticsEnabled tells UiAutomator2 to explicitly trigger
-    # Flutter's semantic node build before returning the session, which
-    # prevents the race condition where element searches return empty even
-    # though the app is visually rendered on screen.
-    options.set_capability("ensureSemanticsEnabled", True)
-    # Allow UiAutomator2 to see elements that are off-screen or not yet
-    # fully visible -- useful for Flutter's first-frame rendering.
-    options.set_capability("allowInvisibleElements", True)
+    options.set_capability("uiautomator2ServerLaunchTimeout", 120000)
+    options.set_capability("uiautomator2ServerInstallTimeout", 120000)
 
     # --- final_year.md item 4: AppiumConnection timeout wiring ---
     # A bare AppiumConnection.set_timeout(N) classmethod call at import time
@@ -62,10 +52,5 @@ def new_driver():
 
     driver = webdriver.Remote(command_executor=connection, options=options)
     driver.implicitly_wait(config.IMPLICIT_WAIT_SECONDS)
-    # Give Flutter time to fully build its semantics/accessibility tree.
-    # On a local emulator cold start, the app renders visually in ~2s but
-    # the semantics tree can take 8-10s to propagate to UiAutomator2.
-    # ensureSemanticsEnabled above helps, but a brief sleep is still needed.
-    time.sleep(8)
     return driver
 
