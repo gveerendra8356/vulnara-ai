@@ -21,16 +21,29 @@ is deterministic across the whole app regardless of screen content.
 from pages.base_page import BasePage
 
 TABS = ["dashboard", "scans", "alerts", "profile"]  # left -> right, matches VulnaraTab enum order
+# widgets/vulnara_bottom_nav.dart: clients don't get the Dashboard tab (it
+# shows org-wide analytics clients shouldn't see), so their bar only has 3
+# equal-width segments, not 4 -- see tabs_for_role().
+CLIENT_TABS = ["scans", "alerts", "profile"]
 NAV_BAR_HEIGHT_PX_AT_MDPI = 64
 
 
+def tabs_for_role(role: str) -> list[str]:
+    return CLIENT_TABS if role == "client" else TABS
+
+
 class BottomNav(BasePage):
-    def tap(self, tab: str):
-        if tab not in TABS:
-            raise ValueError(f"unknown tab {tab!r}, expected one of {TABS}")
-        index = TABS.index(tab)
+    def tap(self, tab: str, role: str = "admin"):
+        # The bar's segment width depends on how many tabs are actually
+        # rendered for this role (3 for client, 4 for admin/analyst) --
+        # using the full TABS count unconditionally taps the wrong segment
+        # whenever role == "client".
+        tabs = tabs_for_role(role)
+        if tab not in tabs:
+            raise ValueError(f"unknown tab {tab!r} for role {role!r}, expected one of {tabs}")
+        index = tabs.index(tab)
         size = self.driver.get_window_size()
-        segment_w = size["width"] / len(TABS)
+        segment_w = size["width"] / len(tabs)
         x = int(segment_w * (index + 0.5))
         y = int(size["height"] * 0.965)  # bottom nav sits flush at the screen edge
         self.driver.tap([(x, y)], 50)

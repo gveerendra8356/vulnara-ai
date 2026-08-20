@@ -3,7 +3,7 @@ and app-bar chrome, exercised with an authenticated session."""
 
 import pytest
 
-from pages.bottom_nav import BottomNav, TABS
+from pages.bottom_nav import BottomNav, TABS, CLIENT_TABS, tabs_for_role
 from pages.scan_list_page import ScanListPage
 from pages.new_scan_page import NewScanPage
 from pages.dashboard_page import DashboardPage
@@ -16,8 +16,10 @@ pytestmark = pytest.mark.navigation
 @pytest.mark.parametrize("tab", TABS)
 def test_bottom_nav_navigates_to_each_tab(login_as_any_role, tab):
     driver, actual_role = login_as_any_role
+    if tab not in tabs_for_role(actual_role):
+        pytest.skip(f"{tab} tab is not available to the {actual_role} role")
     nav = BottomNav(driver)
-    nav.tap(tab)
+    nav.tap(tab, role=actual_role)
     page_by_tab = {
         "dashboard": DashboardPage(driver),
         "scans": ScanListPage(driver),
@@ -27,12 +29,12 @@ def test_bottom_nav_navigates_to_each_tab(login_as_any_role, tab):
     assert page_by_tab[tab].is_loaded(timeout=12), f"{tab} did not load after nav tap ({actual_role})"
 
 
-@pytest.mark.parametrize("tab", TABS)
+@pytest.mark.parametrize("tab", CLIENT_TABS)
 def test_bottom_nav_tap_is_idempotent(login_as_client, tab):
     """Tapping the already-active tab should not crash or navigate away."""
     nav = BottomNav(login_as_client)
-    nav.tap(tab)
-    nav.tap(tab)
+    nav.tap(tab, role="client")
+    nav.tap(tab, role="client")
     assert login_as_client.get_window_size()["width"] > 0
 
 
@@ -50,13 +52,16 @@ def test_back_button_from_new_scan_returns_to_scan_list(login_as_client):
 def test_navigating_all_tabs_in_sequence_never_crashes(login_as_any_role):
     driver, actual_role = login_as_any_role
     nav = BottomNav(driver)
-    for tab in TABS:
-        nav.tap(tab)
+    for tab in tabs_for_role(actual_role):
+        nav.tap(tab, role=actual_role)
     assert driver.get_window_size()["width"] > 0
 
 
 @pytest.mark.parametrize("screen_label", [
-    "Global Analytics", "Active Scans", "Alerts Hub", "New Target Configuration",
+    # "Global Analytics" (dashboard) excluded: the client role -- the only
+    # role this test logs in as -- has no Dashboard tab (see
+    # widgets/vulnara_bottom_nav.dart), so that screen isn't reachable here.
+    "Active Scans", "Alerts Hub", "New Target Configuration",
 ])
 def test_app_bar_wordmark_area_renders_without_crash(login_as_client, screen_label):
     """Every primary screen's Scaffold uses VulnaraAppBar; the wordmark
@@ -66,12 +71,11 @@ def test_app_bar_wordmark_area_renders_without_crash(login_as_client, screen_lab
     driver = login_as_client
     nav = BottomNav(driver)
     label_to_tab = {
-        "Global Analytics": "dashboard", "Active Scans": "scans",
-        "Alerts Hub": "alerts", "New Target Configuration": None,
+        "Active Scans": "scans", "Alerts Hub": "alerts", "New Target Configuration": None,
     }
     tab = label_to_tab[screen_label]
     if tab:
-        nav.tap(tab)
+        nav.tap(tab, role="client")
     else:
         ScanListPage(driver).open_new_scan_fab()
     from pages.base_page import BasePage
@@ -85,9 +89,12 @@ def test_direct_post_login_landing_screen_is_reachable(login_as_any_role, route)
     lands somewhere authenticated (not bounced to /login) and that each
     of the 4 primary destinations remains reachable from there."""
     driver, actual_role = login_as_any_role
-    nav = BottomNav(driver)
     tab_map = {"scans": "scans", "dashboard": "dashboard", "notifications": "alerts", "profile": "profile"}
-    nav.tap(tab_map[route])
+    tab = tab_map[route]
+    if tab not in tabs_for_role(actual_role):
+        pytest.skip(f"{tab} tab is not available to the {actual_role} role")
+    nav = BottomNav(driver)
+    nav.tap(tab, role=actual_role)
     assert driver.get_window_size()["width"] > 0
 
 

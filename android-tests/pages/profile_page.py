@@ -1,6 +1,9 @@
 from pages.base_page import BasePage
 
-ACCOUNT_SETTINGS_LABEL = "Account Settings"
+# lib/screens/profile_screen.dart: the "Account Info" tab label (there is no
+# "Account Settings" section anywhere on this screen) and no version string
+# rendered anywhere in the UI.
+ACCOUNT_SETTINGS_LABEL = "ACCOUNT INFO"
 LOGOUT_LABEL = "LOG OUT"
 VERSION_LABEL = "v2.4.1"
 

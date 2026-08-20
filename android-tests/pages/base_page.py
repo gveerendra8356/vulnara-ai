@@ -26,6 +26,7 @@ Android accessibility nodes the moment an accessibility service attaches
 """
 
 import time
+import xml.etree.ElementTree as ET
 
 from appium.webdriver.common.appiumby import AppiumBy
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
@@ -118,5 +119,19 @@ class BasePage:
         """All @text or @content-desc values currently in the semantics tree -- used by
         page-chrome/accessibility tests that assert on general page
         content rather than one specific element."""
-        # Optimization: returning page_source directly to avoid 60-second hang on test failure
-        return [self.driver.page_source]
+        # Parsing driver.page_source locally (one round-trip) instead of
+        # issuing a find_elements() XPath query -- that used to be what
+        # caused a 60-second hang on test failure. Callers rely on this
+        # returning one entry per on-screen text/content-desc, not a
+        # single blob, so we still need to walk the tree here.
+        try:
+            root = ET.fromstring(self.driver.page_source)
+        except ET.ParseError:
+            return []
+        values = []
+        for node in root.iter():
+            for attr in ("text", "content-desc"):
+                value = node.attrib.get(attr)
+                if value:
+                    values.append(value)
+        return values

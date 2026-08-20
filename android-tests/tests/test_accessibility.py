@@ -40,13 +40,18 @@ def test_login_fields_reachable_as_accessibility_nodes(driver, field_index):
 
 
 @pytest.mark.parametrize("screen_and_tab", [
-    ("Global Analytics", "dashboard"), ("Active Scans", "scans"),
-    ("Alerts Hub", "alerts"), ("Account Settings", "profile"),
+    # "Global Analytics" (dashboard) excluded: the client role -- the only
+    # role this test logs in as -- has no Dashboard tab (see
+    # widgets/vulnara_bottom_nav.dart), so that screen isn't reachable here.
+    # Profile's heading is "ACCOUNT INFO" (its tab label), not "Account
+    # Settings" -- see profile_screen.dart.
+    ("Active Scans", "scans"),
+    ("Alerts Hub", "alerts"), ("ACCOUNT INFO", "profile"),
 ])
 def test_headings_present_on_each_screen(login_as_client, screen_and_tab):
     heading, tab = screen_and_tab
     driver = login_as_client
-    BottomNav(driver).tap(tab)
+    BottomNav(driver).tap(tab, role="client")
     bp = BasePage(driver)
     assert bp.is_present(bp.by_text(heading), timeout=12), f"missing heading: {heading}"
 

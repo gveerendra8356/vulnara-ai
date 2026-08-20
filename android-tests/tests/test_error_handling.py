@@ -7,7 +7,7 @@ import pytest
 
 import config
 from pages.login_page import LoginPage
-from pages.bottom_nav import BottomNav
+from pages.bottom_nav import BottomNav, CLIENT_TABS
 from pages.dashboard_page import DashboardPage
 from pages.scan_list_page import ScanListPage
 from pages.notifications_page import NotificationsPage
@@ -47,11 +47,11 @@ def test_new_scan_submission_with_backend_offline_shows_error(login_as_client):
         set_airplane_mode(driver, False)
 
 
-@pytest.mark.parametrize("tab", ["dashboard", "scans", "alerts", "profile"])
+@pytest.mark.parametrize("tab", CLIENT_TABS)
 def test_app_recovers_after_airplane_mode_restored(login_as_client, tab):
     driver = login_as_client
     set_airplane_mode(driver, True)
-    BottomNav(driver).tap(tab)
+    BottomNav(driver).tap(tab, role="client")
     set_airplane_mode(driver, False)
     page_by_tab = {
         "dashboard": DashboardPage(driver), "scans": ScanListPage(driver),

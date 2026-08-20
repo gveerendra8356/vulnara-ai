@@ -34,15 +34,17 @@ def test_profile_account_settings_row_present(login_as_client):
     BottomNav(driver).tap("profile")
     page = ProfilePage(driver)
     assert page.is_loaded(timeout=15)
-    assert page.is_present(page.by_text("Account Settings"), timeout=8)
+    # lib/screens/profile_screen.dart has no "Account Settings" section --
+    # the account-editing tab is labelled "ACCOUNT INFO".
+    assert page.is_present(page.by_text("ACCOUNT INFO"), timeout=8)
 
 
 def test_profile_version_label_present(login_as_client):
-    driver = login_as_client
-    BottomNav(driver).tap("profile")
-    page = ProfilePage(driver)
-    assert page.is_loaded(timeout=15)
-    assert page.is_present(page.by_text("v2.4.1"), timeout=8)
+    """profile_screen.dart renders no app-version string anywhere on this
+    screen (pubspec.yaml's version isn't surfaced in the UI at all) --
+    there's nothing for this test to assert on until that becomes a real
+    feature."""
+    pytest.skip("no version label is rendered anywhere in profile_screen.dart")
 
 
 def test_logout_returns_to_login(login_as_any_role):

@@ -12,11 +12,13 @@ class ScanListPage(BasePage):
 
     def open_new_scan_fab(self):
         # FloatingActionButton has no explicit label in the source; it's
-        # the single android.widget.Button-role FAB rendered by Scaffold,
-        # reliably the last such control on the screen.
+        # the single android.widget.Button-role FAB rendered by Scaffold
+        # (every other tappable control on this screen -- avatar, scan
+        # cards, bottom nav items -- is a bare GestureDetector/InkWell,
+        # which surfaces as android.view.View, not android.widget.Button).
         fab = self.driver.find_element(
             AppiumBy.ANDROID_UIAUTOMATOR,
-            'new UiSelector().clickable(true).className("android.view.View").instance(0)',
+            'new UiSelector().clickable(true).className("android.widget.Button").instance(0)',
         )
         fab.click()
 

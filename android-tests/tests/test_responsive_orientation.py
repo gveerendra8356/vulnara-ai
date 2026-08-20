@@ -6,7 +6,7 @@ workaround)."""
 
 import pytest
 
-from pages.bottom_nav import BottomNav, TABS
+from pages.bottom_nav import BottomNav, CLIENT_TABS
 from pages.base_page import BasePage
 from pages.login_page import LoginPage
 from utils.adb_helpers import rotate_device
@@ -14,29 +14,32 @@ from utils.adb_helpers import rotate_device
 pytestmark = pytest.mark.responsive
 
 
-@pytest.mark.parametrize("screen_and_tab", [
-    ("Global Analytics", "dashboard"), ("Active Scans", "scans"),
-    ("Alerts Hub", "alerts"), ("Account Settings", "profile"),
-])
+# "Global Analytics" (dashboard) excluded from these client-only tests: the
+# client role has no Dashboard tab (widgets/vulnara_bottom_nav.dart), so
+# that screen isn't reachable here. Profile's heading is "ACCOUNT INFO"
+# (its tab label), not "Account Settings" -- see profile_screen.dart.
+SCREEN_AND_TAB_FOR_CLIENT = [
+    ("Active Scans", "scans"), ("Alerts Hub", "alerts"), ("ACCOUNT INFO", "profile"),
+]
+
+
+@pytest.mark.parametrize("screen_and_tab", SCREEN_AND_TAB_FOR_CLIENT)
 def test_screen_renders_in_portrait(login_as_client, screen_and_tab):
     heading, tab = screen_and_tab
     driver = login_as_client
     rotate_device(driver, "PORTRAIT")
-    BottomNav(driver).tap(tab)
+    BottomNav(driver).tap(tab, role="client")
     bp = BasePage(driver)
     assert bp.is_present(bp.by_text(heading), timeout=15)
 
 
-@pytest.mark.parametrize("screen_and_tab", [
-    ("Global Analytics", "dashboard"), ("Active Scans", "scans"),
-    ("Alerts Hub", "alerts"), ("Account Settings", "profile"),
-])
+@pytest.mark.parametrize("screen_and_tab", SCREEN_AND_TAB_FOR_CLIENT)
 def test_screen_renders_in_landscape(login_as_client, screen_and_tab):
     heading, tab = screen_and_tab
     driver = login_as_client
     rotate_device(driver, "LANDSCAPE")
     try:
-        BottomNav(driver).tap(tab)
+        BottomNav(driver).tap(tab, role="client")
         bp = BasePage(driver)
         assert bp.is_present(bp.by_text(heading), timeout=15)
     finally:
@@ -72,24 +75,24 @@ def test_rotation_does_not_crash_new_scan_form(login_as_client):
 
 
 @pytest.mark.parametrize("screen_and_tab", [
-    ("Global Analytics", "dashboard"), ("Active Scans", "scans"), ("Alerts Hub", "alerts"),
+    ("Active Scans", "scans"), ("Alerts Hub", "alerts"),
 ])
 def test_rotation_back_to_portrait_restores_layout(login_as_client, screen_and_tab):
     heading, tab = screen_and_tab
     driver = login_as_client
-    BottomNav(driver).tap(tab)
+    BottomNav(driver).tap(tab, role="client")
     rotate_device(driver, "LANDSCAPE")
     rotate_device(driver, "PORTRAIT")
     bp = BasePage(driver)
     assert bp.is_present(bp.by_text(heading), timeout=15)
 
 
-@pytest.mark.parametrize("tab", TABS)
+@pytest.mark.parametrize("tab", CLIENT_TABS)
 def test_bottom_nav_tap_works_in_landscape(login_as_client, tab):
     driver = login_as_client
     rotate_device(driver, "LANDSCAPE")
     try:
-        BottomNav(driver).tap(tab)
+        BottomNav(driver).tap(tab, role="client")
         assert driver.get_window_size()["width"] > 0
     finally:
         rotate_device(driver, "PORTRAIT")
