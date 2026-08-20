@@ -87,6 +87,16 @@ class BasePage:
         escaped_value = value.replace(" ", "%s").replace("&", "\&").replace("<", "\<").replace(">", "\>").replace("?", "\?").replace(":", "\:").replace(";", "\;").replace("*", "\*").replace("|", "\|").replace("~", "\~").replace("'", "\\'").replace('"', '\\"').replace("(", "\(").replace(")", "\)")
         subprocess.run(["adb", "shell", "input", "text", escaped_value], check=False)
         time.sleep(0.5)
+        # Scaffold.resizeToAvoidBottomInset shrinks the Flutter viewport while
+        # the IME is up, which can scroll/push whatever's below this field
+        # (e.g. new_scan_screen.dart's confirmation checkbox) out of the
+        # visible viewport and out of the exposed semantics tree with it --
+        # dismiss the keyboard so later locators on this screen can find
+        # their target, same as LoginPage.login() already does.
+        try:
+            self.driver.hide_keyboard()
+        except Exception:
+            pass
 
     def text_of_field(self, index: int) -> str:
         el = self.wait_visible(self.edit_field(index))

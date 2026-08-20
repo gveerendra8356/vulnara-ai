@@ -136,8 +136,14 @@ def _assert_landed_past_login(page: LoginPage, context: str):
     selenium-tests/conftest.py's _assert_landed_on_dashboard rationale
     exactly: an unnoticed failed login otherwise surfaces as 10+ unrelated
     "couldn't find element" failures on whatever screen each test tries
-    next, all hiding the same root cause."""
-    if not page.wait_gone(page.by_text("INITIALIZE SESSION"), timeout=15):
+    next, all hiding the same root cause.
+
+    timeout=25, not 15: CI runs showed failures here clustering at
+    ~35-40s total (driver-fixture cold-start + this wait), the same
+    ballpark as plenty of *passing* tests elsewhere in the same run --
+    15s wasn't leaving CI-under-load enough room for a login that was
+    genuinely still in flight, not stuck."""
+    if not page.wait_gone(page.by_text("INITIALIZE SESSION"), timeout=25):
         raise AssertionError(
             f"{context}: login did not navigate away from the login screen "
             f"within the wait window. This fixture failing here -- rather "
