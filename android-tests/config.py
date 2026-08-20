@@ -30,7 +30,12 @@ APP_ACTIVITY = os.environ.get("APP_ACTIVITY", ".MainActivity")
 
 APPIUM_SERVER_URL = os.environ.get("APPIUM_SERVER_URL", "http://127.0.0.1:4723")
 DEVICE_NAME = os.environ.get("DEVICE_NAME", "Android Emulator")
-PLATFORM_VERSION = os.environ.get("PLATFORM_VERSION", "16")
+# Leave PLATFORM_VERSION empty to let Appium auto-detect the connected emulator's
+# Android version. Hardcoding "16" here works locally (Android 16 AVD) but
+# fails in CI where api-level: 34 = Android 14, producing:
+# "Unable to find an active device or emulator with OS 16" even though the
+# emulator is running fine. Auto-detection removes this mismatch entirely.
+PLATFORM_VERSION = os.environ.get("PLATFORM_VERSION", "")
 NEW_COMMAND_TIMEOUT = int(os.environ.get("NEW_COMMAND_TIMEOUT", "240"))
 
 # CI builds the APK with ApiConfig.baseUrl patched to point at the backend

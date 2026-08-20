@@ -15,7 +15,13 @@ def new_driver():
     options.platform_name = "Android"
     options.automation_name = "UiAutomator2"
     options.device_name = config.DEVICE_NAME
-    options.platform_version = config.PLATFORM_VERSION
+    # Only set platform_version when explicitly configured. Leaving it unset
+    # tells Appium to auto-detect the connected device's Android version,
+    # which is necessary for CI (Android 14 / api-level 34) vs local
+    # (Android 16). Hardcoding "16" was causing 100% failure in CI with
+    # "Unable to find an active device or emulator with OS 16".
+    if config.PLATFORM_VERSION:
+        options.platform_version = config.PLATFORM_VERSION
     options.app = config.APK_PATH
     options.app_package = config.APP_PACKAGE
     options.app_activity = config.APP_ACTIVITY

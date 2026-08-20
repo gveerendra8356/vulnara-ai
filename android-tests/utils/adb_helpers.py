@@ -51,13 +51,27 @@ def force_stop_app(driver):
 
 
 def clear_app_data(driver):
-    """Wipes flutter_secure_storage/shared prefs -- used by session-management
-    tests that need a truly cold, logged-out app state without a full
-    reinstall (no_reset stays False on the driver capabilities; this is for
-    mid-test resets)."""
+    """Resets the app's auth state (flutter_secure_storage/shared prefs)
+    without wiping the UiAutomator2 instrumentation server state.
+
+    IMPORTANT: `pm clear <package>` wipes ALL package data including the
+    UiAutomator2 server APK's own cached state since it runs in the app's
+    process context. This causes 'instrumentation process cannot be
+    initialized' on the very next new_driver() call. Instead, we force-stop
+    the app (which clears in-memory Riverpod auth state) and clear only the
+    shared_prefs directory (where flutter_secure_storage writes the JWT token)
+    via a targeted `rm -rf` -- leaving UiAutomator2's data untouched.
+    """
     import config
+    # Force-stop clears all in-memory state including Riverpod providers
     driver.execute_script("mobile: shell", {
-        "command": "pm", "args": ["clear", config.APP_PACKAGE],
+        "command": "am", "args": ["force-stop", config.APP_PACKAGE],
+    })
+    # Clear only the app's shared_prefs (flutter_secure_storage JWT location)
+    # without touching io.appium.uiautomator2.server data.
+    driver.execute_script("mobile: shell", {
+        "command": "sh",
+        "args": ["-c", f"rm -rf /data/data/{config.APP_PACKAGE}/shared_prefs /data/data/{config.APP_PACKAGE}/files"],
     })
 
 
