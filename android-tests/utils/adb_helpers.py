@@ -27,10 +27,14 @@ def send_to_background(driver, seconds: int = 3):
 
 def bring_to_foreground(driver):
     import config
+    import time
     driver.execute_script("mobile: shell", {
         "command": "monkey",
         "args": ["-p", config.APP_PACKAGE, "-c", "android.intent.category.LAUNCHER", "1"],
     })
+    # monkey is fire-and-forget -- give the process time to start before
+    # the caller tries to interact with any UI elements.
+    time.sleep(1)
 
 
 def set_airplane_mode(driver, enabled: bool):

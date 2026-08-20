@@ -112,6 +112,17 @@ def test_logger(request):
 def driver(request, test_logger):
     d = new_driver()
     test_logger.info(f"Appium session started for {request.node.nodeid}")
+    # With no_reset=True (see driver_factory.py), Appium no longer calls
+    # `pm clear` during session startup. Tests using the plain `driver`
+    # fixture expect an unauthenticated cold-start state -- no stored JWT.
+    # We reset the app explicitly here (force-stop + clear auth data +
+    # relaunch) so that any token left over from a previous test in the
+    # same session pool doesn't bleed into this test's initial app state.
+    clear_app_data(d)
+    force_stop_app(d)
+    bring_to_foreground(d)
+    import time
+    time.sleep(4)  # wait for cold-start + TalkBack semantics tree
     yield d
     test_logger.info("Session ending")
     try:
@@ -138,9 +149,10 @@ def _assert_landed_past_login(page: LoginPage, context: str):
 def _login_fixture_factory(role: str):
     @pytest.fixture
     def _fixture(driver):
-        clear_app_data(driver)
-        force_stop_app(driver)
-        bring_to_foreground(driver)
+        # The `driver` fixture already performed clear_app_data + force_stop +
+        # bring_to_foreground + a 4s sleep before yielding, so the app is in a
+        # clean, unauthenticated cold-start state by the time we get here.
+        # We just need to do the login.
         page = LoginPage(driver)
         assert page.is_loaded(), f"login_as_{role}: login screen never appeared"
         account = config.ACCOUNTS[role]
@@ -158,9 +170,9 @@ login_as_client = _login_fixture_factory("client")
 @pytest.fixture(params=["admin", "analyst", "client"])
 def login_as_any_role(request, driver):
     role = request.param
-    clear_app_data(driver)
-    force_stop_app(driver)
-    bring_to_foreground(driver)
+    # The `driver` fixture already performed clear_app_data + force_stop +
+    # bring_to_foreground + a 4s sleep before yielding, so the app is in a
+    # clean, unauthenticated cold-start state by the time we get here.
     page = LoginPage(driver)
     assert page.is_loaded(), f"login_as_any_role[{role}]: login screen never appeared"
     account = config.ACCOUNTS[role]

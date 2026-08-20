@@ -26,7 +26,16 @@ def new_driver():
     options.app_package = config.APP_PACKAGE
     options.app_activity = config.APP_ACTIVITY
     options.new_command_timeout = config.NEW_COMMAND_TIMEOUT
-    options.no_reset = False
+    options.no_reset = True
+    # full_reset = False: do not uninstall/reinstall the APK between sessions.
+    # no_reset = True: do NOT let Appium call `pm clear` on session startup.
+    # The Appium log confirms that no_reset=False triggers Appium's own
+    # 'fast reset' which calls `pm clear <package>` BEFORE the UiAutomator2
+    # server is brought up -- this corrupts the server's own cached state
+    # and causes 'instrumentation process cannot be initialized' on every
+    # second session. Our conftest fixtures call clear_app_data() explicitly
+    # (force-stop + targeted rm -rf) to reset auth state between tests,
+    # so Appium's own reset is both redundant and harmful.
     options.full_reset = False
     options.auto_grant_permissions = True
     # Flutter apps commonly still report as "loading" right after the first

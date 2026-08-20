@@ -23,13 +23,21 @@ def test_token_persists_across_background_foreground(login_as_any_role):
 
 
 def test_pm_clear_removes_session_forcing_login(login_as_client):
+    """clear_app_data() wipes the Flutter Secure Storage token (force-stop +
+    rm -rf shared_prefs/files). After a relaunch the app has no stored JWT
+    so the router's initial redirect sends the user to /login.
+    Note: we replaced the original `pm clear` with a targeted rm -rf to avoid
+    wiping the UiAutomator2 server state -- the auth-token removal behavior
+    is identical from the test perspective."""
     driver = login_as_client
     clear_app_data(driver)
     force_stop_app(driver)
     from utils.adb_helpers import bring_to_foreground
     bring_to_foreground(driver)
+    import time
+    time.sleep(3)  # wait for cold-start + semantics tree after the relaunch
     login = LoginPage(driver)
-    assert login.is_loaded(timeout=20), "expected login screen after pm clear + relaunch"
+    assert login.is_loaded(timeout=20), "expected login screen after data clear + relaunch"
 
 
 def test_relogin_after_logout_requires_valid_credentials(login_as_client):
