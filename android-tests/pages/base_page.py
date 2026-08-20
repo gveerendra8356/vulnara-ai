@@ -80,13 +80,24 @@ class BasePage:
         el.click()  # Focus the field first
         if clear_first:
             el.clear()
-        
-        # Use ADB for reliable text entry in Flutter, avoiding send_keys sync issues
-        import subprocess
-        # Escape spaces and special characters for adb shell input text
-        escaped_value = value.replace(" ", "%s").replace("&", "\&").replace("<", "\<").replace(">", "\>").replace("?", "\?").replace(":", "\:").replace(";", "\;").replace("*", "\*").replace("|", "\|").replace("~", "\~").replace("'", "\\'").replace('"', '\\"').replace("(", "\(").replace(")", "\)")
-        subprocess.run(["adb", "shell", "input", "text", escaped_value], check=False)
-        time.sleep(0.5)
+
+        if value.isascii():
+            # Use ADB for reliable text entry in Flutter, avoiding send_keys sync issues
+            import subprocess
+            # Escape spaces and special characters for adb shell input text
+            escaped_value = value.replace(" ", "%s").replace("&", "\&").replace("<", "\<").replace(">", "\>").replace("?", "\?").replace(":", "\:").replace(";", "\;").replace("*", "\*").replace("|", "\|").replace("~", "\~").replace("'", "\\'").replace('"', '\\"').replace("(", "\(").replace(")", "\)")
+            subprocess.run(["adb", "shell", "input", "text", escaped_value], check=False)
+            time.sleep(0.5)
+        else:
+            # `adb shell input text` only reliably transmits ASCII -- non-ASCII
+            # codepoints (emoji, RTL override marks, IDN domains, ...) get
+            # silently dropped or mangled by the shell's key-event injection.
+            # Appium's own send_keys goes through UiAutomator2's setText
+            # instead, which handles full Unicode correctly; kept as the
+            # fallback rather than the default because of the send_keys sync
+            # issues noted above for the common ASCII case.
+            el.send_keys(value)
+            time.sleep(0.5)
         # Scaffold.resizeToAvoidBottomInset shrinks the Flutter viewport while
         # the IME is up, which can scroll/push whatever's below this field
         # (e.g. new_scan_screen.dart's confirmation checkbox) out of the
