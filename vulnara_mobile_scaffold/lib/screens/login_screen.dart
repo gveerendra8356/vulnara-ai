@@ -167,18 +167,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 8),
-                            const Divider(height: 24),
-                            Center(
-                              child: TextButton(
-                                onPressed: () {},
-                                child: Text(
-                                  'FORGOT CREDENTIALS?',
-                                  style: VulnaraFonts.codeSm(color: VulnaraColors.onSurfaceVariant, fontSize: 11)
-                                      .copyWith(fontSize: 11),
-                                ),
-                              ),
-                            ),
+
                           ],
                         ),
                       ),

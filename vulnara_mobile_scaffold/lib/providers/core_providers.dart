@@ -10,6 +10,7 @@ import '../core/push_notification_service.dart';
 import '../core/secure_storage.dart';
 import '../repositories/auth_repository.dart';
 import '../repositories/device_repository.dart';
+import '../repositories/notification_repository.dart';
 import '../repositories/remediation_repository.dart';
 import '../repositories/scan_repository.dart';
 
@@ -29,6 +30,13 @@ final scanRepositoryProvider = Provider<ScanRepository>((ref) {
 
 final remediationRepositoryProvider = Provider<RemediationRepository>((ref) {
   return RemediationRepository(ref.watch(apiClientProvider));
+});
+
+final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {
+  return NotificationRepository(
+    ref.watch(scanRepositoryProvider),
+    ref.watch(remediationRepositoryProvider),
+  );
 });
 
 final deviceRepositoryProvider = Provider<DeviceRepository>((ref) {

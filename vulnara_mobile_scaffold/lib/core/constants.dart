@@ -15,8 +15,8 @@ class ApiConfig {
   /// Same host, wss:// for the live scan status WebSocket.
   static const String wsBaseUrl = 'wss://vulnara-backend.onrender.com';
 
-  static const Duration connectTimeout = Duration(seconds: 30); // longer for Render cold-start
-  static const Duration receiveTimeout = Duration(seconds: 30);
+  static const Duration connectTimeout = Duration(seconds: 60); // longer for Render cold-start
+  static const Duration receiveTimeout = Duration(seconds: 60);
 }
 
 class StorageKeys {

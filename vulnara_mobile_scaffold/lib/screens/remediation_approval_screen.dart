@@ -68,7 +68,6 @@ class _RemediationApprovalScreenState extends ConsumerState<RemediationApprovalS
     final authState = ref.read(authProvider);
     final user = authState is AuthLoggedIn ? authState.user : null;
     final isClient = user?.role == 'client';
-    final isAnalystOrAdmin = user?.role == 'analyst' || user?.role == 'admin';
 
     final isPending = remediation.status == RemediationStatus.pending;
     final isApproved = remediation.status == RemediationStatus.approved;
@@ -135,7 +134,8 @@ class _RemediationApprovalScreenState extends ConsumerState<RemediationApprovalS
                     children: [
                       const Icon(Icons.gavel, size: 16, color: VulnaraColors.primary),
                       const SizedBox(width: 8),
-                      Text('REMEDIATION ACTIONS', style: VulnaraFonts.labelCaps(color: VulnaraColors.primary)),
+                      Text('REMEDIATION ACTIONS',
+                          style: VulnaraFonts.labelCaps(color: VulnaraColors.primary)),
                     ],
                   ),
                   const Divider(height: 24),
@@ -143,50 +143,102 @@ class _RemediationApprovalScreenState extends ConsumerState<RemediationApprovalS
                     Text(_error!, style: const TextStyle(color: VulnaraColors.error)),
                     const SizedBox(height: 12),
                   ],
-                  if (remediation.status == RemediationStatus.rejected || remediation.status == RemediationStatus.executed)
-                    Text('Already ${remediation.status.name}.', style: VulnaraFonts.bodyBase(fontWeight: FontWeight.w600))
+
+                  // ── Clients: read-only status panel ───────────────────────
+                  if (isClient) ...[
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: VulnaraColors.surfaceContainerHigh,
+                        borderRadius: BorderRadius.circular(VulnaraRadius.lg),
+                        border: Border.all(color: VulnaraColors.outlineVariant),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.info_outline,
+                              size: 16, color: VulnaraColors.onSurfaceVariant),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              switch (remediation.status) {
+                                RemediationStatus.pending =>
+                                  'This remediation is awaiting analyst review.',
+                                RemediationStatus.approved =>
+                                  'Approved by an analyst. Awaiting execution.',
+                                RemediationStatus.rejected =>
+                                  'This remediation was rejected by an analyst.',
+                                RemediationStatus.executed =>
+                                  'Executed successfully.',
+                              },
+                              style: VulnaraFonts.codeSm(
+                                  color: VulnaraColors.onSurfaceVariant),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ]
+
+                  // ── Analyst / Admin: full action panel ────────────────────
+                  else if (remediation.status == RemediationStatus.rejected ||
+                      remediation.status == RemediationStatus.executed)
+                    Text('Already ${remediation.status.name}.',
+                        style: VulnaraFonts.bodyBase(fontWeight: FontWeight.w600))
                   else ...[
+                    // Approve button (analyst/admin only)
                     SizedBox(
                       width: double.infinity,
                       height: 48,
                       child: ElevatedButton.icon(
-                        onPressed: (_submitting || !isPending || !isAnalystOrAdmin) ? null : () => _decide(approve: true),
+                        onPressed:
+                            (_submitting || !isPending) ? null : () => _decide(approve: true),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: VulnaraColors.primaryContainer,
                           foregroundColor: Colors.white,
                           elevation: 0,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(VulnaraRadius.lg)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(VulnaraRadius.lg)),
                         ),
-                        icon: (_submitting && isPending && isAnalystOrAdmin)
+                        icon: (_submitting && isPending)
                             ? const SizedBox(
-                                height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                                height: 16,
+                                width: 16,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2, color: Colors.white))
                             : const Icon(Icons.check_circle),
-                        label: const Text('Approve Fix (Analyst)'),
+                        label: const Text('Approve Fix'),
                       ),
                     ),
                     const SizedBox(height: 12),
+                    // Mark Executed (once approved)
                     SizedBox(
                       width: double.infinity,
                       height: 48,
                       child: OutlinedButton.icon(
-                        onPressed: (_submitting || !isApproved || !isClient) ? null : _execute,
+                        onPressed: (_submitting || !isApproved) ? null : _execute,
                         style: OutlinedButton.styleFrom(
                           foregroundColor: VulnaraColors.onSurfaceVariant,
                           side: const BorderSide(color: VulnaraColors.outlineVariant),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(VulnaraRadius.lg)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(VulnaraRadius.lg)),
                         ),
-                        icon: (_submitting && isApproved && isClient)
+                        icon: (_submitting && isApproved)
                             ? const SizedBox(
-                                height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2, color: VulnaraColors.onSurfaceVariant))
+                                height: 16,
+                                width: 16,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: VulnaraColors.onSurfaceVariant))
                             : const Icon(Icons.play_arrow),
-                        label: const Text('Mark Executed (Client)'),
+                        label: const Text('Mark Executed'),
                       ),
                     ),
-                    const SizedBox(height: 8),
                     if (isPending) ...[
+                      const SizedBox(height: 8),
                       Center(
                         child: TextButton(
-                          onPressed: (_submitting || !isAnalystOrAdmin) ? null : () => _decide(approve: false),
+                          onPressed:
+                              _submitting ? null : () => _decide(approve: false),
                           child: Text('Reject remediation',
                               style: VulnaraFonts.codeSm(color: VulnaraColors.error)),
                         ),
@@ -195,7 +247,8 @@ class _RemediationApprovalScreenState extends ConsumerState<RemediationApprovalS
                       Text(
                         'Requires dual-authorization before automated deployment via CI/CD.',
                         textAlign: TextAlign.center,
-                        style: VulnaraFonts.codeSm(color: VulnaraColors.onSurfaceVariant).copyWith(fontSize: 11),
+                        style: VulnaraFonts.codeSm(color: VulnaraColors.onSurfaceVariant)
+                            .copyWith(fontSize: 11),
                       ),
                     ],
                   ],

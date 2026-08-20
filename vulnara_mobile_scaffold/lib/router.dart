@@ -29,10 +29,23 @@ final routerProvider = Provider<GoRouter>((ref) {
       final authState = ref.read(authProvider);
       final loggedIn = authState is AuthLoggedIn;
       final onLoginPage = state.matchedLocation == '/login';
+      final loc = state.matchedLocation;
 
-      if (authState is AuthUnknown) return '/login'; // prevent booting secure routes before auth check resolves
+      if (authState is AuthUnknown) return '/login';
       if (!loggedIn && !onLoginPage) return '/login';
       if (loggedIn && onLoginPage) return '/scans';
+
+      if (authState case AuthLoggedIn loggedInState) {
+        final role = loggedInState.user.role;
+        // Clients have no dashboard — redirect to their scans list.
+        if (loc == '/dashboard' && role == 'client') return '/scans';
+        // Admin-only routes: bounce analyst and client back to scans.
+        if ((loc.startsWith('/admin') || loc == '/audit-log') &&
+            role != 'admin') {
+          return '/scans';
+        }
+      }
+
       return null;
     },
     routes: [
