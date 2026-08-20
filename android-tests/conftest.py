@@ -42,6 +42,8 @@ LOGS_DIR = os.path.join(REPORTS_DIR, "logs")
 _session_results = []
 _session_start = None
 _am_xdist_controller = False
+_am_xdist_worker = False
+_worker_id = None
 
 
 def pytest_addoption(parser):
@@ -53,10 +55,13 @@ def pytest_configure(config):  # noqa: F811 -- pytest hookspec requires this exa
     # parameter name; shadows the `config` module imported above within this
     # function's scope only (nothing else in this file needs the module
     # inside pytest_configure).
-    global _am_xdist_controller
+    global _am_xdist_controller, _am_xdist_worker, _worker_id
     is_worker = hasattr(config, "workerinput")
     numprocesses = getattr(config.option, "numprocesses", None)
     _am_xdist_controller = (not is_worker) and bool(numprocesses)
+    _am_xdist_worker = is_worker
+    if is_worker:
+        _worker_id = config.workerinput["workerid"]
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -247,6 +252,7 @@ def pytest_runtest_logreport(report):
             "screenshot": _last_screenshot.get(report.nodeid) if report.failed else None,
             "error": _last_error.get(report.nodeid) if report.failed else None,
         })
+        _flush_results()
     elif report.when == "setup" and report.failed:
         _session_results.append({
             "nodeid": report.nodeid,
@@ -259,6 +265,7 @@ def pytest_runtest_logreport(report):
             "screenshot": _last_screenshot.get(report.nodeid),
             "error": _last_error.get(report.nodeid, str(report.longrepr)),
         })
+        _flush_results()
 
 
 def pytest_sessionstart(session):
@@ -266,16 +273,22 @@ def pytest_sessionstart(session):
     _session_start = time.time()
 
 
-def pytest_sessionfinish(session, exitstatus):
-    if hasattr(session.config, "workerinput"):
-        worker_id = session.config.workerinput["workerid"]
-        os.makedirs(REPORTS_DIR, exist_ok=True)
-        partial_path = os.path.join(REPORTS_DIR, f"execution-results-{worker_id}.json")
-        with open(partial_path, "w") as f:
-            json.dump(_session_results, f, indent=2)
-        return
-
+def _flush_results():
+    """Write reports/execution-results*.json from whatever's in
+    _session_results *right now* -- called after every single test, not
+    just from pytest_sessionfinish. A CI job that gets killed mid-run
+    (GitHub's job timeout-minutes sends a hard cancellation, no graceful
+    pytest shutdown) previously meant pytest_sessionfinish's one-shot
+    write never ran, so a shard that was cut off produced no report data
+    at all even though most of its tests had already completed --
+    checkpointing after every test means whatever ran before the kill is
+    always already on disk."""
     os.makedirs(REPORTS_DIR, exist_ok=True)
+
+    if _am_xdist_worker:
+        partial_path = os.path.join(REPORTS_DIR, f"execution-results-{_worker_id}.json")
+        _atomic_write_json(partial_path, _session_results)
+        return
 
     merged = list(_session_results)
     if os.path.isdir(REPORTS_DIR):
@@ -284,7 +297,6 @@ def pytest_sessionfinish(session, exitstatus):
                 try:
                     with open(os.path.join(REPORTS_DIR, fname)) as f:
                         merged.extend(json.load(f))
-                    os.remove(os.path.join(REPORTS_DIR, fname))
                 except Exception:
                     pass
 
@@ -307,5 +319,34 @@ def pytest_sessionfinish(session, exitstatus):
         "pass_rate": pass_rate,
         "results": merged,
     }
-    with open(os.path.join(REPORTS_DIR, "execution-results.json"), "w") as f:
-        json.dump(payload, f, indent=2)
+    _atomic_write_json(os.path.join(REPORTS_DIR, "execution-results.json"), payload)
+
+
+def _atomic_write_json(path, data):
+    # write-then-rename so a process killed mid-write (GitHub's job
+    # timeout-minutes sends a hard cancellation) never leaves a truncated,
+    # unparseable JSON file behind -- the previous checkpoint stays intact
+    # until the new one has fully landed.
+    tmp_path = f"{path}.tmp-{uuid.uuid4().hex}"
+    with open(tmp_path, "w") as f:
+        json.dump(data, f, indent=2)
+    os.replace(tmp_path, path)
+
+
+def pytest_sessionfinish(session, exitstatus):
+    _flush_results()
+
+    if _am_xdist_worker:
+        return
+
+    # Now that the run finished normally (not killed mid-flight), the
+    # per-worker partial files -- if any -- have been folded into the
+    # merged file _flush_results() just wrote; nothing further reads
+    # them, so clean them up.
+    if os.path.isdir(REPORTS_DIR):
+        for fname in os.listdir(REPORTS_DIR):
+            if fname.startswith("execution-results-gw") and fname.endswith(".json"):
+                try:
+                    os.remove(os.path.join(REPORTS_DIR, fname))
+                except Exception:
+                    pass

@@ -128,6 +128,24 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
+      # Diagnostic only, does not fail the job: a run where most/all tests
+      # in a shard fail uniformly (including tests that don't even touch
+      # the app screen the "real" bug was in) has previously turned out to
+      # be this shard's emulator falling back to software (TCG) CPU
+      # emulation instead of KVM -- every UI action then takes 10-50x
+      # longer, blowing every wait/timeout in the suite regardless of app
+      # or test code. /dev/kvm missing or non-writable here is the
+      # earliest, cheapest signal of that, long before the first test
+      # would time out.
+      - name: Check KVM device is actually accessible
+        run: |
+          if [ -e /dev/kvm ] && [ -r /dev/kvm ] && [ -w /dev/kvm ]; then
+            echo "/dev/kvm present and read/write-accessible -- hardware acceleration should be available."
+          else
+            ls -la /dev/kvm 2>&1 || true
+            echo "::warning::/dev/kvm is missing or not accessible on this runner -- the emulator will likely fall back to slow software CPU emulation, which can make every test in this shard time out even though nothing is wrong with the app or test code. If this shard's tests fail uniformly (including ones unrelated to whatever the last real bug was), re-run the job rather than debugging test code."
+          fi
+
       - uses: actions/download-artifact@v4
         with:
           name: vulnara-mobile-debug-apk
@@ -274,7 +292,14 @@ jobs:
             sleep 15
             cd android-tests && export APK_PATH=$GITHUB_WORKSPACE/android-tests/apk/app-debug.apk && export APPIUM_SERVER_URL=http://127.0.0.1:4723 && export BACKEND_BASE_URL=http://127.0.0.1:8000 && pytest --reruns 2 --reruns-delay 3 -p no:cacheprovider ${{ matrix.paths }} || true
 
+      # if: always() -- conftest.py now checkpoints execution-results*.json
+      # after every single test (not just at the end of the run), so a
+      # shard killed mid-run by timeout-minutes above still has real
+      # partial results on disk. Without always() here, hitting that
+      # timeout skips this step entirely and those results never leave
+      # the runner.
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: shard-results-${{ matrix.shard }}
           path: |
@@ -287,6 +312,13 @@ jobs:
   merge-and-report:
     name: Merge results & build reports
     needs: android-tests
+    # always(), not the implicit success(): a shard timing out or a matrix
+    # entry failing marks the whole `android-tests` job failed, which would
+    # otherwise skip this job entirely -- but the point of the per-shard
+    # if: always() upload above is that partial results exist precisely in
+    # that case, so this job needs to run and merge whatever shards did
+    # produce instead of silently reporting nothing.
+    if: always()
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
