@@ -93,6 +93,60 @@ def _wait_for_backend():
 
 
 @pytest.fixture(scope="session", autouse=True)
+def _app_smoke_check(_wait_for_backend):
+    """One proof-of-life check, before the ~150-test suite below even
+    starts: launch the app fresh and confirm its login screen actually
+    renders. CI runs have shown whole shards where this NEVER succeeds --
+    not once, across 60-80 different cold-start attempts -- because that
+    shard's emulator has no real hardware acceleration (see the
+    '/dev/kvm' check earlier in this job's log) or the app is
+    crash-looping. Every test below depends on a driver + the login
+    screen, so in that state every one of them fails the same way, and
+    pytest-rerunfailures would retry each individually 2 more times --
+    turning a problem that's obvious in under a minute into hours of
+    wasted CI time for zero additional signal. Fail the whole session
+    here instead, once, fast, with a diagnosis pointing at the actual
+    likely cause instead of ~150 near-identical "login screen never
+    appeared" failures."""
+    d = None
+    try:
+        d = new_driver()
+        clear_app_data(d)
+        force_stop_app(d)
+        bring_to_foreground(d)
+        page = LoginPage(d)
+        # Generous on purpose -- this only needs to catch "never renders
+        # at all", not shave time off a merely-slow-but-working cold
+        # start (individual tests' own timeouts already handle that).
+        if page.is_loaded(timeout=60):
+            return
+    except Exception as exc:
+        pytest.exit(
+            f"Smoke check: launching the app raised {exc!r} before its "
+            f"login screen could even be checked. This points at the "
+            f"emulator/Appium session itself, not app or test code -- see "
+            f"the '/dev/kvm' check earlier in this job's log.",
+            returncode=4,
+        )
+    finally:
+        if d is not None:
+            try:
+                d.quit()
+            except Exception:
+                pass
+    pytest.exit(
+        "Smoke check failed: the app's login screen never rendered within "
+        "60s of a cold start. This means the environment itself is broken "
+        "(no real hardware acceleration on this runner, or the app is "
+        "crash-looping) -- not that the tests below are. See the "
+        "'/dev/kvm' check earlier in this job's log before re-running; "
+        "retrying every test 3x against a broken environment would just "
+        "waste hours re-confirming the same thing.",
+        returncode=4,
+    )
+
+
+@pytest.fixture(scope="session", autouse=True)
 def _make_dirs():
     os.makedirs(SCREENSHOTS_DIR, exist_ok=True)
     os.makedirs(LOGS_DIR, exist_ok=True)

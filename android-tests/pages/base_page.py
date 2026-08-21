@@ -81,7 +81,12 @@ class BasePage:
         if clear_first:
             el.clear()
 
-        if value.isascii():
+        # "\x00" can't survive as a subprocess argv element at all --
+        # os.execve() takes NUL-terminated C strings, so a NUL *inside* an
+        # argument raises ValueError('embedded null byte') before adb even
+        # runs (seen in CI on fuzz_data.py's "null_byte_like" case). Route
+        # that through send_keys the same as non-ASCII values below.
+        if value.isascii() and "\x00" not in value:
             # Use ADB for reliable text entry in Flutter, avoiding send_keys sync issues
             import subprocess
             # Escape spaces and special characters for adb shell input text
@@ -93,9 +98,10 @@ class BasePage:
             # codepoints (emoji, RTL override marks, IDN domains, ...) get
             # silently dropped or mangled by the shell's key-event injection.
             # Appium's own send_keys goes through UiAutomator2's setText
-            # instead, which handles full Unicode correctly; kept as the
-            # fallback rather than the default because of the send_keys sync
-            # issues noted above for the common ASCII case.
+            # instead, which handles full Unicode (and a literal NUL, sent
+            # as JSON over HTTP rather than a process argv) correctly; kept
+            # as the fallback rather than the default because of the
+            # send_keys sync issues noted above for the common ASCII case.
             el.send_keys(value)
             time.sleep(0.5)
         # Scaffold.resizeToAvoidBottomInset shrinks the Flutter viewport while
