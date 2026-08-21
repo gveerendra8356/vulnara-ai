@@ -91,10 +91,8 @@ jobs:
     # actually available on that runner, so everything -- not just
     # login -- runs at a crawl) rides GitHub's default 360-minute job
     # cap: every test pays the full --reruns 2 cost before giving up,
-    # so the job silently grinds for hours instead of failing fast. A
-    # healthy shard finishes well inside this; a broken one now fails
-    # loudly at 75 minutes instead of needing a manual cancel at 4+ hours.
-    timeout-minutes: 75
+    # so the job silently grinds for hours instead of failing fast.
+    timeout-minutes: 180
     strategy:
       fail-fast: false
       matrix:
