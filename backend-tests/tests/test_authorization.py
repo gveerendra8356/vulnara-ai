@@ -349,10 +349,7 @@ class TestKnownIdorGaps:
         SEVERITY: Critical
         """
         r = await client.get(f"/vulnerabilities/{seeded_vulnerability['vuln_id']}", headers=client2_headers)
-        assert r.status_code == 200, (
-            "If this now returns 403/404, the IDOR in VULN-001 has been fixed -- "
-            "update findings.xlsx accordingly rather than treating this as a test failure."
-        )
+        assert r.status_code == 404
 
     async def test_get_remediation_by_id_has_no_ownership_check(self, client, client2_headers, seeded_remediation):
         """
@@ -364,12 +361,9 @@ class TestKnownIdorGaps:
         SEVERITY: Critical
         """
         r = await client.get(f"/remediations/{seeded_remediation['remediation_id']}", headers=client2_headers)
-        assert r.status_code == 200, (
-            "If this now returns 403/404, the IDOR in VULN-001 has been fixed -- "
-            "update findings.xlsx accordingly rather than treating this as a test failure."
-        )
+        assert r.status_code == 404
 
-    async def test_list_remediations_is_not_scoped_per_tenant(self, client, client1_headers, seeded_remediation):
+    async def test_list_remediations_is_scoped_per_tenant(self, client, client2_headers, seeded_remediation):
         """
         CATEGORY: Authorization
         TITLE: [Finding] GET /remediations (list) is not scoped by tenant for role=client
@@ -380,10 +374,10 @@ class TestKnownIdorGaps:
                    test. See findings.xlsx VULN-001.
         SEVERITY: High
         """
-        r = await client.get("/remediations", headers=client1_headers)
+        r = await client.get("/remediations", headers=client2_headers)
         assert r.status_code == 200
         ids = [rem["remediation_id"] for rem in r.json()]
-        assert seeded_remediation["remediation_id"] in ids
+        assert seeded_remediation["remediation_id"] not in ids
 
 
 class TestDeviceRegistrationAuthz:

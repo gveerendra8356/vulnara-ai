@@ -1,7 +1,7 @@
 import { mockApi } from "./mockApi";
 import { realApi } from "./realApi";
 
-export const USE_MOCK = String(import.meta.env.VITE_USE_MOCK ?? "true") === "true";
+export const USE_MOCK = String(import.meta.env.VITE_USE_MOCK ?? "false") === "true";
 
 // Every page/component imports `api` from here and never touches
 // mockApi.js / realApi.js directly. Flip VITE_USE_MOCK in .env to switch

@@ -119,30 +119,7 @@ async def _call_gemini(
 
 async def run_triage_call(prompt: str) -> TriageResponse:
     from app.triage.prompts import TRIAGE_SYSTEM_INSTRUCTION
-    try:
-        return await _call_gemini(TRIAGE_SYSTEM_INSTRUCTION, prompt, TriageResponse)
-    except GeminiTriageError as e:
-        logger.error(f"Groq API failed, falling back to mock triage response. Error: {e}")
-        from app.triage.schemas import TriageFinding
-        host_ip = "Unknown"
-        import re
-        m = re.search(r'"host":\s*"([^"]+)"', prompt)
-        if m:
-            host_ip = m.group(1)
-
-        mock_finding = TriageFinding(
-            host=host_ip,
-            port=80,
-            service_name="http",
-            service_version="Apache",
-            cve_id="CVE-2023-38709",
-            is_false_positive=False,
-            severity="HIGH",
-            cvss_score=7.5,
-            confidence_score=0.9,
-            explanation="[MOCK RESPONSE DUE TO API ERROR] AI confirmed HTTP Server vulnerability based on signature match."
-        )
-        return TriageResponse(findings=[mock_finding])
+    return await _call_gemini(TRIAGE_SYSTEM_INSTRUCTION, prompt, TriageResponse)
 
 
 async def run_remediation_call(prompt: str) -> RemediationResponse:

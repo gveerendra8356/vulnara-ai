@@ -14,6 +14,8 @@ from pydantic import BaseModel
 
 from app.core.auth import CurrentUser, get_current_user
 from app.core.db import get_session
+from app.core.config import get_config_value
+from app.core.ownership import get_visible_vulnerability
 from app.remediation.remediation_service import generate_remediation
 
 router = APIRouter()
@@ -30,7 +32,10 @@ async def create_remediation(
     current_user: CurrentUser = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ):
-    remediation = await generate_remediation(session, vuln_id, payload.target_os)
+    vuln = await get_visible_vulnerability(session, vuln_id, current_user)
+    if await get_config_value(session, "ai_remediation_enabled") != "true":
+        raise HTTPException(status_code=503, detail="AI remediation is disabled")
+    remediation = await generate_remediation(session, vuln, payload.target_os)
 
     return {
         "remediation_id": remediation.remediation_id,
@@ -106,7 +111,9 @@ async def approve_remediation(
     rem = result.scalar_one_or_none()
     if not rem:
         raise HTTPException(status_code=404, detail="Remediation not found")
-        
+    if rem.status != "PENDING":
+        raise HTTPException(status_code=409, detail="Only pending remediations can be approved")
+
     rem.status = "APPROVED"
     rem.reviewed_by = current_user.user_id
     rem.reviewed_at = datetime.now(timezone.utc)
@@ -128,7 +135,9 @@ async def reject_remediation(
     rem = result.scalar_one_or_none()
     if not rem:
         raise HTTPException(status_code=404, detail="Remediation not found")
-        
+    if rem.status != "PENDING":
+        raise HTTPException(status_code=409, detail="Only pending remediations can be rejected")
+
     rem.status = "REJECTED"
     rem.reviewed_by = current_user.user_id
     rem.reviewed_at = datetime.now(timezone.utc)

@@ -30,7 +30,7 @@ class _NewScanScreenState extends ConsumerState<NewScanScreen> {
   final _targetController = TextEditingController();
   final _justificationController = TextEditingController();
   bool _authorizationConfirmed = false;
-  bool _activeTestingEnabled = true;
+  bool _activeTestingEnabled = false;
   bool _submitting = false;
   String? _error;
 

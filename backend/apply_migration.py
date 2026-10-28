@@ -2,7 +2,7 @@ import asyncio
 from app.core.db import engine
 from app.models.scan import Base
 # Import all models to ensure they are registered with Base.metadata
-from app.models import scan, user, token_denylist, device_token, threat_log, triage_models
+from app.models import scan, user, token_denylist, device_token, threat_log, triage_models, system_config
 
 async def run_migration():
     print("Connecting to local SQLite database to create tables...")

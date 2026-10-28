@@ -340,9 +340,7 @@ class TestVulnerabilityUpdateValidation:
         SEVERITY: Low
         """
         r = await client.patch(f"/vulnerabilities/{seeded_vulnerability['vuln_id']}", headers=analyst_headers, json={"status": ""})
-        assert r.status_code == 200, (
-            "If this now 422s, enum validation has been added -- update findings.xlsx VULN-003."
-        )
+        assert r.status_code == 422
 
     @pytest.mark.parametrize("garbage_status", ["not_a_real_status", "🔥🔥🔥", "DROP TABLE vulnerabilities;", "<script>x</script>"])
     async def test_status_arbitrary_values_accepted_no_enum_enforced(self, client, analyst_headers, seeded_vulnerability, garbage_status):
@@ -358,10 +356,7 @@ class TestVulnerabilityUpdateValidation:
         SEVERITY: Low
         """
         r = await client.patch(f"/vulnerabilities/{seeded_vulnerability['vuln_id']}", headers=analyst_headers, json={"status": garbage_status})
-        assert r.status_code == 200
-        # And it must come back exactly as stored (round-trip integrity), not
-        # partially sanitized -- confirms it's genuinely unconstrained storage.
-        assert r.json()["status"] == garbage_status
+        assert r.status_code == 422
 
 
 class TestRemediationRejectValidation:

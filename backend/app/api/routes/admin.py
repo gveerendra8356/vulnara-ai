@@ -13,6 +13,7 @@ Admin-only endpoints:
 """
 
 import uuid
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy import select, func
@@ -22,6 +23,8 @@ from app.core.auth import CurrentUser, get_current_user
 from app.core.db import get_session, AsyncSessionLocal
 from app.models.user import User
 from app.models.scan import Scan
+from app.models.system_config import SystemConfig
+from app.core.config import DEFAULT_CONFIG
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -34,28 +37,19 @@ def _require_admin(current_user: CurrentUser):
 # ── Config ────────────────────────────────────────────────────────────────────
 
 @router.get("/config")
-async def list_config(current_user: CurrentUser = Depends(get_current_user)):
+async def list_config(
+    current_user: CurrentUser = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
+):
     _require_admin(current_user)
-    return [
-        {
-            "config_key": "max_concurrent_scans",
-            "config_value": "5",
-            "description": "Maximum number of scans running simultaneously",
-            "updated_at": "2024-01-01T00:00:00Z"
-        },
-        {
-            "config_key": "ai_remediation_enabled",
-            "config_value": "true",
-            "description": "Enable AI generation of remediation scripts",
-            "updated_at": "2024-01-01T00:00:00Z"
-        },
-        {
-            "config_key": "email_alerts_enabled",
-            "config_value": "true",
-            "description": "Send email alerts for HIGH/CRITICAL vulnerabilities",
-            "updated_at": "2024-01-01T00:00:00Z"
-        },
-    ]
+    result = await session.execute(select(SystemConfig))
+    rows = {row.config_key: row for row in result.scalars()}
+    return [{
+        "config_key": key,
+        "config_value": rows[key].config_value if key in rows else default,
+        "description": description,
+        "updated_at": rows[key].updated_at if key in rows else None,
+    } for key, (default, description) in DEFAULT_CONFIG.items()]
 
 
 class ConfigUpdateRequest(BaseModel):
@@ -66,10 +60,30 @@ class ConfigUpdateRequest(BaseModel):
 async def update_config(
     key: str,
     payload: ConfigUpdateRequest,
-    current_user: CurrentUser = Depends(get_current_user)
+    current_user: CurrentUser = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
 ):
     _require_admin(current_user)
-    return {"config_key": key, "config_value": payload.config_value, "updated_at": "2024-01-01T00:00:00Z"}
+    if key not in DEFAULT_CONFIG:
+        raise HTTPException(status_code=404, detail="Unknown configuration key")
+    value = payload.config_value.strip().lower()
+    if key == "max_concurrent_scans":
+        if not value.isdigit() or not 1 <= int(value) <= 100:
+            raise HTTPException(status_code=422, detail="max_concurrent_scans must be 1-100")
+    elif value not in ("true", "false"):
+        raise HTTPException(status_code=422, detail="Value must be true or false")
+    result = await session.execute(select(SystemConfig).where(SystemConfig.config_key == key))
+    row = result.scalar_one_or_none()
+    if row is None:
+        row = SystemConfig(config_key=key, config_value=value)
+        session.add(row)
+    else:
+        row.config_value = value
+        row.updated_at = datetime.now(timezone.utc)
+    await session.commit()
+    await session.refresh(row)
+    return {"config_key": key, "config_value": row.config_value,
+            "description": DEFAULT_CONFIG[key][1], "updated_at": row.updated_at}
 
 
 # ── CVE Definitions ───────────────────────────────────────────────────────────
@@ -87,7 +101,7 @@ async def list_cve_defs(current_user: CurrentUser = Depends(get_current_user)):
 @router.post("/cve-definitions/sync")
 async def sync_cve_defs(current_user: CurrentUser = Depends(get_current_user)):
     _require_admin(current_user)
-    return {"status": "sync_started", "message": "NVD CVE synchronization started in background"}
+    raise HTTPException(status_code=501, detail="Manual NVD sync is not implemented; CVEs are cached during scans")
 
 
 # ── User Management ───────────────────────────────────────────────────────────

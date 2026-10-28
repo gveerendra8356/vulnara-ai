@@ -33,6 +33,7 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import AsyncSessionLocal
+from app.core.config import get_config_value
 from app.core.push_notifications import send_critical_alert
 from app.core.email_alert import send_vulnerability_alert
 from app.models.scan import Scan
@@ -73,16 +74,7 @@ async def run_triage(scan_id: uuid.UUID, normalized_payload: dict[str, Any]) -> 
 
                 candidate_cves = await _gather_candidates(nvd, host_entry)
 
-                try:
-                    findings = await _triage_host(scan_target, host_entry, candidate_cves)
-                except GeminiTriageError:
-                    logger.exception(
-                        "Triage failed for scan %s host %s -- skipping this host, "
-                        "continuing with the rest of the scan rather than failing "
-                        "the whole scan over one host's AI call.",
-                        scan_id_str, host_entry["host"],
-                    )
-                    continue
+                findings = await _triage_host(scan_target, host_entry, candidate_cves)
 
                 for finding in findings:
                     if finding.is_false_positive:
@@ -105,7 +97,7 @@ async def run_triage(scan_id: uuid.UUID, normalized_payload: dict[str, Any]) -> 
                         },
                     )
 
-                    if finding.severity in ("CRITICAL", "HIGH"):
+                    if finding.severity in ("CRITICAL", "HIGH") and await get_config_value(session, "email_alerts_enabled") == "true":
                         # Email alert (best-effort, runs in thread to not block)
                         if scan_owner_email:
                             import asyncio as _asyncio
@@ -154,20 +146,6 @@ async def run_triage(scan_id: uuid.UUID, normalized_payload: dict[str, Any]) -> 
                                     "event": "alert.critical",
                                 },
                             )
-
-            await _mark_scan_completed(session, scan_id)
-
-        await scan_connection_manager.broadcast(
-            scan_id_str,
-            "scan.completed",
-            {
-                "status": "COMPLETED",
-                "vuln_count_by_severity": {
-                    sev: severity_counts.get(sev, 0)
-                    for sev in ("CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO")
-                },
-            },
-        )
 
     finally:
         await nvd.close()

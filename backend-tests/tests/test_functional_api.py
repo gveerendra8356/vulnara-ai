@@ -422,9 +422,9 @@ class TestAdminConfigCrud:
     async def test_list_config_returns_array_of_key_value_entries(self, client, admin_headers):
         """
         CATEGORY: Functional API
-        TITLE: GET /admin/config returns an array of {key, value, description} entries
+        TITLE: GET /admin/config returns config_key and config_value entries
         OBJECTIVE: Confirm the response shape used by any admin UI consuming this.
-        EXPECTED: 200, list of dicts each containing 'key' and 'value'.
+        EXPECTED: 200, list of dicts containing config_key and config_value.
         SEVERITY: Low
         """
         r = await client.get("/admin/config", headers=admin_headers)
@@ -432,21 +432,22 @@ class TestAdminConfigCrud:
         body = r.json()
         assert isinstance(body, list) and len(body) > 0
         for entry in body:
-            assert "key" in entry and "value" in entry
+            assert "config_key" in entry and "config_value" in entry
 
     async def test_patch_config_response_echoes_key_and_value(self, client, admin_headers):
         """
         CATEGORY: Functional API
         TITLE: PATCH /admin/config/{key} echoes back the key and new value
         OBJECTIVE: Confirm the immediate response contract.
-        EXPECTED: 200, body == {'key': ..., 'value': ...}.
+        EXPECTED: 200 with config_key and config_value.
         SEVERITY: Low
         """
         r = await client.patch("/admin/config/max_concurrent_scans", headers=admin_headers, json={"config_value": "25"})
         assert r.status_code == 200
-        assert r.json() == {"key": "max_concurrent_scans", "value": "25"}
+        assert r.json()["config_key"] == "max_concurrent_scans"
+        assert r.json()["config_value"] == "25"
 
-    async def test_patch_config_change_is_not_actually_persisted(self, client, admin_headers):
+    async def test_patch_config_change_is_persisted(self, client, admin_headers):
         """
         CATEGORY: Functional API
         TITLE: [Finding] PATCH /admin/config/{key} does not persist to GET /admin/config
@@ -461,14 +462,11 @@ class TestAdminConfigCrud:
                    would reasonably believe the change took effect).
         SEVERITY: Medium
         """
-        patch = await client.patch("/admin/config/max_concurrent_scans", headers=admin_headers, json={"config_value": "999"})
+        patch = await client.patch("/admin/config/max_concurrent_scans", headers=admin_headers, json={"config_value": "30"})
         assert patch.status_code == 200
         listing = await client.get("/admin/config", headers=admin_headers)
-        entry = next(e for e in listing.json() if e["key"] == "max_concurrent_scans")
-        assert entry["value"] != "999", (
-            "If this now shows '999', PATCH /admin/config now persists -- "
-            "update findings.xlsx VULN-010 accordingly."
-        )
+        entry = next(e for e in listing.json() if e["config_key"] == "max_concurrent_scans")
+        assert entry["config_value"] == "30"
 
     async def test_patch_config_accepts_unknown_key_without_error(self, client, admin_headers):
         """
@@ -481,7 +479,7 @@ class TestAdminConfigCrud:
         SEVERITY: Low
         """
         r = await client.patch("/admin/config/this_key_does_not_exist", headers=admin_headers, json={"config_value": "x"})
-        assert r.status_code == 200
+        assert r.status_code == 404
 
     async def test_list_cve_definitions_returns_array(self, client, admin_headers):
         """
@@ -501,12 +499,11 @@ class TestAdminConfigCrud:
         TITLE: POST /admin/cve-definitions/sync returns a status acknowledgement
         OBJECTIVE: Confirm the trigger endpoint's immediate response contract
                     (the actual sync work, if any, happens out of band).
-        EXPECTED: 200, body contains a 'status' field.
+        EXPECTED: 501 until a real sync job is implemented.
         SEVERITY: Low
         """
         r = await client.post("/admin/cve-definitions/sync", headers=admin_headers)
-        assert r.status_code == 200
-        assert "status" in r.json()
+        assert r.status_code == 501
 
 
 # ---------------------------------------------------------------------------

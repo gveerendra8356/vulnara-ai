@@ -16,20 +16,22 @@ from __future__ import annotations
 
 import asyncio
 import uuid
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, status
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.audit_log import log_authorization_confirmation
 from app.core.auth import CurrentUser, get_current_user
 from app.core.db import get_session
+from app.core.config import get_config_value
 from app.models.scan import Scan
 from app.models.triage_models import Vulnerability, Remediation, CVEDefinition
 from app.models.threat_log import ThreatLog
 from app.schemas.scan import ScanCreateRequest, ScanCreateResponse
 from app.schemas.triage import VulnerabilityResponse, ThreatLogResponse, RemediationResponse
-from app.scanner.task_runner import run_scan_task
+from app.scanner.task_runner import start_scan_task, cancel_scan_task
 from app.websocket.manager import scan_connection_manager
 
 router = APIRouter()
@@ -61,6 +63,13 @@ async def create_scan(
             detail="authorization_justification is required and cannot be blank.",
         )
 
+    limit = int(await get_config_value(session, "max_concurrent_scans"))
+    active_count = await session.scalar(
+        select(func.count()).select_from(Scan).where(Scan.status.in_(["PENDING", "IN_PROGRESS"]))
+    )
+    if active_count >= limit:
+        raise HTTPException(status_code=429, detail="Maximum concurrent scans reached")
+
     scan = Scan(
         user_id=current_user.user_id,
         target=payload.target,
@@ -80,13 +89,7 @@ async def create_scan(
         justification=payload.authorization_justification,
     )
 
-    asyncio.create_task(
-        run_scan_task(
-            scan_id=scan.scan_id,
-            target=scan.target,
-            active_testing_enabled=scan.active_testing_enabled,
-        )
-    )
+    start_scan_task(scan.scan_id, scan.target, scan.active_testing_enabled)
 
     return ScanCreateResponse(
         scan_id=scan.scan_id,
@@ -202,8 +205,11 @@ async def cancel_scan(
 
     if scan.status in ["PENDING", "IN_PROGRESS"]:
         scan.status = "CANCELLED"
+        scan.completed_at = datetime.now(timezone.utc)
         await session.commit()
         await session.refresh(scan)
+        cancel_scan_task(scan_id)
+        await scan_connection_manager.broadcast(str(scan_id), "scan.status_changed", {"status": "CANCELLED"})
     return scan
 
 
@@ -297,7 +303,7 @@ async def scan_status_ws(websocket: WebSocket, scan_id: uuid.UUID):
     async with AsyncSessionLocal() as session:
         user_result = await session.execute(select(User).where(User.user_id == user_id))
         user = user_result.scalar_one_or_none()
-        if not user:
+        if not user or not user.is_active:
             await websocket.close(code=4001)
             return
 

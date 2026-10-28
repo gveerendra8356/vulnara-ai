@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Literal
 from datetime import datetime
 from uuid import UUID
 
@@ -36,7 +36,7 @@ class VulnerabilityResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 class VulnerabilityUpdateRequest(BaseModel):
-    status: str
+    status: Literal["OPEN", "REMEDIATED", "ACCEPTED_RISK", "FALSE_POSITIVE"]
 
 class ThreatLogResponse(BaseModel):
     log_id: UUID

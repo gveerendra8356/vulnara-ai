@@ -27,16 +27,9 @@ from app.triage.prompts import build_remediation_prompt
 
 async def generate_remediation(
     session: AsyncSession,
-    vuln_id: uuid.UUID,
+    vuln: Vulnerability,
     target_os: str | None,
 ) -> Remediation:
-    result = await session.execute(
-        select(Vulnerability).where(Vulnerability.vuln_id == vuln_id)
-    )
-    vuln = result.scalar_one_or_none()
-    if vuln is None:
-        raise HTTPException(status_code=404, detail="Vulnerability not found")
-
     vuln_data = {
         "host": vuln.host,
         "port": vuln.port,
@@ -62,7 +55,7 @@ async def generate_remediation(
         )
 
     remediation = Remediation(
-        vuln_id=vuln_id,
+        vuln_id=vuln.vuln_id,
         target_os=target_os,
         executive_summary=ai_response.executive_summary,
         technical_script=ai_response.technical_script,

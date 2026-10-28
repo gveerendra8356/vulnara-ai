@@ -24,19 +24,34 @@ always-on Oracle VM.
 from __future__ import annotations
 
 import logging
+import asyncio
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import select
+from sqlalchemy import select, update, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import AsyncSessionLocal
 from app.models.scan import Scan
+from app.models.triage_models import Vulnerability
 from app.scanner.nmap_wrapper import NmapScanner, NmapExecutionError, NmapNotFoundError
 from app.scanner.normalizer import normalize_scan_results
 from app.websocket.manager import scan_connection_manager
 
 logger = logging.getLogger("vulnara.scanner")
+_running_tasks: dict[uuid.UUID, asyncio.Task] = {}
+
+
+def start_scan_task(scan_id: uuid.UUID, target: str, active_testing_enabled: bool) -> None:
+    task = asyncio.create_task(run_scan_task(scan_id, target, active_testing_enabled))
+    _running_tasks[scan_id] = task
+    task.add_done_callback(lambda finished: _running_tasks.pop(scan_id, None))
+
+
+def cancel_scan_task(scan_id: uuid.UUID) -> None:
+    task = _running_tasks.get(scan_id)
+    if task is not None:
+        task.cancel()
 
 
 def _extract_web_base_urls(normalized: dict) -> list[str]:
@@ -95,15 +110,8 @@ async def run_scan_task(scan_id: uuid.UUID, target: str, active_testing_enabled:
                 scan_id_str, len(normalized["hosts"]),
             )
 
-            # Recon's own DB session (`session`, opened above) is done with
-            # its job at this point -- the triage pipeline opens and manages
-            # its own session for the remainder of the work (writing
-            # Vulnerabilities rows, marking the scan COMPLETED, and
-            # broadcasting scan.completed once triage itself finishes).
-            # We deliberately don't call _mark_completed/broadcast
-            # scan.completed here anymore -- that's now the triage
-            # pipeline's responsibility, since the scan isn't actually
-            # "done" from the user's perspective until triage has run.
+            # Triage persists findings; the scan finishes after optional
+            # active testing so COMPLETED means every selected stage ended.
             from app.triage.pipeline import run_triage
             await run_triage(scan_id, normalized)
 
@@ -119,6 +127,10 @@ async def run_scan_task(scan_id: uuid.UUID, target: str, active_testing_enabled:
             # unconditionally here is not the actual gate.
             # ------------------------------------------------------------
             if active_testing_enabled:
+                await scan_connection_manager.broadcast(
+                    scan_id_str, "scan.status_changed",
+                    {"status": "IN_PROGRESS", "stage": "active_testing"},
+                )
                 web_targets = _extract_web_base_urls(normalized)
                 if web_targets:
                     from app.active_testing.pipeline import run_active_testing
@@ -129,6 +141,25 @@ async def run_scan_task(scan_id: uuid.UUID, target: str, active_testing_enabled:
                         "ports found in recon results -- nothing to test.",
                         scan_id_str,
                     )
+
+            if await _mark_completed(session, scan_id):
+                counts_result = await session.execute(
+                    select(Vulnerability.severity, func.count())
+                    .where(Vulnerability.scan_id == scan_id)
+                    .group_by(Vulnerability.severity)
+                )
+                counts = dict(counts_result.all())
+                await scan_connection_manager.broadcast(
+                    scan_id_str, "scan.completed",
+                    {"status": "COMPLETED", "vuln_count_by_severity": {
+                        sev: counts.get(sev, 0)
+                        for sev in ("CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO")
+                    }},
+                )
+
+        except asyncio.CancelledError:
+            logger.info("Scan %s cancelled", scan_id_str)
+            return
 
         except (NmapNotFoundError, NmapExecutionError) as e:
             logger.exception("Scan %s failed during recon", scan_id_str)
@@ -161,22 +192,28 @@ async def _get_scan(session: AsyncSession, scan_id: uuid.UUID) -> Scan:
 
 
 async def _mark_in_progress(session: AsyncSession, scan_id: uuid.UUID) -> None:
-    scan = await _get_scan(session, scan_id)
-    scan.status = "IN_PROGRESS"
-    scan.started_at = datetime.now(timezone.utc)
+    result = await session.execute(
+        update(Scan).where(Scan.scan_id == scan_id, Scan.status == "PENDING")
+        .values(status="IN_PROGRESS", started_at=datetime.now(timezone.utc))
+    )
     await session.commit()
+    if result.rowcount != 1:
+        raise asyncio.CancelledError()
 
 
-async def _mark_completed(session: AsyncSession, scan_id: uuid.UUID) -> None:
-    scan = await _get_scan(session, scan_id)
-    scan.status = "COMPLETED"
-    scan.completed_at = datetime.now(timezone.utc)
+async def _mark_completed(session: AsyncSession, scan_id: uuid.UUID) -> bool:
+    result = await session.execute(
+        update(Scan).where(Scan.scan_id == scan_id, Scan.status == "IN_PROGRESS")
+        .values(status="COMPLETED", completed_at=datetime.now(timezone.utc))
+    )
     await session.commit()
+    return result.rowcount == 1
 
 
 async def _mark_failed(session: AsyncSession, scan_id: uuid.UUID, error_message: str) -> None:
-    scan = await _get_scan(session, scan_id)
-    scan.status = "FAILED"
-    scan.completed_at = datetime.now(timezone.utc)
+    await session.execute(
+        update(Scan).where(Scan.scan_id == scan_id, Scan.status == "IN_PROGRESS")
+        .values(status="FAILED", completed_at=datetime.now(timezone.utc))
+    )
     await session.commit()
     logger.error("Scan %s marked FAILED: %s", scan_id, error_message)

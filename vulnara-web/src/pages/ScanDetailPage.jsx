@@ -6,6 +6,7 @@ import { StatusPill, SeverityBadge, ConfidenceBar, LoadingRow, EmptyState } from
 import { VulnTable } from "../components/VulnTable";
 import { useScanSocket } from "../hooks/useScanSocket";
 import { ConfirmDialog } from "../components/ConfirmDialog";
+import { compareFindings, downloadScanReport } from "../lib/scanInsights";
 
 const TABS = [
   { id: "overview", label: "Overview", icon: "info" },
@@ -45,6 +46,20 @@ export function ScanDetailPage() {
     enabled: !!scan,
   });
 
+  const { data: scanHistory } = useQuery({
+    queryKey: ["scans"],
+    queryFn: () => api.listScans(),
+    enabled: !!scan,
+  });
+  const priorScan = (scanHistory?.items ?? [])
+    .filter((item) => item.scan_id !== scanId && item.target === scan?.target && item.status === "COMPLETED" && new Date(item.created_at) < new Date(scan?.created_at))
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
+  const { data: priorVulnData } = useQuery({
+    queryKey: ["scan-vulns", priorScan?.scan_id],
+    queryFn: () => api.listVulnerabilities(priorScan.scan_id),
+    enabled: !!priorScan,
+  });
+
   const { events, connected } = useScanSocket(scanId, {
     onEvent: (msg) => {
       if (["scan.status_changed", "scan.completed", "scan.failed"].includes(msg.event)) {
@@ -78,6 +93,9 @@ export function ScanDetailPage() {
   const vulns = vulnData?.items ?? (Array.isArray(vulnData) ? vulnData : []);
   const logs = logsData?.items ?? (Array.isArray(logsData) ? logsData : []);
   const remediations = remData?.items ?? (Array.isArray(remData) ? remData : []);
+  const priorVulns = priorVulnData?.items ?? (Array.isArray(priorVulnData) ? priorVulnData : []);
+  const comparison = priorScan && scan.status === "COMPLETED" && priorVulnData
+    ? compareFindings(vulns, priorVulns) : null;
   const counts = scan.vuln_count_by_severity || {};
   const canCancel = ["PENDING", "IN_PROGRESS"].includes(scan.status);
   const progressPct = scan.progress_percent ?? (scan.status === "COMPLETED" ? 100 : scan.status === "IN_PROGRESS" ? 50 : 0);
@@ -116,6 +134,21 @@ export function ScanDetailPage() {
           </p>
         </div>
         <div className="flex gap-3">
+          <button
+            onClick={() => downloadScanReport(scan, vulns, logs, remediations)}
+            disabled={!vulnData || (scan.active_testing_enabled && !logsData) || !remData}
+            className="glass-panel px-4 py-2 rounded-md text-sm font-medium text-on-surface flex items-center gap-2 disabled:opacity-50"
+          >
+            <span className="material-symbols-outlined text-[18px]">download</span>
+            Download report
+          </button>
+          <button
+            onClick={() => navigate("/scans/new", { state: { target: scan.target } })}
+            className="glass-panel px-4 py-2 rounded-md text-sm font-medium text-on-surface flex items-center gap-2"
+          >
+            <span className="material-symbols-outlined text-[18px]">restart_alt</span>
+            Rescan target
+          </button>
           <button
             onClick={() => navigate("/scans")}
             className="glass-panel px-4 py-2 rounded-md font-body-md text-sm font-medium text-on-surface-variant flex items-center gap-2 hover:bg-surface-variant/50 transition-colors"
@@ -220,6 +253,17 @@ export function ScanDetailPage() {
 
       {tab === "overview" && (
         <div className="glass-panel rounded-xl p-6">
+          {comparison && (
+            <div className="mb-6 p-4 rounded-lg border border-primary/30 bg-primary/5">
+              <h3 className="font-headline-sm text-on-surface mb-2">Compared with previous completed scan</h3>
+              <p className="text-xs text-on-surface-variant mb-3">{priorScan.scan_id} · {new Date(priorScan.created_at).toLocaleString()}. Matching uses host, port, service and CVE; review changed or unmapped findings manually.</p>
+              <div className="flex flex-wrap gap-4 text-sm">
+                <span className="text-error">New: {comparison.newFindings.length}</span>
+                <span className="text-success">No longer detected: {comparison.resolved.length}</span>
+                <span className="text-on-surface-variant">Still detected: {comparison.unchanged.length}</span>
+              </div>
+            </div>
+          )}
           <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 text-sm">
             <dt className="text-on-surface-variant">Target</dt>
             <dd className="font-code-sm text-on-surface">{scan.target}</dd>

@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import CurrentUser, get_current_user
 from app.core.db import get_session
+from app.core.ownership import get_visible_vulnerability
 from app.models.triage_models import Vulnerability
 from app.schemas.triage import VulnerabilityResponse, VulnerabilityUpdateRequest
 
@@ -18,13 +19,7 @@ async def get_vulnerability(
     current_user: CurrentUser = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ):
-    result = await session.execute(select(Vulnerability).where(Vulnerability.vuln_id == vuln_id))
-    vuln = result.scalar_one_or_none()
-    
-    if not vuln:
-        raise HTTPException(status_code=404, detail="Vulnerability not found")
-        
-    return vuln
+    return await get_visible_vulnerability(session, vuln_id, current_user)
 
 @router.patch("/vulnerabilities/{vuln_id}", response_model=VulnerabilityResponse)
 async def update_vulnerability(

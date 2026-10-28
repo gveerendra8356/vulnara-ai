@@ -1,12 +1,13 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { api } from "../lib/api";
 import { ErrorBanner } from "../components/Primitives";
 
 export function NewScanPage() {
   const navigate = useNavigate();
-  const [target, setTarget] = useState("");
+  const location = useLocation();
+  const [target, setTarget] = useState(location.state?.target || "");
   const [justification, setJustification] = useState("");
   const [authorized, setAuthorized] = useState(false);
   const [activeTesting, setActiveTesting] = useState(false);

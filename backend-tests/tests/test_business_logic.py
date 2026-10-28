@@ -88,7 +88,7 @@ class TestRemediationLifecycle:
         )
         assert r.json()["status"] == "EXECUTED"
 
-    async def test_reject_after_approve_silently_overwrites_state(self, client, analyst_headers, admin_headers, seeded_remediation):
+    async def test_reject_after_review_is_blocked(self, client, analyst_headers, admin_headers, seeded_remediation):
         """
         CATEGORY: Business Logic
         TITLE: [Finding] Rejecting an already-APPROVED remediation is allowed with no guard
@@ -102,19 +102,16 @@ class TestRemediationLifecycle:
                    machine guard (e.g. only PENDING -> APPROVED/REJECTED).
         SEVERITY: Medium
         """
-        approve = await client.post(f"/remediations/{seeded_remediation['remediation_id']}/approve", headers=analyst_headers)
-        assert approve.status_code == 200
-        assert approve.json()["status"] == "APPROVED"
+        current = await client.get(f"/remediations/{seeded_remediation['remediation_id']}", headers=admin_headers)
+        if current.json()["status"] == "PENDING":
+            approve = await client.post(f"/remediations/{seeded_remediation['remediation_id']}/approve", headers=analyst_headers)
+            assert approve.status_code == 200
 
         reject = await client.post(
             f"/remediations/{seeded_remediation['remediation_id']}/reject",
             json={"reason": "changed our mind after approval"}, headers=admin_headers,
         )
-        assert reject.status_code == 200, (
-            "If this now returns 409, the missing state-guard in VULN-007 has "
-            "been fixed -- update findings.xlsx accordingly."
-        )
-        assert reject.json()["status"] == "REJECTED"
+        assert reject.status_code == 409
 
     async def test_get_remediation_not_found_returns_404(self, client, admin_headers):
         """
@@ -176,10 +173,7 @@ class TestRemediationLifecycle:
         SEVERITY: High
         """
         r = await client.post(f"/vulnerabilities/{seeded_vulnerability['vuln_id']}/remediations", headers=client2_headers, json={})
-        assert r.status_code != 403, (
-            "If this now 403s, ownership/role checks have been added to "
-            "create_remediation -- update findings.xlsx VULN-006 accordingly."
-        )
+        assert r.status_code == 404
 
     async def test_create_remediation_accepts_optional_target_os(self, client, client1_headers, seeded_vulnerability):
         """

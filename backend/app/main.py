@@ -32,12 +32,20 @@ from app.api.routes.auth import router as auth_router
 from app.api.routes.vulnerabilities import router as vulnerabilities_router
 from app.api.routes.admin import router as admin_router
 from app.core.db import AsyncSessionLocal
+from app.models.system_config import SystemConfig
+from app.core.db import engine
 
 logging.basicConfig(level=logging.INFO)
 
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Vulnara API")
+
+
+@app.on_event("startup")
+async def ensure_config_table():
+    async with engine.begin() as conn:
+        await conn.run_sync(SystemConfig.__table__.create, checkfirst=True)
 
 # Comma-separated list, e.g. "https://vulnara.vercel.app,http://localhost:5173"
 _origins_env = os.environ.get("CORS_ORIGINS", "http://localhost:5173")

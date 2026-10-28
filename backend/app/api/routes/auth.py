@@ -60,7 +60,7 @@ async def login(payload: UserLoginRequest, session: AsyncSession = Depends(get_s
     result = await session.execute(select(User).where(User.email == payload.email))
     user = result.scalar_one_or_none()
     
-    if not user or not verify_password(payload.password, user.password_hash):
+    if not user or not user.is_active or not verify_password(payload.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Incorrect email or password")
     
     # Update last login
@@ -117,7 +117,7 @@ async def refresh_token(payload: RefreshTokenRequest, session: AsyncSession = De
 
     result = await session.execute(select(User).where(User.user_id == user_id_uuid))
     user = result.scalar_one_or_none()
-    if not user:
+    if not user or not user.is_active:
         raise HTTPException(status_code=401, detail="User not found")
 
     access_token = create_access_token(data={"sub": str(user.user_id), "role": user.role})
