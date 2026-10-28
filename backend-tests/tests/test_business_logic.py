@@ -67,39 +67,24 @@ class TestRemediationLifecycle:
         assert r.json()["status"] == "EXECUTED"
         assert r.json()["executed_at"] is not None
 
-    async def test_mark_executed_has_no_role_restriction(self, client, client1_headers, seeded_remediation, analyst_headers):
+    async def test_mark_executed_is_restricted_to_analysts_and_admins(self, client, client1_headers, seeded_remediation, analyst_headers):
         """
-        CATEGORY: Business Logic
-        TITLE: [Finding] POST /remediations/{id}/mark-executed has no role check
-        OBJECTIVE: Unlike /approve and /reject (both explicitly gated to
-                    analyst/admin), mark_remediation_executed has no role
-                    check at all -- confirm a client-role user really can
-                    call it, once the remediation is approved.
-        EXPECTED (CURRENT BEHAVIOR): 200 OK for a client-role caller. See
-                   findings.xlsx (VULN-006, High) recommending the same
-                   role guard used on the other two write actions.
+        CATEGORY: Authorization
+        TITLE: A client cannot mark an approved remediation as executed
+        OBJECTIVE: Ensure the execution transition is restricted to analysts and admins.
+        EXPECTED: 403 Forbidden for a client-role caller.
         SEVERITY: High
         """
         await client.post(f"/remediations/{seeded_remediation['remediation_id']}/approve", headers=analyst_headers)
         r = await client.post(f"/remediations/{seeded_remediation['remediation_id']}/mark-executed", headers=client1_headers)
-        assert r.status_code == 200, (
-            "If this now returns 403, the missing role check in VULN-006 has "
-            "been fixed -- update findings.xlsx accordingly."
-        )
-        assert r.json()["status"] == "EXECUTED"
+        assert r.status_code == 403
 
     async def test_reject_after_review_is_blocked(self, client, analyst_headers, admin_headers, seeded_remediation):
         """
         CATEGORY: Business Logic
-        TITLE: [Finding] Rejecting an already-APPROVED remediation is allowed with no guard
-        OBJECTIVE: approve_remediation/reject_remediation set status
-                    unconditionally with no check of the current state, so an
-                    APPROVED remediation can be silently flipped to REJECTED
-                    (or vice versa) with no audit trail of the contradiction.
-        EXPECTED (CURRENT BEHAVIOR): approve -> 200/APPROVED, then reject on
-                   the same id -> 200/REJECTED (no 409 Conflict). See
-                   findings.xlsx (VULN-007, Medium) recommending a state
-                   machine guard (e.g. only PENDING -> APPROVED/REJECTED).
+        TITLE: Rejecting an already-approved remediation returns a conflict
+        OBJECTIVE: Ensure the workflow cannot overwrite a completed review decision.
+        EXPECTED: Approve -> 200/APPROVED, then reject -> 409 Conflict.
         SEVERITY: Medium
         """
         current = await client.get(f"/remediations/{seeded_remediation['remediation_id']}", headers=admin_headers)
@@ -159,17 +144,12 @@ class TestRemediationLifecycle:
         r = await client.post(f"/vulnerabilities/{uuid.uuid4()}/remediations", headers=client1_headers, json={})
         assert r.status_code == 404
 
-    async def test_create_remediation_has_no_ownership_or_role_restriction(self, client, client2_headers, seeded_vulnerability):
+    async def test_create_remediation_rejects_vulnerability_from_another_client(self, client, client2_headers, seeded_vulnerability):
         """
         CATEGORY: Business Logic
-        TITLE: [Finding] POST /vulnerabilities/{id}/remediations has no ownership check
-        OBJECTIVE: Any authenticated user, of any role, can trigger AI remediation
-                    generation (a billed Gemini API call) for a vulnerability
-                    that belongs to a scan they don't own.
-        EXPECTED (CURRENT BEHAVIOR): request proceeds past authorization to the
-                   AI call itself (502 in this offline test environment since
-                   no live Gemini credentials are configured for CI -- a 403
-                   never appears at any point). See findings.xlsx (VULN-006).
+        TITLE: Remediation generation rejects another client's vulnerability
+        OBJECTIVE: Verify ownership is checked before invoking AI generation.
+        EXPECTED: 404 Not Found.
         SEVERITY: High
         """
         r = await client.post(f"/vulnerabilities/{seeded_vulnerability['vuln_id']}/remediations", headers=client2_headers, json={})
@@ -345,6 +325,22 @@ class TestAccountAndTokenBusinessRules:
         login = await client.post("/auth/login", json={"email": unique_email, "password": "TempPass123!"})
         assert login.status_code == 200
         assert login.json()["user"]["role"] == "analyst"
+
+    async def test_admin_create_user_rejects_overlong_temp_password(self, client, admin_headers, unique_email):
+        """
+        CATEGORY: Business Logic
+        TITLE: Admin-created accounts reject overlong temporary passwords
+        OBJECTIVE: Apply the bcrypt byte limit to admin account provisioning.
+        EXPECTED: 422 Unprocessable Entity.
+        SEVERITY: Medium
+        """
+        response = await client.post("/auth/users", headers=admin_headers, json={
+            "email": unique_email,
+            "full_name": "Long Password QA",
+            "role": "analyst",
+            "temp_password": "Aa1!" * 50,
+        })
+        assert response.status_code == 422
 
     async def test_scan_list_response_excludes_other_tenants_scans_count(self, client, client1_headers, client2_headers, client1_scan):
         """

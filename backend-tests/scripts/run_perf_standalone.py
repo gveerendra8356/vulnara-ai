@@ -4,7 +4,7 @@ scripts/run_perf_standalone.py
 One-shot driver: boots the same ephemeral server conftest.py uses, logs in
 as client1, runs perf_sample.run(), writes reports/perf_stats.json, tears
 the server down. Kept separate from the pytest run itself so a perf sample
-never affects (or is affected by) the 400-case functional suite's timing.
+never affects (or is affected by) the full functional suite's timing.
 """
 from __future__ import annotations
 

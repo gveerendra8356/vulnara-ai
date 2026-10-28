@@ -152,6 +152,9 @@ async def mark_remediation_executed(
     current_user: CurrentUser = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ):
+    if current_user.role not in ["analyst", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
     stmt = _scope_to_own_scans(
         select(Remediation).where(Remediation.remediation_id == rem_id), current_user
     )

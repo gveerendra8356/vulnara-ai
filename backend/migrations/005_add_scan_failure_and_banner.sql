@@ -1,0 +1,5 @@
+ALTER TABLE scans
+    ADD COLUMN IF NOT EXISTS failure_reason VARCHAR(255);
+
+ALTER TABLE vulnerabilities
+    ADD COLUMN IF NOT EXISTS banner TEXT;

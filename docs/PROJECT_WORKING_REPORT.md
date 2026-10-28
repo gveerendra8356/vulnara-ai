@@ -53,7 +53,7 @@ The central input is `POST /scans` with a bearer access token and JSON such as:
 }
 ```
 
-`target` is one domain or IP string, 1–255 characters. The API trims whitespace but does not parse it as a URL; use a host or IP, not a full `https://` URL. `authorization_confirmed` must be true, and the justification must contain 10–2000 nonblank characters. It is stored and audit logged. The code checks the user's attestation; it does not independently verify ownership or the written permission. `active_testing_enabled` defaults to false in the API and web form. **The mobile form currently initializes its active testing switch to true**, so mobile users should explicitly review that switch before submitting.
+`target` is one domain or IP string, 1–255 characters. The API trims whitespace but does not parse it as a URL; use a host or IP, not a full `https://` URL. `authorization_confirmed` must be true, and the justification must contain 10–2000 nonblank characters. It is stored and audit logged. The code checks the user's attestation; it does not independently verify ownership or the written permission. `active_testing_enabled` defaults to false in the API, web form, and mobile form.
 
 An accepted request returns HTTP 201 with `scan_id`, `target`, `status: "PENDING"`, `active_testing_enabled`, and `created_at`. A failed validation or missing confirmation returns 422. The user can then call `GET /scans/{scan_id}` or subscribe to `/ws/scans/{scan_id}?token=<access_token>`.
 
@@ -67,9 +67,9 @@ For each detected service/port, the backend queries NIST's NVD CVE API using a k
 
 The backend sends all ports and candidate CVEs for one host to **Groq** (`GROQ_MODEL`, default `openai/gpt-oss-120b`). The model is instructed to decide whether each CVE fits the observed service/version, label false positives, assign severity and confidence, and explain its reasoning. The response must be JSON matching Pydantic schemas; invalid responses trigger correction attempts, and transient Groq errors use exponential backoff. Findings marked `is_false_positive` are skipped. Remaining findings and referenced CVE definitions are stored. A `vulnerability.discovered` event is broadcast per saved finding. HIGH and CRITICAL findings can trigger email; CRITICAL findings also trigger a WebSocket alert and, if configured, an FCM push to the scan owner's registered devices.
 
-**Important accuracy caveat:** if the triage Groq call fails, `run_triage_call` currently creates a hardcoded mock HIGH finding referencing `CVE-2023-38709`. Such a result is *not verified evidence about the target*. It is saved through the normal finding path, so a presentation or demo must distinguish it from an actual AI/NVD assessment. Confidence, CVSS, and severity on normal AI findings are model outputs and should also be reviewed by a human.
+**Important accuracy caveat:** a Groq triage failure now fails the scan with a visible `failure_reason`; the backend does not create a mock vulnerability. If the failure happens after earlier hosts were assessed, the scan can contain partial findings. Confidence, CVSS, and severity on AI findings are model outputs and should be reviewed by a human.
 
-After triage, the scan is marked `COMPLETED` and the backend emits `scan.completed` with counts by severity. The stored vulnerability rows provide the detailed result.
+The scan is marked `COMPLETED` only after triage and any opted-in active testing finish. The backend emits `scan.status_changed` with the `active_testing` stage while those probes run, then emits `scan.completed` with counts by severity. Cancellation marks the scan `CANCELLED` and cancels its asyncio task; an in-flight Nmap child process is terminated as part of cancellation.
 
 ### Optional active web testing
 
@@ -85,13 +85,13 @@ For each discovered parameter, the engine sends a benign baseline and a small ca
 | XSS reflection | Checks for the full unescaped payload in returned text. Optional Playwright code can look for a real title change if installed. | Reflection alone is not browser execution; Playwright is not a default dependency. |
 | Command injection | Looks for an output marker or a time delay. | A page that simply echoes the submitted input can imitate command output. |
 
-Only heuristic-positive attempts call Groq for a second, contextual verdict. If that call fails, `ai_verified` is false. Each `threat_logs` row records attack type, URL, parameter, payload, verdict, notes, risk rating, and timestamp. These rows currently have `vuln_id=null`: active-test evidence is **not automatically linked to or converted into a vulnerability row**. Threat logs therefore need separate review. Active testing starts **after** the scan is already marked `COMPLETED`; completion currently means recon plus triage completed, not that every opted-in active probe has finished.
+Only heuristic-positive attempts call Groq for a second, contextual verdict. If that call fails, `ai_verified` is false. Each `threat_logs` row records attack type, URL, parameter, payload, verdict, notes, risk rating, and timestamp. These rows can have `vuln_id=null`: active-test evidence is **not automatically converted into a vulnerability row**. The finding detail page shows the observed service/version/banner, matched CVE source, AI rationale and confidence, and related active-test verification status. Host/port-associated attempts are evidence to review, not proof that a particular CVE is exploitable.
 
 ### Remediation workflow
 
 For a saved finding, `POST /vulnerabilities/{vuln_id}/remediations` accepts an optional `target_os` (for example, `ubuntu-22.04`; omit for a generic Linux assumption). The backend sends the finding's host, port, service/version, CVE, severity, score, reasoning, and OS hint to Groq. The response contains an executive summary, a technical script, and an AI confidence value. It is saved as `PENDING` and returned with its ID. If the AI generation fails, the route returns 502.
 
-Analysts/admins use `POST /remediations/{id}/approve` or `/reject` (reject requires a `reason` field). An approved remediation can be marked with `POST /remediations/{id}/mark-executed`. **The backend never runs the generated script**: marking executed only updates database status and timestamp, after someone has applied it outside the platform. The rejection reason is accepted by the API but currently not stored. There is no enforced transition check before approve/reject, so a reviewer can overwrite a prior decision. The generated script should be checked against the real system before use.
+Analysts/admins use `POST /remediations/{id}/approve` or `/reject` (reject requires a `reason` field). Only analysts/admins can mark an approved remediation as executed. Approval and rejection only accept a `PENDING` remediation. **The backend never runs the generated script**: marking executed only updates database status and timestamp, after someone has applied it outside the platform. The rejection reason is accepted by the API but currently not stored. The generated script should be checked against the real system before use.
 
 ## 3. Outputs the user can inspect
 
@@ -99,8 +99,8 @@ Analysts/admins use `POST /remediations/{id}/approve` or `/reject` (reject requi
 | --- | --- |
 | Login | Access token, refresh token, expiry duration, user profile/role. |
 | Create scan | Scan ID and initial `PENDING` state. |
-| Scan status | Target, owner ID, status (`PENDING`, `IN_PROGRESS`, `COMPLETED`, `FAILED`, `CANCELLED`), timestamps, active-test flag, authorization justification, and counts by severity. |
-| Scan vulnerabilities | Finding IDs, host/port/service/version, CVE and CVSS if present, severity, AI confidence/reasoning, status, discovery time. |
+| Scan status | Target, owner ID, status (`PENDING`, `IN_PROGRESS`, `COMPLETED`, `FAILED`, `CANCELLED`), failure reason when present, timestamps, active-test flag, authorization justification, and counts by severity. |
+| Scan vulnerabilities | Finding IDs, host/port/service/version/banner, CVE and CVSS if present, severity, AI confidence/reasoning, status, discovery time. |
 | Active threat logs | Each tested URL/parameter, attack type, exact payload, AI verdict and explanation, risk rating, time. |
 | Remediation | Executive summary, proposed technical script, AI confidence, status (`PENDING`, `APPROVED`, `REJECTED`, `EXECUTED`), reviewer and timestamps. |
 | Live WebSocket | `scan.status_changed`, `recon.progress`, `vulnerability.discovered`, `alert.critical`, `scan.completed`, `active_test.attempt`, or `scan.failed`. |
@@ -109,7 +109,7 @@ The dashboard aggregates scan and finding data; a result with zero findings can 
 
 ## 4. How the web and mobile applications participate
 
-The React web app uses Axios for HTTP, React Query for caching/refetching, React Router for pages, and WebSockets for scan events. It offers login/registration, scan creation and lists, finding details, threat logs, remediation queue/review, profile, and admin pages. **It defaults to mock API data** unless `VITE_USE_MOCK=false` is supplied at build/start time. `VITE_API_BASE_URL` and `VITE_WS_BASE_URL` must point to the actual backend for real mode. The web router is configured with `/vulnara-ai/` as its base path.
+The React web app uses Axios for HTTP, React Query for caching/refetching, React Router for pages, and WebSockets for scan events. It offers login/registration, scan creation and lists, finding details, threat logs, remediation queue/review, profile, and admin pages. It defaults to the real API; set `VITE_USE_MOCK=true` to opt into mock data. `VITE_API_BASE_URL` and `VITE_WS_BASE_URL` must point to the actual backend. The web router is configured with `/vulnara-ai/` as its base path.
 
 The Flutter app uses Dio repositories for REST calls, Riverpod providers for state, GoRouter for navigation, WebSockets for live scan updates, and secure storage for tokens. Firebase Messaging and local notifications handle critical alerts when Firebase and device registration are configured. Its current API constants point to `10.0.2.2:8000`, which works for an Android emulator talking to a backend running on the development computer. A physical phone or deployed backend needs a reachable URL and matching WebSocket scheme.
 
@@ -149,12 +149,12 @@ Key backend settings are `DATABASE_URL`, `VULNARA_SECRET_KEY`, `GROQ_API_KEY`, o
 ## 7. Current implementation limits and report interpretation
 
 - The older architecture/API documents sometimes say **Gemini**, but the current AI client calls **Groq**. The old module/class names remain.
-- The Groq triage failure fallback fabricates a HIGH mock vulnerability. This is the most important issue when interpreting demo output.
-- Cancellation changes the database status but does not cancel or signal the in-memory background task. The task may continue and later overwrite that status.
+- AI triage failures no longer create synthetic findings; failed scans expose a user-facing failure reason. Partial findings may remain if failure occurs after some hosts have completed triage.
+- Cancellation stops the in-memory asyncio task and terminates an active Nmap subprocess. Scan tasks and WebSocket subscriptions still live in one process, so a restart can lose in-progress work and live subscribers; multiple workers do not share these events.
 - Scan tasks and WebSocket subscriptions live in one server process. A restart can lose in-progress work and live subscribers; multiple workers do not share these events.
 - NVD uses keyword search, and the AI judges candidate applicability. Neither CVE matches nor AI explanations are independently verified by the code against a product's actual installed version.
-- The admin config listing/update and manual CVE sync endpoints are placeholders: updates are not persisted, and the sync route does not start a background sync.
-- Some direct finding/remediation routes do not enforce ownership as strictly as scan listing routes. Treat role-based UI restrictions separately from route-level access checks.
+- Admin configuration edits are persisted. Manual NVD synchronization is not implemented; the admin UI labels it unavailable and the endpoint returns 501.
+- Finding details and remediation creation check scan ownership for client accounts; remediation detail/list routes are also tenant-scoped for clients.
 - The scan target is only length/blank checked; the backend does not restrict it to an approved hostname or IP range. Authorization is an attestation logged by the user.
 - The default local database setting is SQLite, while triage uses PostgreSQL-specific `INSERT ... ON CONFLICT` logic. Production configuration should use the prepared PostgreSQL schema/migrations.
 - The `/health` route reports `status: "ok"` even if its separate `db` field says `"unreachable"`; check both fields.

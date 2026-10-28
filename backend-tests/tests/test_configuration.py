@@ -197,26 +197,21 @@ class TestErrorResponseDisclosure:
         assert "Traceback" not in r.text
         assert ".py\", line" not in r.text
 
-    async def test_crash_inducing_request_does_not_leak_stack_trace(self, client, unique_email):
+    async def test_overlong_password_is_rejected_without_stack_trace(self, client, unique_email):
         """
         CATEGORY: Configuration
-        TITLE: The known >72-byte-password 500 does not leak a stack trace to the client
-        OBJECTIVE: Even though this input triggers an unhandled server error
-                    (see VULN-002 in test_authentication.py / findings.xlsx),
-                    confirm production-mode error handling still hides the
-                    traceback from the response body -- i.e. the crash is a
-                    genuine bug, but not compounded by also being an info leak.
-        EXPECTED: 500, body/text does NOT contain 'Traceback' or a raw Python
-                   exception string with file paths.
-        SEVERITY: Medium
+        TITLE: An overlong registration password returns validation errors only
+        OBJECTIVE: Confirm the bcrypt byte limit is enforced before hashing.
+        EXPECTED: 422, body contains no traceback or server filesystem paths.
+        SEVERITY: Low
         """
         long_password = "Aa1!" * 50
         r = await client.post("/auth/register", json={
             "email": unique_email, "password": long_password, "full_name": "QA", "role": "client",
         })
-        if r.status_code == 500:
-            assert "Traceback" not in r.text
-            assert "/home/" not in r.text and "/app/" not in r.text
+        assert r.status_code == 422
+        assert "Traceback" not in r.text
+        assert "/home/" not in r.text and "/app/" not in r.text
 
 
 class TestRateLimiting:

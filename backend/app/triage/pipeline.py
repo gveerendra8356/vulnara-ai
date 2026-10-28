@@ -1,24 +1,23 @@
 """
 triage/pipeline.py
 
-This is the module referenced as a stub in Task 3's task_runner.py
-("TRIAGE HANDOFF" comment). It's Data Flow 2 from the project spec:
+This implements Data Flow 2 from the project spec:
 normalized telemetry -> AI cross-reference against CVE data -> prioritized
 threat matrix.
 
 Flow per host:
   1. For each open port, query NVD for candidate CVEs (nvd_client)
-  2. Batch all ports for that host into ONE Gemini call (prompts.py already
+  2. Batch all ports for that host into ONE AI call (prompts.py already
      batches per-host, not per-port, specifically to conserve free-tier
      rate limit budget -- see RATE_LIMITS.md)
-  3. Validate Gemini's response against TriageResponse
+  3. Validate the AI response against TriageResponse
   4. Write non-false-positive findings to Vulnerabilities
   5. Upsert any newly-seen CVEs into CVE_Definitions (organic cache growth,
      complementing the scheduled NVD sync job from Data Flow 4)
   6. Broadcast vulnerability.discovered (and alert.critical for CRITICAL
      severity) over the WebSocket, matching the Task 2 contract
-  7. Once all hosts are processed, mark the scan COMPLETED with real
-     severity counts
+  7. Return after all hosts are processed; task_runner marks the scan
+     COMPLETED after any selected active-testing stage also finishes.
 """
 
 from __future__ import annotations
@@ -81,7 +80,15 @@ async def run_triage(scan_id: uuid.UUID, normalized_payload: dict[str, Any]) -> 
                         continue  # explicitly filtered, per Data Flow 2 spec
 
                     await _persist_cve_if_new(session, finding, candidate_cves, host_entry)
-                    vuln = await _write_vulnerability(session, scan_id, finding)
+                    banner = next(
+                        (
+                            port_info.get("banner")
+                            for port_info in host_entry["ports"]
+                            if port_info["port"] == finding.port
+                        ),
+                        None,
+                    )
+                    vuln = await _write_vulnerability(session, scan_id, finding, banner)
                     severity_counts[finding.severity] += 1
 
                     await scan_connection_manager.broadcast(
@@ -195,8 +202,7 @@ async def _persist_cve_if_new(
     _write_vulnerability() inserts -- otherwise the insert throws a
     ForeignKeyViolationError that isn't caught anywhere in this pipeline
     and takes down the *entire* scan (see FALSE_POSITIVES.md history).
-    The AI (or its mock-fallback when the Groq API errors) can return a
-    cve_id that was never in our NVD candidate list, so we always fall
+    The AI can return a cve_id that was never in our NVD candidate list, so we always fall
     back to a minimal AI-sourced stub row rather than silently skipping
     the upsert.
     """
@@ -238,7 +244,10 @@ async def _persist_cve_if_new(
 
 
 async def _write_vulnerability(
-    session: AsyncSession, scan_id: uuid.UUID, finding: TriageFinding
+    session: AsyncSession,
+    scan_id: uuid.UUID,
+    finding: TriageFinding,
+    banner: str | None,
 ) -> Vulnerability:
     vuln = Vulnerability(
         scan_id=scan_id,
@@ -247,6 +256,7 @@ async def _write_vulnerability(
         port=finding.port,
         service_name=finding.service_name,
         service_version=finding.service_version,
+        banner=banner,
         severity=finding.severity,
         cvss_score=finding.cvss_score,
         confidence_score=finding.confidence_score,

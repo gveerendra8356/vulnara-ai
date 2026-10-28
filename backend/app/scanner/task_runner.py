@@ -6,9 +6,9 @@ Orchestrates a single scan end-to-end as an asyncio background task:
   2. Runs NmapScanner.run_full_scan(), forwarding phase progress as
      recon.progress WebSocket events
   3. Normalizes results via normalizer.normalize_scan_results()
-  4. Hands the normalized payload off to the AI triage layer (stubbed —
-     out of scope for this module; see TRIAGE HANDOFF note below)
-  5. On any unhandled error, marks the scan FAILED and broadcasts
+  4. Runs AI triage and optional active testing
+  5. Marks the scan COMPLETED after every selected stage finishes
+  6. On any unhandled error, marks the scan FAILED and broadcasts
      scan.failed with the error message
 
 DEPLOYMENT NOTE:
@@ -36,6 +36,7 @@ from app.models.scan import Scan
 from app.models.triage_models import Vulnerability
 from app.scanner.nmap_wrapper import NmapScanner, NmapExecutionError, NmapNotFoundError
 from app.scanner.normalizer import normalize_scan_results
+from app.triage.gemini_client import GeminiTriageError
 from app.websocket.manager import scan_connection_manager
 
 logger = logging.getLogger("vulnara.scanner")
@@ -161,11 +162,30 @@ async def run_scan_task(scan_id: uuid.UUID, target: str, active_testing_enabled:
             logger.info("Scan %s cancelled", scan_id_str)
             return
 
+        except GeminiTriageError:
+            failure_reason = (
+                "AI triage unavailable; findings may be incomplete. "
+                "No synthetic findings were created."
+            )
+            logger.exception("Scan %s failed during AI triage", scan_id_str)
+            await _mark_failed(session, scan_id, failure_reason)
+            await scan_connection_manager.broadcast(
+                scan_id_str,
+                "scan.failed",
+                {
+                    "status": "FAILED",
+                    "stage": "ai_triage",
+                    "error_message": failure_reason,
+                },
+            )
+
         except (NmapNotFoundError, NmapExecutionError) as e:
             logger.exception("Scan %s failed during recon", scan_id_str)
-            await _mark_failed(session, scan_id, str(e))
+            failure_reason = "Reconnaissance failed. Check the backend logs for details."
+            await _mark_failed(session, scan_id, failure_reason)
             await scan_connection_manager.broadcast(
-                scan_id_str, "scan.failed", {"status": "FAILED", "error_message": str(e)}
+                scan_id_str, "scan.failed",
+                {"status": "FAILED", "stage": "recon", "error_message": failure_reason},
             )
 
         except Exception as e:  # noqa: BLE001 - top-level task guard, must not raise
@@ -174,11 +194,12 @@ async def run_scan_task(scan_id: uuid.UUID, target: str, active_testing_enabled:
             # or a bug would leave the scan stuck IN_PROGRESS forever with
             # no error surfaced to the user.
             logger.exception("Scan %s failed with unexpected error", scan_id_str)
-            await _mark_failed(session, scan_id, "Internal error during scan")
+            failure_reason = "Scan failed due to an internal error. Check the backend logs for details."
+            await _mark_failed(session, scan_id, failure_reason)
             await scan_connection_manager.broadcast(
                 scan_id_str,
                 "scan.failed",
-                {"status": "FAILED", "error_message": "Internal error during scan"},
+                {"status": "FAILED", "error_message": failure_reason},
             )
 
 
@@ -210,10 +231,14 @@ async def _mark_completed(session: AsyncSession, scan_id: uuid.UUID) -> bool:
     return result.rowcount == 1
 
 
-async def _mark_failed(session: AsyncSession, scan_id: uuid.UUID, error_message: str) -> None:
+async def _mark_failed(session: AsyncSession, scan_id: uuid.UUID, failure_reason: str) -> None:
     await session.execute(
         update(Scan).where(Scan.scan_id == scan_id, Scan.status == "IN_PROGRESS")
-        .values(status="FAILED", completed_at=datetime.now(timezone.utc))
+        .values(
+            status="FAILED",
+            completed_at=datetime.now(timezone.utc),
+            failure_reason=failure_reason,
+        )
     )
     await session.commit()
-    logger.error("Scan %s marked FAILED: %s", scan_id, error_message)
+    logger.error("Scan %s marked FAILED: %s", scan_id, failure_reason)

@@ -55,6 +55,7 @@ async def main() -> None:
             port=443,
             service_name="https",
             service_version="nginx/1.18.0",
+            banner="HTTP/1.1 200 OK\r\nServer: nginx/1.18.0",
             severity="HIGH",
             cvss_score=7.5,
             confidence_score=0.92,

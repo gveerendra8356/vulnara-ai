@@ -208,29 +208,55 @@ class NmapScanner:
     # Low-level subprocess runner (nmap path only)
     # ------------------------------------------------------------------
     async def _run_nmap_xml(self, args: list[str]) -> ET.Element:
-        import subprocess
+        if self.nmap_path is None:
+            raise NmapNotFoundError("nmap is not available")
 
         cmd = [self.nmap_path, *args, "-oX", "-"]
-
-        def run_sync():
-            return subprocess.run(cmd, capture_output=True, timeout=self.timeout_seconds)
-
+        proc: asyncio.subprocess.Process | None = None
         try:
-            proc = await asyncio.to_thread(run_sync)
-        except subprocess.TimeoutExpired:
+            proc = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+            stdout, stderr = await asyncio.wait_for(
+                proc.communicate(), timeout=self.timeout_seconds
+            )
+        except asyncio.TimeoutError:
+            if proc is not None and proc.returncode is None:
+                try:
+                    proc.kill()
+                except ProcessLookupError:
+                    pass
+                await proc.wait()
             raise NmapExecutionError(
                 f"nmap timed out after {self.timeout_seconds}s running: {' '.join(cmd)}"
             )
-        except Exception as e:
+        except asyncio.CancelledError:
+            if proc is not None and proc.returncode is None:
+                try:
+                    proc.terminate()
+                except ProcessLookupError:
+                    pass
+                try:
+                    await asyncio.wait_for(proc.wait(), timeout=5)
+                except asyncio.TimeoutError:
+                    try:
+                        proc.kill()
+                    except ProcessLookupError:
+                        pass
+                    await proc.wait()
+            raise
+        except OSError as e:
             raise NmapExecutionError(f"Failed to execute nmap: {e}")
 
         if proc.returncode != 0:
             raise NmapExecutionError(
-                f"nmap exited {proc.returncode}: {proc.stderr.decode(errors='replace')}"
+                f"nmap exited {proc.returncode}: {stderr.decode(errors='replace')}"
             )
 
         try:
-            return ET.fromstring(proc.stdout)
+            return ET.fromstring(stdout)
         except ET.ParseError as e:
             raise NmapExecutionError(f"Failed to parse nmap XML output: {e}")
 

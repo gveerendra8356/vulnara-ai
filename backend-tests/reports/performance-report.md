@@ -18,7 +18,7 @@ over 5 minutes, with thresholds of p95 < 500ms and error rate < 1%.
 
 A lightweight async load generator (not k6 -- see below for why) hit
 `GET /health` and `GET /scans` concurrently against the same ephemeral
-instance used for the functional suite, immediately after the 400-case run.
+instance used for the functional suite.
 
 | Metric | GET /health | GET /scans (client1) |
 |---|---|---|

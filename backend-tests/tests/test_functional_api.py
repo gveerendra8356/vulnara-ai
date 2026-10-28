@@ -250,14 +250,15 @@ class TestVulnerabilityCrud:
         CATEGORY: Functional API
         TITLE: GET /vulnerabilities/{id} response matches VulnerabilityResponse contract
         OBJECTIVE: Confirm every documented field is present.
-        EXPECTED: vuln_id, scan_id, host, severity, confidence_score, status, discovered_at present.
+        EXPECTED: vuln_id, scan_id, host, banner, severity, confidence_score, status, discovered_at present.
         SEVERITY: Medium
         """
         r = await client.get(f"/vulnerabilities/{seeded_vulnerability['vuln_id']}", headers=admin_headers)
         assert r.status_code == 200
         body = r.json()
-        for field in ("vuln_id", "scan_id", "host", "severity", "confidence_score", "status", "discovered_at"):
+        for field in ("vuln_id", "scan_id", "host", "banner", "severity", "confidence_score", "status", "discovered_at"):
             assert field in body
+        assert body["banner"] == "HTTP/1.1 200 OK\r\nServer: nginx/1.18.0"
 
     async def test_get_nonexistent_vulnerability_returns_404(self, client, admin_headers):
         """
@@ -278,10 +279,10 @@ class TestVulnerabilityCrud:
         EXPECTED: 404 Not Found.
         SEVERITY: Low
         """
-        r = await client.patch(f"/vulnerabilities/{uuid.uuid4()}", headers=analyst_headers, json={"status": "CONFIRMED"})
+        r = await client.patch(f"/vulnerabilities/{uuid.uuid4()}", headers=analyst_headers, json={"status": "OPEN"})
         assert r.status_code == 404
 
-    @pytest.mark.parametrize("new_status", ["CONFIRMED", "FALSE_POSITIVE", "REMEDIATED", "OPEN"])
+    @pytest.mark.parametrize("new_status", ["FALSE_POSITIVE", "REMEDIATED", "ACCEPTED_RISK", "OPEN"])
     async def test_update_vulnerability_status_round_trips(self, client, analyst_headers, seeded_vulnerability, new_status):
         """
         CATEGORY: Functional API
@@ -870,4 +871,3 @@ class TestMoreFieldLevelContractChecks:
         })
         assert r.status_code == 201
         assert r.json()["platform"] == "android"
-

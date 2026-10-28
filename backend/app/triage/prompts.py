@@ -1,9 +1,9 @@
 """
 triage/prompts.py
 
-Prompt templates for the two Gemini calls. Design principles applied
+Prompt templates for the AI calls. Design principles applied
 throughout (see Task 4, item 3 for the full explanation):
-  - The schema is described in the prompt AND enforced via Gemini's
+  - The schema is described in the prompt AND enforced via the model's
     response_schema/JSON mode (gemini_client.py) -- redundant on purpose.
   - Every instruction that matters for parsing safety is stated as a
     constraint ("must", "never", "exactly"), not a suggestion.
@@ -62,7 +62,7 @@ def build_triage_prompt(
     """
     Builds the user-turn prompt for one host's worth of findings in a
     single call (batched per host, not per port, to keep request volume
-    reasonable against Gemini's free-tier rate limits -- see RATE_LIMITS.md).
+    reasonable against the provider's rate limits -- see RATE_LIMITS.md).
 
     `candidate_cves` maps port -> list of CVE dicts from nvd_client, already
     trimmed to the fields the model needs (we don't send the full raw NVD

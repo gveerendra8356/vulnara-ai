@@ -178,6 +178,7 @@ async def get_scan(
         "user_id": scan.user_id,
         "target": scan.target,
         "status": scan.status,
+        "failure_reason": scan.failure_reason,
         "active_testing_enabled": scan.active_testing_enabled,
         "authorization_justification": scan.authorization_justification,
         "started_at": scan.started_at,

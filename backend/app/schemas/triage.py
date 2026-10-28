@@ -23,6 +23,7 @@ class VulnerabilityResponse(BaseModel):
     port: Optional[int] = None
     service_name: Optional[str] = None
     service_version: Optional[str] = None
+    banner: Optional[str] = None
     severity: str
     cvss_score: Optional[float] = None
     confidence_score: float

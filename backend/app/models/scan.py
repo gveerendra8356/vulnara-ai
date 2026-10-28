@@ -42,6 +42,7 @@ class Scan(Base):
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="PENDING")
     # Valid values (enforced at the DB level via CHECK constraint, see Task 1 SQL):
     # PENDING | IN_PROGRESS | COMPLETED | FAILED | CANCELLED
+    failure_reason: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

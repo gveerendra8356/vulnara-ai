@@ -1,13 +1,13 @@
 # Vulnara Backend Test Suite
 
-A 400-case automated regression + security test suite for
+A backend API regression + security test suite for
 [`vulnara-ai/backend`](https://github.com/gveerendra8356/vulnara-ai), built
 by actually reading the codebase (routes, schemas, models) rather than
 guessing at an API contract, and validated by running every single test
 against the real, running FastAPI application.
 
-**Last run: 399 passed / 400, 1 confirmed bug (not a flaky test — see
-below).** Full results are in `reports/`.
+**Last full run (2026-10-28): 404 passed, 0 failed.** Full results are in
+`reports/`.
 
 ## What's in here
 
@@ -19,14 +19,15 @@ backend-tests/
 ├── pytest.ini
 ├── requirements.txt
 ├── tests/
-│   ├── test_authentication.py   # 43 cases  — register/login/refresh/logout/me
-│   ├── test_authorization.py    # 47 cases  — RBAC + cross-tenant IDOR checks
-│   ├── test_input_validation.py # 59 cases  — boundary/format checks on every schema
-│   ├── test_injection.py        # 67 cases  — SQLi, command injection, path traversal, SSRF, XSS, JWT
-│   ├── test_business_logic.py   # 22 cases  — remediation state machine, scan cancellation rules
-│   ├── test_configuration.py    # 26 cases  — CORS, security headers, rate limiting
-│   ├── test_functional_api.py   # 84 cases  — CRUD/response-contract correctness, every endpoint
-│   └── test_dast.py             # 27 cases  — auth bypass, JWT tampering, brute force, IDOR probes
+│   ├── test_authentication.py   # register/login/refresh/logout/me
+│   ├── test_authorization.py    # RBAC + cross-tenant access checks
+│   ├── test_input_validation.py # schema boundaries and formats
+│   ├── test_injection.py        # injection and payload handling
+│   ├── test_business_logic.py   # remediation lifecycle and scan cancellation
+│   ├── test_configuration.py    # CORS, headers, and rate-limit behavior
+│   ├── test_functional_api.py   # API contract coverage
+│   ├── test_dast.py             # auth bypass, JWT, and IDOR probes
+│   └── test_scan_runtime.py     # AI failure propagation and subprocess cancellation
 ├── performance/
 │   └── k6-load-test.js          # full k6 script for CI/staging (see performance-report.md for why it wasn't run here)
 ├── scripts/
@@ -70,7 +71,7 @@ That's it — no separate database, no Docker, no manual server startup.
 5. Every test talks to that instance over real HTTP with `httpx` — this
    exercises CORS middleware, JSON parsing, the real JWT auth dependency,
    and real async DB round trips, not just a route handler called directly.
-6. Tears the server down and deletes the DB file when the session ends.
+6. Tears the server down. The next run recreates the isolated test database.
 
 Nothing here ever touches a production database or real credentials.
 
@@ -80,45 +81,36 @@ Nothing here ever touches a production database or real credentials.
 |---|---|
 | `reports/test-cases.xlsx` | One row per test case: ID, category, title, objective, steps, expected result, severity, **actual pass/fail status from the last run**, duration. Plus a per-category summary sheet. |
 | `reports/Automation_Test_Report.xlsx` | Styled to match the sample report you shared — `Executed Tests` / `Passed` / `Failed` / `Skipped` / `Execution Metrics` / `Defect Summary` sheets. |
-| `reports/findings.xlsx` | 10 curated, confirmed findings (not every "documents current behavior" test — the real, reviewed list), each with severity, evidence (which test proves it), impact, and a specific fix. |
+| `reports/findings.xlsx` | Curated findings with severity, evidence, impact, and recommended fixes. |
 | `reports/endpoint-inventory.xlsx` | All 27 REST endpoints + 1 WebSocket, method, auth requirement, description. |
 | `reports/backend-inventory.md` | Stack detection: framework, DB, auth mechanism, API surface, environment notes. |
-| `reports/executive-summary.md` | One page, non-technical, headline numbers + top findings. |
-| `reports/security-review.md` | Full narrative security review with all 10 findings in detail. |
+| `reports/executive-summary.md` | Headline numbers and curated follow-up items. |
+| `reports/security-review.md` | Summary of curated findings and test methodology. |
 | `reports/performance-report.md` | Real latency numbers from a lightweight load sample, plus why full k6 wasn't run here (see below) and how to run it yourself. |
 
 `generate_reports.py` re-parses every test's docstring via Python's `ast`
-module (not just whatever ran), so `test-cases.xlsx` documents all 400
+module (not just whatever ran), so `test-cases.xlsx` documents all collected
 cases regardless of which ones executed in a given run, and merges in the
 actual pass/fail outcome from `--json-report` when available.
 
-## The one confirmed failure — this is a real bug, not a flaky test
+## Corrected regression coverage
 
-`test_authentication.py::TestRegistration::test_register_extremely_long_password_does_not_crash`
-**fails on every run, on purpose.** Registering with a password longer than
-bcrypt's 72-byte input limit crashes the server with an unhandled 500
-instead of a clean validation error. That's `VULN-002` in `findings.xlsx`
-— a one-line fix (`Field(min_length=8, max_length=72)` on
-`UserRegisterRequest.password`). Once fixed, re-running the suite should
-flip this test to a pass.
+Passwords exceeding bcrypt's 72-byte limit are rejected with HTTP 422 for
+registration, profile password changes, and admin-created accounts. Tests
+assert the validation result rather than treating a server error as expected.
 
-## The 10 confirmed findings (see `findings.xlsx` / `security-review.md`)
+## Findings carried forward (see `findings.xlsx` / `security-review.md`)
 
 | ID | Severity | Summary |
 |---|---|---|
-| VULN-001 | **Critical** | `GET /vulnerabilities/{id}` and `GET /remediations/{id}` have no cross-tenant ownership check — any authenticated user can read any other tenant's data by ID. |
-| VULN-002 | **Critical** | Registering with a >72-byte password crashes the server (500). |
-| VULN-006 | High | `POST /remediations/{id}/mark-executed` has no role check at all; `create_remediation` has no ownership check either. |
 | VULN-005 | High | No SSRF deny-list on scan targets (metadata IPs, localhost all accepted). |
 | VULN-009 | High | No rate limiting anywhere on `/auth/login` or `/auth/register`. |
 | VULN-004 | Medium | A scan target starting with `-` could argument-inject into the `nmap` call. |
-| VULN-007 | Medium | Approve/reject on a remediation has no state-machine guard — can silently flip an already-approved remediation to rejected. |
-| VULN-010 | Medium | `PATCH /admin/config/{key}` reports success but never actually persists (both endpoints are hardcoded stubs). |
-| VULN-003 | Low | Vulnerability `status` field accepts any string, no enum validation. |
 | VULN-008 | Low | No security response headers (X-Frame-Options, CSP, etc.) or Server-banner suppression. |
 
-Every one of these is backed by a specific, reproducible test — see the
-`Evidence` column in `findings.xlsx` for the exact test name.
+See the evidence column in `findings.xlsx`; accepted-input tests alone do not
+prove end-to-end exploitability. No live scan was run as part of this test
+suite.
 
 ## What was verified to be solid
 
@@ -148,4 +140,3 @@ testing. Logout genuinely revokes refresh tokens. See
   instead reports real numbers from a smaller in-process async load sample
   (`scripts/perf_sample.py`) against the same ephemeral instance, and is
   explicit about the difference in what that does and doesn't tell you.
-

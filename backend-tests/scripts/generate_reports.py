@@ -24,6 +24,7 @@ import ast
 import json
 import re
 import sys
+import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -56,7 +57,7 @@ def parse_test_docstrings() -> list[dict]:
     documented even if the run itself was partial."""
     cases = []
     for path in sorted(TESTS_DIR.glob("test_*.py")):
-        tree = ast.parse(path.read_text(), filename=str(path))
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         class_stack = []
 
         def visit(node, class_name=None):
@@ -66,7 +67,7 @@ def parse_test_docstrings() -> list[dict]:
                 elif isinstance(child, ast.AsyncFunctionDef) and child.name.startswith("test_"):
                     docstring = ast.get_docstring(child) or ""
                     m = FIELD_RE.search(docstring)
-                    nodeid_base = f"{path.relative_to(ROOT)}::"
+                    nodeid_base = f"{path.relative_to(ROOT).as_posix()}::"
                     if class_name:
                         nodeid_base += f"{class_name}::"
                     nodeid_base += child.name
@@ -113,7 +114,7 @@ def parse_test_docstrings() -> list[dict]:
 def load_json_results(json_report_path: Path) -> dict:
     if not json_report_path.exists():
         return {}
-    data = json.loads(json_report_path.read_text())
+    data = json.loads(json_report_path.read_text(encoding="utf-8"))
     by_base = {}
     for t in data.get("tests", []):
         nodeid = t["nodeid"]
@@ -142,6 +143,56 @@ def merge_cases_with_results(cases: list[dict], results: dict) -> list[dict]:
                 "nodeid": m["nodeid"],
             })
     return merged
+
+
+def write_junit_xml(results: dict, out_path: Path) -> None:
+    tests = results.get("raw", {}).get("tests", [])
+    def phase(test: dict, name: str) -> dict:
+        value = test.get(name)
+        return value if isinstance(value, dict) else {}
+
+    failures = sum(1 for test in tests if test.get("outcome") == "failed")
+    skipped = sum(1 for test in tests if test.get("outcome") == "skipped")
+    errors = sum(
+        1
+        for test in tests
+        if phase(test, "setup").get("outcome") == "failed"
+        or phase(test, "teardown").get("outcome") == "failed"
+    )
+    duration = sum(
+        phase(test, "call").get("duration", 0)
+        + phase(test, "setup").get("duration", 0)
+        + phase(test, "teardown").get("duration", 0)
+        for test in tests
+    )
+    suite = ET.Element(
+        "testsuite",
+        name="backend-tests",
+        tests=str(len(tests)),
+        failures=str(failures),
+        errors=str(errors),
+        skipped=str(skipped),
+        time=f"{duration:.4f}",
+    )
+
+    for test in tests:
+        parts = test["nodeid"].split("::")
+        case = ET.SubElement(
+            suite,
+            "testcase",
+            classname=".".join(parts[:-1]),
+            name=parts[-1],
+            time=f"{phase(test, 'call').get('duration', 0):.4f}",
+        )
+        if test.get("outcome") == "failed":
+            details = phase(test, "call").get("longrepr") or "Test failed"
+            failure = ET.SubElement(case, "failure", message="Test failed")
+            failure.text = details if isinstance(details, str) else repr(details)
+        elif test.get("outcome") == "skipped":
+            ET.SubElement(case, "skipped")
+
+    ET.indent(suite, space="  ")
+    ET.ElementTree(suite).write(out_path, encoding="utf-8", xml_declaration=True)
 
 
 # ---------------------------------------------------------------------------
@@ -308,52 +359,18 @@ def write_automation_style_report(merged: list[dict], run_meta: dict, out_path: 
 # ---------------------------------------------------------------------------
 
 FINDINGS = [
-    dict(id="VULN-001", severity="Critical", area="Authorization / IDOR",
-         endpoint="GET /vulnerabilities/{vuln_id}, GET /remediations/{rem_id}, GET /remediations",
-         description=("Neither GET /vulnerabilities/{id} nor GET /remediations/{id} performs any "
-                       "ownership/tenant check, unlike the equivalent /scans/* endpoints. Any "
-                       "authenticated user of any role can read any other tenant's vulnerability "
-                       "or remediation data by ID or via the unscoped list endpoint."),
-         evidence="test_authorization.py::TestKnownIdorGaps (3 tests, all confirming current 200 OK behavior)",
-         impact="Cross-tenant data disclosure of vulnerability and remediation details, including AI-generated remediation scripts.",
-         remediation="Add the same scan-ownership join check used in scans.py (scan.user_id == current_user.user_id or role == 'admin') to get_vulnerability, get_remediation, and list_remediations."),
-    dict(id="VULN-002", severity="Critical", area="Authentication / Availability",
-         endpoint="POST /auth/register",
-         description=("Registering with a password longer than bcrypt's 72-byte input cap raises an "
-                       "unhandled exception, returning an HTTP 500 instead of a clean validation error."),
-         evidence="test_authentication.py::TestRegistration::test_register_extremely_long_password_does_not_crash (reproducibly fails)",
-         impact="Unauthenticated crash-inducing input on a public endpoint; potential denial-of-service / log-noise vector.",
-         remediation="Add an explicit max_length (e.g. 72) to UserRegisterRequest.password, or truncate/reject before passing to passlib."),
-    dict(id="VULN-003", severity="Low", area="Input Validation",
-         endpoint="PATCH /vulnerabilities/{vuln_id}",
-         description="VulnerabilityUpdateRequest.status is a bare `str` with no Literal/enum constraint and no DB-level CHECK constraint; any string, including empty or garbage values, is persisted as-is.",
-         evidence="test_input_validation.py::TestVulnerabilityUpdateValidation (5 tests, confirming current 200 OK behavior)",
-         impact="Data-integrity risk -- downstream code filtering/branching on status values may silently mishandle unexpected values.",
-         remediation="Constrain status to Literal['OPEN','CONFIRMED','FALSE_POSITIVE','REMEDIATED'] (or equivalent) in the schema."),
     dict(id="VULN-004", severity="Medium", area="Injection / Argument Injection",
          endpoint="POST /scans",
-         description="The `target` field applies no allow-list or leading-character restriction; a target beginning with '-' could be interpreted as an nmap flag by argument position once it reaches the scanner, even though the subprocess call itself is not shell-based.",
+         description="The API accepts targets beginning with '-'. The scanner passes the target as a subprocess argument, not through a shell; however, nmap option parsing for such a target has not been exercised end to end.",
          evidence="test_injection.py::TestCommandInjection::test_target_starting_with_dash_does_not_crash_api",
-         impact="Potential argument-injection into the nmap invocation (e.g. forcing output-file flags or altering scan behavior).",
-         remediation="Reject targets starting with '-' or prefix the nmap argument list with '--' before the target."),
+         impact="A leading dash could be interpreted as a scanner option if target parsing does not terminate options.",
+         remediation="Reject targets starting with '-' or use the scanner's supported option terminator before the target."),
     dict(id="VULN-005", severity="High", area="SSRF",
          endpoint="POST /scans",
-         description="No deny-list exists for internal/loopback/link-local/cloud-metadata address ranges on the `target` field.",
+         description="The API permits internal, loopback, and link-local targets after the user confirms authorization. This is expected for authorized internal assessments, but deployments serving untrusted tenants may need an explicit target-range policy.",
          evidence="test_injection.py::TestSsrfStyleTargets (6 parametrized targets, all currently accepted)",
-         impact="If active_testing_enabled is combined with such a target, the scanner could be induced to probe internal infrastructure (including cloud metadata endpoints) on the API's behalf.",
-         remediation="Validate/resolve the target and reject RFC 1918, loopback, link-local, and known cloud-metadata ranges unless explicitly allow-listed per tenant."),
-    dict(id="VULN-006", severity="High", area="Authorization",
-         endpoint="POST /remediations/{rem_id}/mark-executed, POST /vulnerabilities/{vuln_id}/remediations",
-         description="mark_remediation_executed() has no role check at all (unlike /approve and /reject, both gated to analyst/admin) -- a client-role user can mark a remediation executed. create_remediation() similarly has no ownership or role restriction, letting any authenticated user trigger a billed AI generation call for a vulnerability they don't own.",
-         evidence="test_business_logic.py::test_mark_executed_has_no_role_restriction, test_create_remediation_has_no_ownership_or_role_restriction",
-         impact="Unauthorized state changes to the remediation workflow, and unauthorized consumption of paid AI API calls.",
-         remediation="Add the same `if current_user.role not in ['analyst','admin']` guard used elsewhere in remediations.py, plus a scan-ownership check for create_remediation."),
-    dict(id="VULN-007", severity="Medium", area="Business Logic",
-         endpoint="POST /remediations/{rem_id}/approve, POST /remediations/{rem_id}/reject",
-         description="Neither endpoint checks the remediation's current status before transitioning it -- an already-APPROVED remediation can be silently REJECTED (or vice versa) with no conflict error and no record of the contradiction.",
-         evidence="test_business_logic.py::test_reject_after_approve_silently_overwrites_state",
-         impact="Audit-trail integrity gap in a security-sensitive approval workflow.",
-         remediation="Add a state-machine guard: only allow PENDING -> APPROVED/REJECTED transitions, returning 409 Conflict otherwise."),
+         impact="Without tenant isolation or target policy, a user could cause the service to probe networks reachable from the backend.",
+         remediation="Define a deployment-specific allow-list or authorization policy for reachable target ranges; do not blanket-block private networks when internal scanning is intended."),
     dict(id="VULN-008", severity="Low", area="Configuration / Security Headers",
          endpoint="All endpoints",
          description="No security response headers are set at the application layer: X-Content-Type-Options, X-Frame-Options, Strict-Transport-Security, Content-Security-Policy are all absent, and the default 'Server: uvicorn' banner is exposed.",
@@ -366,12 +383,6 @@ FINDINGS = [
          evidence="test_configuration.py::TestRateLimiting (2 tests)",
          impact="No built-in protection against credential-stuffing/brute-force login attempts or registration spam.",
          remediation="Add per-IP and per-account rate limiting on /auth/login and /auth/register (e.g. via slowapi or a reverse-proxy rule)."),
-    dict(id="VULN-010", severity="Medium", area="Functional Gap",
-         endpoint="PATCH /admin/config/{key}",
-         description="update_config() returns the submitted value directly without writing to any store, and list_config() returns a hardcoded literal list -- a PATCH call reports success but has zero effect on subsequent GETs.",
-         evidence="test_functional_api.py::test_patch_config_change_is_not_actually_persisted",
-         impact="Administrators would reasonably believe a configuration change took effect when it did not; not a security issue but a significant functional/trust gap.",
-         remediation="Back /admin/config with a real table (or settings store) and have both endpoints read/write the same source of truth."),
 ]
 
 
@@ -447,6 +458,41 @@ ENDPOINTS = [
     ("GET", "/admin/cve-definitions", "Bearer (admin)", "List synced CVE definitions"),
     ("POST", "/admin/cve-definitions/sync", "Bearer (admin)", "Trigger NVD CVE sync"),
     ("GET", "/health", "None", "Liveness + DB connectivity check"),
+]
+
+_CURRENT_ENDPOINT_METADATA = {
+    "/vulnerabilities/{vuln_id}": (
+        "Authenticated; client access is scan-owner scoped",
+        "Fetch one vulnerability",
+    ),
+    "/vulnerabilities/{vuln_id}/remediations": (
+        "Authenticated; client access is scan-owner scoped",
+        "Trigger AI remediation generation",
+    ),
+    "/remediations": (
+        "Authenticated; client results are tenant-scoped",
+        "List remediations, optional ?status=",
+    ),
+    "/remediations/{rem_id}": (
+        "Authenticated; client access is scan-owner scoped",
+        "Fetch one remediation",
+    ),
+    "/remediations/{rem_id}/mark-executed": (
+        "Analyst/admin only; remediation must be APPROVED",
+        "Mark an APPROVED remediation as executed",
+    ),
+    "/admin/config": ("Admin only", "List persisted runtime configuration"),
+    "/admin/config/{key}": ("Admin only", "Update persisted runtime configuration"),
+    "/admin/cve-definitions/sync": (
+        "Admin only",
+        "Manual NVD sync is unavailable; endpoint returns 501",
+    ),
+}
+ENDPOINTS = [
+    (method, path, *_CURRENT_ENDPOINT_METADATA[path])
+    if path in _CURRENT_ENDPOINT_METADATA
+    else (method, path, auth, description)
+    for method, path, auth, description in ENDPOINTS
 ]
 
 
@@ -556,31 +602,19 @@ against every relevant field and endpoint, and every attempt was correctly
 rejected. Authentication, token refresh/revocation, and the primary
 scan-ownership authorization checks all behave as designed.
 
-That said, this run surfaced **{len(FINDINGS)} confirmed issues**, most
-importantly:
-
-- **VULN-001 (Critical):** `GET /vulnerabilities/{{id}}` and
-  `GET /remediations/{{id}}` have no cross-tenant ownership check at all --
-  any logged-in user can read another customer's vulnerability/remediation
-  data by ID.
-- **VULN-002 (Critical):** Registering with an unusually long password
-  crashes the server with a 500 instead of a clean validation error.
-- **VULN-006 (High):** `POST /remediations/{{id}}/mark-executed` has no
-  role check -- a client-role user can mark a remediation as executed.
-- **VULN-005 (High) / VULN-009 (High):** No SSRF-range restriction on scan
-  targets, and no rate limiting anywhere on login/registration.
+The regression suite verifies that finding/remediation ownership checks,
+password-byte validation, remediation role restrictions, and workflow state
+transitions are enforced. The remaining items in the curated findings
+report should be reviewed before deployment, especially target restrictions
+and authentication rate limiting.
 
 Full technical detail, evidence, and recommended fixes for every finding are
-in `findings.xlsx` and `security-review.md`. Every finding above is backed
-by a specific, reproducible automated test in this suite -- re-running
-`pytest` after a fix should flip the corresponding test's outcome, which is
-called out explicitly in each test's assertion message.
+in `findings.xlsx` and `security-review.md`.
 
 ## Recommendation
-None of the findings above require blocking a release outright, but
-VULN-001, VULN-002, and VULN-006 should be treated as should-fix-before-next-release
-given they're all reachable by any authenticated user with no special
-tooling. The rest are reasonable backlog items.
+Do not treat this automated test report as a substitute for a deployment
+review or an authorized live scan. Resolve the remaining findings and
+confirm configuration, authorization, and operational controls in staging.
 """, encoding="utf-8")
 
 
@@ -596,20 +630,17 @@ def write_security_review_md(out_path: Path) -> None:
     )
     out_path.write_text(f"""# Security Review -- Vulnara Backend
 
-This review is based on (1) a manual read of every route, schema, and model
-in `backend/app/`, and (2) {len(FINDINGS)} findings confirmed by automated
-tests that exercise the real, running application over HTTP -- not just a
-static-analysis pass. See `test-cases.xlsx` for the full 400-case suite and
-`findings.xlsx` for the machine-readable finding list.
+This generated report summarizes the current curated findings and their
+regression-test references. It is not a new independent security review.
+See `findings.xlsx` for the machine-readable finding list.
 
 ## What was tested well and holds up
 - **SQL injection:** every free-text field (scan target, justification,
   login credentials) was fuzzed with 15 classic SQLi payloads; the
   SQLAlchemy async ORM's parameterized queries held in every case.
 - **Command / argument injection:** `nmap` is invoked via
-  `asyncio.create_subprocess_exec` with an argument list (never `shell=True`),
-  confirmed safe against shell metacharacter payloads -- though see VULN-004
-  for a narrower argument-injection edge case.
+  `asyncio.create_subprocess_exec` with an argument list (never `shell=True`);
+  target validation remains a separate concern.
 - **Path traversal:** no field is ever used as a filesystem path; traversal
   payloads are stored/rejected as inert text.
 - **JWT security:** `alg: none`, algorithm-confusion, weak-secret guessing,
@@ -621,12 +652,12 @@ static-analysis pass. See `test-cases.xlsx` for the full 400-case suite and
   with an admin override, verified via a real two-client-account IDOR setup
   (not just "authenticated vs not").
 
-## Confirmed findings
+## Curated follow-up items
 
 {finding_sections}
 
 ## Methodology notes
-- All 400 tests in this suite run against a real `uvicorn` process bound to
+- The HTTP integration tests run against a real `uvicorn` process bound to
   an ephemeral SQLite database, not against route handlers called directly
   in-process -- so CORS middleware, JSON parsing, and the real JWT auth
   dependency are all genuinely exercised on every request.
@@ -644,7 +675,7 @@ def write_performance_report_md(out_path: Path, perf_stats: dict | None) -> None
 
 A lightweight async load generator (not k6 -- see below for why) hit
 `GET /health` and `GET /scans` concurrently against the same ephemeral
-instance used for the functional suite, immediately after the 400-case run.
+instance used for the functional suite.
 
 | Metric | GET /health | GET /scans (client1) |
 |---|---|---|
@@ -709,6 +740,8 @@ def main() -> None:
     results = load_json_results(args.json_report)
     merged = merge_cases_with_results(cases, results)
     print(f"  {len(merged)} rows after merging with execution results")
+    print("Writing junit.xml...")
+    write_junit_xml(results, REPORTS_DIR / "junit.xml")
 
     run_meta = {
         "run_at": datetime.now(timezone.utc).isoformat(),
@@ -738,7 +771,7 @@ def main() -> None:
 
     perf_stats = None
     if args.perf_stats.exists():
-        perf_stats = json.loads(args.perf_stats.read_text())
+        perf_stats = json.loads(args.perf_stats.read_text(encoding="utf-8"))
     print("Writing performance-report.md...")
     write_performance_report_md(REPORTS_DIR / "performance-report.md", perf_stats)
 

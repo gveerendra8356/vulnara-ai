@@ -50,6 +50,7 @@ class Vulnerability(Base):
     port: Mapped[int | None] = mapped_column(Integer, nullable=True)
     service_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
     service_version: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    banner: Mapped[str | None] = mapped_column(Text, nullable=True)
     severity: Mapped[str] = mapped_column(String(10), nullable=False)
     cvss_score: Mapped[float | None] = mapped_column(Numeric(3, 1), nullable=True)
     confidence_score: Mapped[float] = mapped_column(Numeric(3, 2), nullable=False)

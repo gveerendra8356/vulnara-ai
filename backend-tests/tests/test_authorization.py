@@ -137,7 +137,7 @@ class TestAnalystPrivilegedActions:
         """
         r = await client.patch(
             f"/vulnerabilities/{seeded_vulnerability['vuln_id']}",
-            json={"status": "CONFIRMED"}, headers=client1_headers,
+            json={"status": "OPEN"}, headers=client1_headers,
         )
         assert r.status_code == 403
 
@@ -151,7 +151,7 @@ class TestAnalystPrivilegedActions:
         """
         r = await client.patch(
             f"/vulnerabilities/{seeded_vulnerability['vuln_id']}",
-            json={"status": "CONFIRMED"}, headers=analyst_headers,
+            json={"status": "REMEDIATED"}, headers=analyst_headers,
         )
         assert r.status_code == 200
 
@@ -326,39 +326,30 @@ class TestScanOwnershipCrossTenant:
         assert client1_scan["scan_id"] in ids
 
 
-class TestKnownIdorGaps:
+class TestFindingAndRemediationOwnership:
     """
-    These document CONFIRMED gaps found by static review of
-    api/routes/vulnerabilities.py and api/routes/remediations.py: neither
-    GET /vulnerabilities/{id} nor GET /remediations/{id} performs any
-    ownership check at all (unlike the /scans/* family above). Any
-    authenticated user -- any role -- can read any other tenant's
-    vulnerability or remediation record by ID. See findings.xlsx (VULN-001).
+    Regression tests ensuring finding and remediation details remain scoped
+    to the owning client's scans.
     """
 
-    async def test_get_vulnerability_by_id_has_no_ownership_check(self, client, client2_headers, seeded_vulnerability):
+    async def test_client_cannot_get_another_clients_vulnerability(self, client, client2_headers, seeded_vulnerability):
         """
         CATEGORY: Authorization
-        TITLE: [IDOR - CONFIRMED FINDING] GET /vulnerabilities/{id} has no tenant check
-        OBJECTIVE: Document that a client from a different tenant CAN currently
-                    read a vulnerability that belongs to another user's scan.
-        EXPECTED (CURRENT BEHAVIOR): 200 OK -- this is the vulnerability, not the
-                   correct behavior. See findings.xlsx VULN-001 (Critical) for
-                   the remediation recommendation (add a scan-ownership join
-                   check identical to the one already used in scans.py).
-        SEVERITY: Critical
+        TITLE: A client cannot read another client's vulnerability by ID
+        OBJECTIVE: Verify vulnerability detail access checks scan ownership.
+        EXPECTED: 404 Not Found.
+        SEVERITY: High
         """
         r = await client.get(f"/vulnerabilities/{seeded_vulnerability['vuln_id']}", headers=client2_headers)
         assert r.status_code == 404
 
-    async def test_get_remediation_by_id_has_no_ownership_check(self, client, client2_headers, seeded_remediation):
+    async def test_client_cannot_get_another_clients_remediation(self, client, client2_headers, seeded_remediation):
         """
         CATEGORY: Authorization
-        TITLE: [IDOR - CONFIRMED FINDING] GET /remediations/{id} has no tenant check
-        OBJECTIVE: Document that a client from a different tenant CAN currently
-                    read another tenant's remediation record.
-        EXPECTED (CURRENT BEHAVIOR): 200 OK. See findings.xlsx VULN-001.
-        SEVERITY: Critical
+        TITLE: A client cannot read another client's remediation by ID
+        OBJECTIVE: Verify remediation detail access checks scan ownership.
+        EXPECTED: 404 Not Found.
+        SEVERITY: High
         """
         r = await client.get(f"/remediations/{seeded_remediation['remediation_id']}", headers=client2_headers)
         assert r.status_code == 404

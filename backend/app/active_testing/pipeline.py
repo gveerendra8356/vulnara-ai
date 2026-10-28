@@ -192,7 +192,7 @@ async def _run_one_test(
         if strong_result is not None:
             heuristic = strong_result  # real execution evidence supersedes the reflection heuristic
 
-    # --- only escalate to AI verification (costs a Gemini call) if there's a signal to judge ---
+    # --- only escalate to AI verification if there's a signal to judge ---
     if heuristic.signal_detected:
         verdict = await ai_verify(
             attack_type=attack_type.value,
@@ -203,7 +203,7 @@ async def _run_one_test(
         )
     else:
         # No heuristic signal -- log a clean negative result without
-        # spending a Gemini call on it. Still written to Threat_Logs:
+        # spending an AI call on it. Still written to Threat_Logs:
         # "tested, found nothing" is meaningful audit trail.
         from app.triage.schemas import ActiveTestVerdict
         verdict = ActiveTestVerdict(

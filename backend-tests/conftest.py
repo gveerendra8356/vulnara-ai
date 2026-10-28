@@ -30,6 +30,8 @@ from pathlib import Path
 
 import httpx
 import pytest
+from sqlalchemy.engine import URL
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 _FIXTURE_DATA: dict = {}
 
@@ -39,8 +41,10 @@ _FIXTURE_DATA: dict = {}
 
 THIS_DIR = Path(__file__).resolve().parent
 BACKEND_DIR = Path(os.environ.get("BACKEND_DIR", THIS_DIR.parent / "backend")).resolve()
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
 
-TEST_DB_FILENAME = "ci_test.db"
+TEST_DB_FILENAME = os.environ.get("BACKEND_TEST_DB_FILENAME", "ci_test.db")
 TEST_DB_PATH = BACKEND_DIR / TEST_DB_FILENAME
 
 HOST = os.environ.get("BACKEND_HOST", "127.0.0.1")
@@ -105,6 +109,7 @@ def base_url():
     env["VULNARA_SECRET_KEY"] = SECRET_KEY
     env["CORS_ORIGINS"] = env.get("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000")
     env["ENVIRONMENT"] = "development"
+    env["PYTHONIOENCODING"] = "utf-8"
     env.setdefault("PYTHONUNBUFFERED", "1")
 
     # 1. Create schema against the ephemeral DB (mirrors apply_migration.py).
@@ -326,11 +331,45 @@ def seeded_vulnerability(base_url):
     return {"vuln_id": _FIXTURE_DATA["vuln_id"], "scan_id": _FIXTURE_DATA["scan_id"]}
 
 
-@pytest.fixture(scope="session")
+def _create_pending_remediation() -> dict:
+    import importlib
+
+    importlib.import_module("app.models.user")
+    importlib.import_module("app.models.scan")
+    from app.models.triage_models import Remediation
+
+    async def create():
+        engine = create_async_engine(
+            URL.create("sqlite+aiosqlite", database=str(TEST_DB_PATH))
+        )
+        try:
+            session_factory = async_sessionmaker(engine, expire_on_commit=False)
+            async with session_factory() as session:
+                remediation = Remediation(
+                    vuln_id=uuid.UUID(_FIXTURE_DATA["vuln_id"]),
+                    target_os="Ubuntu 22.04",
+                    executive_summary="Isolated pending remediation for a regression test.",
+                    technical_script="# regression fixture",
+                    ai_confidence=0.8,
+                    status="PENDING",
+                )
+                session.add(remediation)
+                await session.commit()
+                return {
+                    "remediation_id": str(remediation.remediation_id),
+                    "vuln_id": _FIXTURE_DATA["vuln_id"],
+                }
+        finally:
+            await engine.dispose()
+
+    return asyncio.run(create())
+
+
+@pytest.fixture
 def seeded_remediation(base_url):
-    return {"remediation_id": _FIXTURE_DATA["remediation_id"], "vuln_id": _FIXTURE_DATA["vuln_id"]}
+    return _create_pending_remediation()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def seeded_remediation_2(base_url):
-    return {"remediation_id": _FIXTURE_DATA["remediation_id_2"], "vuln_id": _FIXTURE_DATA["vuln_id"]}
+    return _create_pending_remediation()

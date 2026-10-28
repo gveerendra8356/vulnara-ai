@@ -74,7 +74,7 @@ export function AdminConfigPage() {
                       )}
                     </td>
                     <td className="p-3 text-on-surface-variant text-xs max-w-[320px]">{c.description}</td>
-                    <td className="p-3 text-on-surface-variant text-xs">{new Date(c.updated_at).toLocaleString()}</td>
+                    <td className="p-3 text-on-surface-variant text-xs">{c.updated_at ? new Date(c.updated_at).toLocaleString() : "Default value"}</td>
                     <td className="p-3 pr-6">
                       {editing === c.config_key ? (
                         <div className="flex gap-2">

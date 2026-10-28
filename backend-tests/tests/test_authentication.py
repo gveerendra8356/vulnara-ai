@@ -166,23 +166,19 @@ class TestRegistration:
         })
         assert r.status_code == 201
 
-    async def test_register_extremely_long_password_does_not_crash(self, client, unique_email):
+    async def test_register_password_over_bcrypt_limit_is_rejected(self, client, unique_email):
         """
         CATEGORY: Authentication
-        TITLE: Registration with a >72-byte password does not 500
-        OBJECTIVE: bcrypt hard-caps input at 72 bytes; verify the app truncates
-                    consistently instead of raising an uncaught exception.
-        EXPECTED: A clean 2xx or 4xx response, never a 500.
+        TITLE: Registration rejects a password exceeding bcrypt's byte limit
+        OBJECTIVE: Reject overlong UTF-8 passwords before password hashing.
+        EXPECTED: 422 Unprocessable Entity.
         SEVERITY: High
         """
         long_password = "Aa1!" * 50  # 200 bytes, well past bcrypt's 72-byte cap
         r = await client.post("/auth/register", json={
             "email": unique_email, "password": long_password, "full_name": "QA", "role": "client",
         })
-        assert r.status_code != 500, (
-            "Registration 500'd on a long password -- bcrypt likely raised on "
-            ">72 bytes instead of being truncated consistently before hashing."
-        )
+        assert r.status_code == 422
 
     async def test_register_role_omitted_defaults_to_client(self, client, unique_email):
         """
@@ -368,6 +364,20 @@ class TestMeRefreshLogout:
         r = await client.get("/auth/me", headers=client1_headers)
         assert r.status_code == 200
         assert r.json()["email"] == "client1.qa@vulnara-qa-suite.com"
+
+    async def test_update_profile_rejects_overlong_new_password(self, client, client1_headers):
+        """
+        CATEGORY: Authentication
+        TITLE: Profile updates reject passwords exceeding bcrypt's byte limit
+        OBJECTIVE: Apply the same UTF-8 byte limit to password changes.
+        EXPECTED: 422 Unprocessable Entity.
+        SEVERITY: Medium
+        """
+        r = await client.patch("/auth/me", headers=client1_headers, json={
+            "current_password": "Client1QA123!",
+            "new_password": "Aa1!" * 50,
+        })
+        assert r.status_code == 422
 
     async def test_refresh_with_valid_token_issues_new_access_token(self, client, unique_email):
         """

@@ -168,6 +168,12 @@ export function ScanDetailPage() {
         </div>
       </div>
 
+      {scan.failure_reason && (
+        <div className="mb-6 rounded-lg border border-yellow-500/40 bg-yellow-500/10 p-4 text-sm text-yellow-100" role="status">
+          <strong>Scan incomplete:</strong> {scan.failure_reason}
+        </div>
+      )}
+
       {/* Recon Status Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="glass-panel p-5 rounded-lg flex flex-col justify-between relative overflow-hidden">
