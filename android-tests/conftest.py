@@ -107,13 +107,11 @@ def _app_smoke_check(_wait_for_backend):
     d = None
     try:
         d = new_driver()
-        clear_app_data(d)
-        force_stop_app(d)
-        bring_to_foreground(d)
         page = LoginPage(d)
-        # Generous on purpose -- this only needs to catch "never renders
-        # at all", not shave time off a merely-slow-but-working cold
-        # start (individual tests' own timeouts already handle that).
+        # new_driver() installs and launches the app on the fresh CI AVD.
+        # Do not immediately force-stop, delete its data directories, and
+        # relaunch it here: that race caused a healthy first launch to lose
+        # its Flutter semantics tree on one matrix shard before collection.
         if page.is_loaded(timeout=60):
             return
     except Exception as exc:
