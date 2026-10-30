@@ -309,6 +309,8 @@ jobs:
             android-tests/reports/execution-results*.json
             android-tests/reports/screenshots
             android-tests/reports/logs
+            backend/backend.log
+            appium.log
           retention-days: 14
           if-no-files-found: warn
 

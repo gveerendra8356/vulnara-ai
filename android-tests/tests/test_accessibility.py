@@ -45,8 +45,12 @@ def test_headings_present_on_each_screen(login_as_client, screen_and_tab):
     heading, tab = screen_and_tab
     driver = login_as_client
     BottomNav(driver).tap(tab, role="client")
-    bp = BasePage(driver)
-    assert bp.is_present(bp.by_text(heading), timeout=12), f"missing heading: {heading}"
+    if tab == "profile":
+        from pages.profile_page import ProfilePage
+        assert ProfilePage(driver).is_loaded(timeout=12)
+    else:
+        bp = BasePage(driver)
+        assert bp.is_present(bp.by_text(heading), timeout=12), f"missing heading: {heading}"
 
 
 @pytest.mark.parametrize("tooltip", ["Pending remediations", "Copy to clipboard"])

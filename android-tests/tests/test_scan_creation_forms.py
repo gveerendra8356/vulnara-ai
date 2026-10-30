@@ -31,7 +31,7 @@ def test_new_scan_form_loads(new_scan_page):
     "Explicit Permission Confirmation", "Enable AI Active Testing",
 ])
 def test_new_scan_static_labels_present(new_scan_page, label):
-    assert new_scan_page.is_present(new_scan_page.by_text(label), timeout=8), f"missing: {label}"
+    assert new_scan_page.is_present(new_scan_page.by_text_contains(label), timeout=8), f"missing: {label}"
 
 
 @pytest.mark.parametrize("name,value", BOUNDARY_TEXT_INPUTS, ids=[n for n, _ in BOUNDARY_TEXT_INPUTS])

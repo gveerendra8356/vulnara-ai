@@ -185,7 +185,7 @@ def driver(request, test_logger):
         pass
 
 
-def _assert_landed_past_login(page: LoginPage, context: str):
+def _assert_landed_past_login(page: LoginPage, context: str) -> bool:
     """Fail loudly and specifically HERE if login didn't complete -- mirrors
     selenium-tests/conftest.py's _assert_landed_on_dashboard rationale
     exactly: an unnoticed failed login otherwise surfaces as 10+ unrelated
@@ -197,13 +197,24 @@ def _assert_landed_past_login(page: LoginPage, context: str):
     ballpark as plenty of *passing* tests elsewhere in the same run --
     15s wasn't leaving CI-under-load enough room for a login that was
     genuinely still in flight, not stuck."""
-    if not page.wait_gone(page.by_text("INITIALIZE SESSION"), timeout=25):
-        raise AssertionError(
-            f"{context}: login did not navigate away from the login screen "
-            f"within the wait window. This fixture failing here -- rather "
-            f"than a downstream test failing on an unrelated locator -- "
-            f"means the problem is the login step itself."
-        )
+    return page.wait_gone(page.by_text("INITIALIZE SESSION"), timeout=25)
+
+
+def _login_with_one_recovery(page: LoginPage, account: dict, context: str) -> None:
+    """Perform a valid login and recover once from transient input loss."""
+    for attempt in range(2):
+        page.login(account["email"], account["password"])
+        if _assert_landed_past_login(page, context):
+            return
+        if attempt == 0:
+            # The login screen is still present, so re-enter both values
+            # from scratch. This targets the observed UiAutomator2 setText
+            # race without re-running the test body or hiding assertions.
+            continue
+    raise AssertionError(
+        f"{context}: login did not navigate away after two verified input "
+        f"attempts; visible text={page.all_texts()!r}"
+    )
 
 
 def _login_fixture_factory(role: str):
@@ -216,8 +227,7 @@ def _login_fixture_factory(role: str):
         page = LoginPage(driver)
         assert page.is_loaded(), f"login_as_{role}: login screen never appeared"
         account = config.ACCOUNTS[role]
-        page.login(account["email"], account["password"])
-        _assert_landed_past_login(page, f"login_as_{role}")
+        _login_with_one_recovery(page, account, f"login_as_{role}")
         return driver
     return _fixture
 
@@ -236,8 +246,7 @@ def login_as_any_role(request, driver):
     page = LoginPage(driver)
     assert page.is_loaded(), f"login_as_any_role[{role}]: login screen never appeared"
     account = config.ACCOUNTS[role]
-    page.login(account["email"], account["password"])
-    _assert_landed_past_login(page, f"login_as_any_role[{role}]")
+    _login_with_one_recovery(page, account, f"login_as_any_role[{role}]")
     return driver, role
 
 

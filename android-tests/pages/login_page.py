@@ -35,8 +35,16 @@ class LoginPage(BasePage):
         self.tap_text(SUBMIT_LABEL)
 
     def login(self, email: str, password: str):
-        self.enter_email(email)
-        self.enter_password(password)
+        # Credentials are test control data, so use UiAutomator2's direct
+        # setText path instead of `adb shell input text`. The latter is
+        # appropriate for fuzzing keyboard input, but proved intermittent
+        # across hundreds of repeated CI logins (especially for `!` in the
+        # seeded passwords).
+        for index, value in ((EMAIL_FIELD, email), (PASSWORD_FIELD, password)):
+            el = self.wait_visible(self.edit_field(index))
+            el.click()
+            el.clear()
+            el.send_keys(value)
         try:
             self.driver.hide_keyboard()
         except Exception:

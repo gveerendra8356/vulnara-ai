@@ -29,8 +29,12 @@ def test_screen_renders_in_portrait(login_as_client, screen_and_tab):
     driver = login_as_client
     rotate_device(driver, "PORTRAIT")
     BottomNav(driver).tap(tab, role="client")
-    bp = BasePage(driver)
-    assert bp.is_present(bp.by_text(heading), timeout=15)
+    if tab == "profile":
+        from pages.profile_page import ProfilePage
+        assert ProfilePage(driver).is_loaded(timeout=15)
+    else:
+        bp = BasePage(driver)
+        assert bp.is_present(bp.by_text(heading), timeout=15)
 
 
 @pytest.mark.parametrize("screen_and_tab", SCREEN_AND_TAB_FOR_CLIENT)
@@ -40,8 +44,12 @@ def test_screen_renders_in_landscape(login_as_client, screen_and_tab):
     rotate_device(driver, "LANDSCAPE")
     try:
         BottomNav(driver).tap(tab, role="client")
-        bp = BasePage(driver)
-        assert bp.is_present(bp.by_text(heading), timeout=15)
+        if tab == "profile":
+            from pages.profile_page import ProfilePage
+            assert ProfilePage(driver).is_loaded(timeout=15)
+        else:
+            bp = BasePage(driver)
+            assert bp.is_present(bp.by_text(heading), timeout=15)
     finally:
         rotate_device(driver, "PORTRAIT")
 

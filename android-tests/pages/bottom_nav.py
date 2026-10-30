@@ -14,6 +14,7 @@ is deterministic across the whole app regardless of screen content.
 from pages.base_page import BasePage
 
 TABS = ["dashboard", "scans", "alerts", "profile"]  # left -> right, matches VulnaraTab enum order
+TAB_LABELS = {"dashboard": "Dashboard", "scans": "Scans", "alerts": "Alerts", "profile": "Profile"}
 # widgets/vulnara_bottom_nav.dart: clients don't get the Dashboard tab (it
 # shows org-wide analytics clients shouldn't see), so their bar only has 3
 # equal-width segments, not 4 -- see tabs_for_role().
@@ -32,6 +33,14 @@ class BottomNav(BasePage):
         tabs = tabs_for_role(role)
         if tab not in tabs:
             raise ValueError(f"unknown tab {tab!r} for role {role!r}, expected one of {tabs}")
+        # The app now exposes semantic labels for every tab. Prefer the
+        # actual control over screen coordinates, which become unreliable
+        # after rotation or with different system-bar insets.
+        try:
+            self.wait_visible(self.by_content_desc(TAB_LABELS[tab]), timeout=4).click()
+            return
+        except Exception:
+            pass
         index = tabs.index(tab)
         size = self.driver.get_window_size()
         segment_w = size["width"] / len(tabs)

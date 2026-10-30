@@ -34,7 +34,7 @@ class NewScanPage(BasePage):
         self.enter_text(JUSTIFICATION_FIELD, value)
 
     def toggle_authorization_confirmation(self):
-        self.tap_text(CONFIRMATION_LABEL)
+        self.wait_visible(self.by_text_contains(CONFIRMATION_LABEL)).click()
 
     def toggle_active_testing_switch(self):
         switch = self.driver.find_element(AppiumBy.CLASS_NAME, "android.widget.Switch")

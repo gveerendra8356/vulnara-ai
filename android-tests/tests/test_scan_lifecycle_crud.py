@@ -108,7 +108,7 @@ def test_scan_list_retry_visible_on_transient_load_error(login_as_client, attemp
 @pytest.mark.parametrize("n", [1, 2, 3])
 def test_create_multiple_scans_sequentially(login_as_client, n):
     driver = login_as_client
-    _create_scan(driver, target=f"10.0.{n}.0/24", justification=f"QA sequential scan #{n}.")
+    _create_scan(driver, target=f"127.0.0.{n}", justification=f"QA sequential scan #{n}.")
     status = ScanStatusPage(driver)
     assert status.is_loaded(timeout=20)
 

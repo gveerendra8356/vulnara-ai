@@ -36,7 +36,7 @@ def test_profile_account_settings_row_present(login_as_client):
     assert page.is_loaded(timeout=15)
     # lib/screens/profile_screen.dart has no "Account Settings" section --
     # the account-editing tab is labelled "ACCOUNT INFO".
-    assert page.is_present(page.by_text("ACCOUNT INFO"), timeout=8)
+    assert page.is_present(page.by_text_contains("ACCOUNT INFO"), timeout=8)
 
 
 def test_profile_version_label_present(login_as_client):

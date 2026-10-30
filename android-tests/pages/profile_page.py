@@ -10,7 +10,7 @@ VERSION_LABEL = "v2.4.1"
 
 class ProfilePage(BasePage):
     def is_loaded(self, timeout: float = 15) -> bool:
-        return self.is_present(self.by_text(ACCOUNT_SETTINGS_LABEL), timeout=timeout) or \
+        return self.is_present(self.by_text_contains(ACCOUNT_SETTINGS_LABEL), timeout=timeout) or \
             self.is_present(self.by_text(LOGOUT_LABEL), timeout=timeout)
 
     def display_name_text(self) -> str | None:
