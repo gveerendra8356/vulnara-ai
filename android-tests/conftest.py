@@ -104,37 +104,34 @@ def _app_smoke_check(_wait_for_backend):
     screen, so in that state every one of them would fail the same way.
     Fail the whole session here instead, once, with a diagnosis pointing
     at the likely cause instead of cascading into unrelated tests."""
-    d = None
-    try:
-        d = new_driver()
-        page = LoginPage(d)
-        # new_driver() installs and launches the app on the fresh CI AVD.
-        # Do not immediately force-stop, delete its data directories, and
-        # relaunch it here: that race caused a healthy first launch to lose
-        # its Flutter semantics tree on one matrix shard before collection.
-        if page.is_loaded(timeout=60):
-            return
-    except Exception as exc:
-        pytest.exit(
-            f"Smoke check: launching the app raised {exc!r} before its "
-            f"login screen could even be checked. This points at the "
-            f"emulator/Appium session itself, not app or test code -- see "
-            f"the '/dev/kvm' check earlier in this job's log.",
-            returncode=4,
-        )
-    finally:
-        if d is not None:
-            try:
-                d.quit()
-            except Exception:
-                pass
+    failures = []
+    for attempt in range(1, 4):
+        d = None
+        try:
+            d = new_driver()
+            page = LoginPage(d)
+            # The first UiAutomator2 session on a newly booted API 34 AVD
+            # occasionally starts before Flutter exposes its semantics
+            # tree. Recreating the session is the recovery Appium itself
+            # recommends; do not mutate app data between attempts.
+            if page.is_loaded(timeout=30):
+                return
+            failures.append(f"attempt {attempt}: login semantics absent")
+        except Exception as exc:
+            failures.append(f"attempt {attempt}: {exc!r}")
+        finally:
+            if d is not None:
+                try:
+                    d.quit()
+                except Exception:
+                    pass
     pytest.exit(
         "Smoke check failed: the app's login screen never rendered within "
         "60s of a cold start. This means the environment itself is broken "
         "(no real hardware acceleration on this runner, or the app is "
         "crash-looping) -- not that the tests below are. See the "
         "'/dev/kvm' check earlier in this job's log before re-running; "
-        "retrying tests against a broken environment would just waste time.",
+        f"three fresh Appium sessions failed: {'; '.join(failures)}",
         returncode=4,
     )
 
