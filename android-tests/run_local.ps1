@@ -355,7 +355,7 @@ Push-Location $TestDir
 # Force $testPaths to a proper array so it expands correctly as arguments.
 # Do NOT use @testPaths splat on a string -- it splits by characters on Windows.
 [string[]]$pathArray  = @($testPaths)
-$pytestArgs = @("-v", "--reruns", "2", "--reruns-delay", "3", "--tb=short", "-p", "no:cacheprovider") + $pathArray
+$pytestArgs = @("-v", "--tb=short", "-p", "no:cacheprovider") + $pathArray
 Write-Host "    CMD: python -m pytest $pytestArgs" -ForegroundColor DarkGray
 & python -m pytest @pytestArgs
 $pytestExit = $LASTEXITCODE

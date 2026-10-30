@@ -66,7 +66,7 @@ def test_rotation_does_not_crash_new_scan_form(login_as_client):
     scans.open_new_scan_fab()
     form = NewScanPage(driver)
     assert form.is_loaded()
-    form.enter_target("testphp.vulnweb.com")
+    form.enter_target("127.0.0.1")
     rotate_device(driver, "LANDSCAPE")
     try:
         assert form.is_loaded(timeout=10)

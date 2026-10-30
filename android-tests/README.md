@@ -23,46 +23,40 @@ android-tests/
     adb_helpers.py            background/foreground, airplane mode, pm clear
     screenshot.py
   pages/                      11 page objects, one per screen
-  tests/                      14 modules, 405 collected test cases
+  tests/                      14 modules, 396 collected test cases
   reports/
     generate_reports.py       -> Automation_Test_Report.xlsx + HTML/MD
 .github/workflows/
   android-tests.yml           4-shard CI: build APK, backend, emulator, Appium
 ```
 
-405 tests collected and verified with `pytest --collect-only` (not just
+396 tests collected and verified with `pytest --collect-only` (not just
 claimed — see "Verification log" below). Broken down by module:
 
 | Module | Tests | Covers |
 |---|---:|---|
-| `test_authentication.py` | 41 | login screen labels, valid/invalid credentials, email-format handling, repeated failures |
-| `test_authorization.py` | 48 | RBAC across admin/analyst/client, unauthenticated redirects, go_router's login-page guard |
-| `test_navigation.py` | 42 | bottom nav taps, back button, deep-link landing, app-bar chrome |
-| `test_scan_creation_forms.py` | 41 | New Target Configuration form fields, checkbox/switch, blocked submits |
-| `test_scan_lifecycle_crud.py` | 17 | scan creation → status → list, WebSocket live status, pull-to-refresh |
-| `test_remediation_workflow.py` | 21 | analyst approve/reject, client execute, vulnerability detail |
+| `test_authentication.py` | 40 | login screen labels, valid/invalid credentials, email-format handling, repeated failures |
+| `test_authorization.py` | 61 | RBAC across admin/analyst/client, unauthenticated redirects, go_router's login-page guard |
+| `test_navigation.py` | 35 | bottom nav taps, back button, deep-link landing, app-bar chrome |
+| `test_scan_creation_forms.py` | 48 | New Target Configuration form fields, checkbox/switch, blocked submits |
+| `test_scan_lifecycle_crud.py` | 15 | scan creation → status → list, WebSocket live status, pull-to-refresh |
+| `test_remediation_workflow.py` | 19 | analyst approve/reject, client execute, vulnerability detail |
 | `test_notifications.py` | 9 | Alerts Hub load, empty state, repeat visits |
 | `test_profile.py` | 12 | profile load, role chip, logout |
 | `test_audit_log.py` | 9 | audit log reachability, table columns, scrolling |
 | `test_session_management.py` | 12 | background/foreground persistence, `pm clear`, role-switch isolation |
-| `test_input_validation.py` | 75 | boundary/fuzz input on every text field (SQLi-shaped strings, XSS-shaped strings, unicode, empty, very long, etc.) |
-| `test_error_handling.py` | 12 | airplane-mode-induced backend-unreachable scenarios, recovery, resubmission |
-| `test_accessibility.py` | 26 | content-description coverage — **includes tests documenting a real defect, see below** |
-| `test_responsive_orientation.py` | 25 | portrait/landscape rendering and rotation |
-| **Total** | **405** | |
+| `test_input_validation.py` | 92 | boundary/fuzz input on every text field (SQLi-shaped strings, XSS-shaped strings, unicode, empty, very long, etc.) |
+| `test_error_handling.py` | 11 | airplane-mode-induced backend-unreachable scenarios, recovery, resubmission |
+| `test_accessibility.py` | 18 | content-description, screen-reader labels, touch targets, and control-state coverage |
+| `test_responsive_orientation.py` | 15 | portrait/landscape rendering and rotation |
+| **Total** | **396** | |
 
-## A real finding, not a testing gap: bottom nav has no accessibility labels
+## Bottom-navigation accessibility coverage
 
-`lib/widgets/vulnara_bottom_nav.dart` wraps each of the 4 tab icons in an
-`InkWell` with a bare `Icon(...)` — no `tooltip`, no `Semantics`, no
-`semanticLabel`. Flutter's accessibility bridge exposes text and
-tooltip-derived content-descriptions automatically to UiAutomator2, but
-there's nothing for it to expose here. `test_accessibility.py`'s
-`test_bottom_nav_icons_lack_content_description` asserts on this directly
-and is **expected to fail** until the app adds labels — that's
-intentional, not a bug in the suite. It'll show up as a real FAILED row
-in the Excel report, the same way a genuine screen-reader accessibility
-gap should.
+`lib/widgets/vulnara_bottom_nav.dart` supplies both a `Tooltip` and an
+`Icon.semanticLabel` for Dashboard, Scans, Alerts, and Profile. The
+`test_bottom_nav_icons_have_content_description` test visits every admin
+tab and verifies its exact content description through UiAutomator2.
 
 Also documented (as an `xfail`, not silently ignored):
 `remediation_approval_screen.dart`'s Approve/Execute/Reject buttons have
@@ -127,7 +121,7 @@ appium --relaxed-security &
 cd android-tests
 pip install -r requirements.txt
 export APK_PATH=../vulnara_mobile_scaffold/build/app/outputs/flutter-apk/app-debug.apk
-pytest -n 2 --reruns 2 --reruns-delay 3
+pytest
 python3 reports/generate_reports.py
 ```
 Open `reports/Automation_Test_Report.xlsx` — same 6-sheet layout as the
@@ -194,8 +188,7 @@ development, not recalled from training data — consistent with
   the scan pipeline, so remediation/vulnerability-detail tests need that
   fixture data or they cleanly `pytest.skip()` instead of failing for the
   wrong reason).
-- `pip index versions` / PyPI JSON API → `pytest==9.1.1` required by
-  `pytest-rerunfailures==16.5`'s own `pytest!=8.2.2,>=8.2` constraint.
+- `pytest==9.1.1` is used with the current Android test dependencies.
 
 ## Known gaps / next steps
 
@@ -204,9 +197,7 @@ development, not recalled from training data — consistent with
   because those specific widgets have no distinguishing text or
   content-description in source. They work, but are more brittle than a
   labeled element would be — a good first PR into the app itself would be
-  adding `key:`/`tooltip:`/`semanticLabel` to the FAB, list item rows, and
-  the bottom nav icons (the same accessibility gap this suite already
-  documents as a finding).
+  adding `key:`/`tooltip:`/`semanticLabel` to the FAB and list item rows.
 - `test_error_handling.py`'s airplane-mode tests assume the AVD image
   supports `cmd connectivity airplane-mode` — true for all standard
   Google APIs images on API 30+, not guaranteed on every custom image.
@@ -237,4 +228,3 @@ Also fixed: `pages/login_page.py`'s `is_loaded()` was missing the
 `test_authorization.py` called with `timeout=15` — a real
 `TypeError`, caught in the same run (2 occurrences, masked by the larger
 failure above for everything else).
-

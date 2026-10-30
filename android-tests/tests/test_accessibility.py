@@ -1,34 +1,27 @@
-"""tests/test_accessibility.py -- semantics/content-description coverage.
-Where the app has a real gap (bottom nav icons), these tests assert on
-that gap directly and are EXPECTED to fail until the app adds
-semanticLabel/Tooltip to those icons -- see pages/bottom_nav.py's
-docstring for the source-level confirmation."""
+"""tests/test_accessibility.py -- semantics/content-description coverage."""
 
 import pytest
 
-from pages.bottom_nav import BottomNav, TABS
+from pages.bottom_nav import BottomNav
 from pages.login_page import LoginPage
 from pages.base_page import BasePage
 
 pytestmark = pytest.mark.accessibility
 
 
-@pytest.mark.parametrize("tab_index", range(len(TABS)))
-def test_bottom_nav_icons_lack_content_description(login_as_client, tab_index):
-    """Documents a real accessibility defect: widgets/vulnara_bottom_nav.dart
-    wraps each Icon in an InkWell with no tooltip/Semantics/semanticLabel,
-    so screen-reader users get an unlabeled tappable region for each of the
-    4 tabs. This is intentionally a FAILING assertion until the app is
-    fixed -- see the module docstring."""
-    driver = login_as_client
-    from appium.webdriver.common.appiumby import AppiumBy
-    nearby = driver.find_elements(AppiumBy.XPATH, "//*[@content-desc!='']")
-    labels_here = [e.get_attribute("content-desc") for e in nearby if e.get_attribute("content-desc")]
-    assert len(labels_here) > 0, (
-        f"bottom nav tab index {tab_index} ({TABS[tab_index]}) has no "
-        f"accessibility content-description anywhere on screen -- known "
-        f"gap, see pages/bottom_nav.py"
-    )
+@pytest.mark.parametrize("tab,label", [
+    ("dashboard", "Dashboard"),
+    ("scans", "Scans"),
+    ("alerts", "Alerts"),
+    ("profile", "Profile"),
+])
+def test_bottom_nav_icons_have_content_description(login_as_admin, tab, label):
+    """Every navigation item exposes its own readable label."""
+    driver = login_as_admin
+    BottomNav(driver).tap(tab, role="admin")
+    page = BasePage(driver)
+    assert page.is_present(page.by_content_desc(label), timeout=10), \
+        f"bottom nav item {tab!r} has no {label!r} content description"
 
 
 @pytest.mark.parametrize("field_index", [0, 1])

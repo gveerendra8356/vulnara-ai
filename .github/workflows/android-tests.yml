@@ -90,8 +90,8 @@ jobs:
     # Without this, a shard whose emulator is degraded (e.g. KVM not
     # actually available on that runner, so everything -- not just
     # login -- runs at a crawl) rides GitHub's default 360-minute job
-    # cap: every test pays the full --reruns 2 cost before giving up,
-    # so the job silently grinds for hours instead of failing fast.
+    # cap: emulator/UI failures should be surfaced quickly rather than
+    # consuming the full job window on repeated session attempts.
     timeout-minutes: 180
     strategy:
       fail-fast: false
@@ -260,6 +260,10 @@ jobs:
           target: google_apis
           arch: x86_64
           profile: pixel_6
+          # Avoid host-GPU context loss seen in CI (QEMU/DisplaySurfaceGL
+          # errors and emulator disconnects). Keep KVM for CPU acceleration
+          # while using the emulator's software renderer.
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           # pre-launch-emulator-commands runs before the emulator boots,
           # so we use script: for post-boot setup instead.
@@ -288,7 +292,8 @@ jobs:
             # Give TalkBack time to fully initialize. On CI emulators this
             # takes 5-8s; 15s is conservative but avoids the race completely.
             sleep 15
-            cd android-tests && export APK_PATH=$GITHUB_WORKSPACE/android-tests/apk/app-debug.apk && export APPIUM_SERVER_URL=http://127.0.0.1:4723 && export BACKEND_BASE_URL=http://127.0.0.1:8000 && pytest --reruns 2 --reruns-delay 3 -p no:cacheprovider ${{ matrix.paths }} || true
+            cd android-tests && export APK_PATH=$GITHUB_WORKSPACE/android-tests/apk/app-debug.apk && export APPIUM_SERVER_URL=http://127.0.0.1:4723 && export BACKEND_BASE_URL=http://127.0.0.1:8000 && pytest -p no:cacheprovider ${{ matrix.paths }}
+        continue-on-error: true
 
       # if: always() -- conftest.py now checkpoints execution-results*.json
       # after every single test (not just at the end of the run), so a

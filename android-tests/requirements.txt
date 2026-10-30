@@ -3,10 +3,9 @@
 # server-side pieces (appium, appium-uiautomator2-driver) are npm packages
 # installed by the CI workflow, not here -- see requirements-check.md.
 
-# pytest-rerunfailures 16.5 requires pytest>=8.2,!=8.2.2 (checked via PyPI
-# JSON API) -- 9.1.1 satisfies that.
+# Avoid automatic retries: UI/emulator failures are expensive, and retries
+# can hide a disconnected device instead of adding useful signal.
 pytest==9.1.1
-pytest-rerunfailures==16.5
 pytest-xdist==3.8.0
 Appium-Python-Client==5.3.1
 openpyxl==3.1.5

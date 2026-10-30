@@ -41,7 +41,7 @@ BOUNDARY_TEXT_INPUTS = [
     ("leading_trailing_spaces", "   padded value   "),
     ("valid_ip", "192.168.1.55"),
     ("valid_cidr", "10.0.0.0/24"),
-    ("valid_hostname", "testphp.vulnweb.com"),
+    ("valid_hostname", "example.invalid"),
     ("path_traversal", "../../etc/passwd"),
 ]
 

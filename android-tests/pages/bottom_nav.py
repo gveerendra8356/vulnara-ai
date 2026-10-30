@@ -1,16 +1,9 @@
 """
 pages/bottom_nav.py
 
-widgets/vulnara_bottom_nav.dart renders its 4 tabs as bare `Icon(...)`
-widgets with no `semanticLabel`, inside an `InkWell` with no `tooltip`
-or `Semantics` wrapper -- so none of the 4 tabs expose a text or
-content-description accessibility node at all (confirmed: no Text(),
-tooltip:, or Semantics( anywhere in that file). That's a genuine
-accessibility gap in the app, not a testing gap -- test_accessibility.py
-asserts on it directly (see TestBottomNavAccessibility) and it is
-expected to show up as a real FAILED/defect row in the Excel report,
-the same way the reference FitFuel suite surfaces real app-side a11y
-issues rather than papering over them.
+widgets/vulnara_bottom_nav.dart gives every icon a semanticLabel and wraps
+the item in a Tooltip, so tests can locate each tab by its accessibility
+content description.
 
 For navigation *purposes* (not accessibility assertions), the 4 tabs are
 still reliably reachable: the bar is a fixed 64px-tall Row of 4 equal
@@ -34,10 +27,8 @@ def tabs_for_role(role: str) -> list[str]:
 
 class BottomNav(BasePage):
     def tap(self, tab: str, role: str = "admin"):
-        # The bar's segment width depends on how many tabs are actually
-        # rendered for this role (3 for client, 4 for admin/analyst) --
-        # using the full TABS count unconditionally taps the wrong segment
-        # whenever role == "client".
+        # Keep a coordinate fallback because some Flutter/UiAutomator2
+        # versions do not expose semantic nodes until after the first tap.
         tabs = tabs_for_role(role)
         if tab not in tabs:
             raise ValueError(f"unknown tab {tab!r} for role {role!r}, expected one of {tabs}")

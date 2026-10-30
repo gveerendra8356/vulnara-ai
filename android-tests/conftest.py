@@ -101,13 +101,9 @@ def _app_smoke_check(_wait_for_backend):
     shard's emulator has no real hardware acceleration (see the
     '/dev/kvm' check earlier in this job's log) or the app is
     crash-looping. Every test below depends on a driver + the login
-    screen, so in that state every one of them fails the same way, and
-    pytest-rerunfailures would retry each individually 2 more times --
-    turning a problem that's obvious in under a minute into hours of
-    wasted CI time for zero additional signal. Fail the whole session
-    here instead, once, fast, with a diagnosis pointing at the actual
-    likely cause instead of ~150 near-identical "login screen never
-    appeared" failures."""
+    screen, so in that state every one of them would fail the same way.
+    Fail the whole session here instead, once, with a diagnosis pointing
+    at the likely cause instead of cascading into unrelated tests."""
     d = None
     try:
         d = new_driver()
@@ -140,8 +136,7 @@ def _app_smoke_check(_wait_for_backend):
         "(no real hardware acceleration on this runner, or the app is "
         "crash-looping) -- not that the tests below are. See the "
         "'/dev/kvm' check earlier in this job's log before re-running; "
-        "retrying every test 3x against a broken environment would just "
-        "waste hours re-confirming the same thing.",
+        "retrying tests against a broken environment would just waste time.",
         returncode=4,
     )
 
@@ -248,9 +243,8 @@ def login_as_any_role(request, driver):
 
 # --------------------------------------------------------------------- hooks
 # See selenium-tests/conftest.py's module-level comment above the identical
-# block for the full rationale (pytest-rerunfailures timing, xdist relay
-# double-counting). Reproduced here unchanged because this suite hits the
-# exact same two hooks for the exact same reasons.
+# block for the xdist relay double-counting rationale. Reproduced here
+# because this suite uses the same result-reporting hooks.
 
 _meta_by_nodeid = {}
 _last_screenshot = {}

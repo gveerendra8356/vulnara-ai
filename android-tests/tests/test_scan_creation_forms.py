@@ -64,7 +64,7 @@ def test_active_testing_switch_reflects_state(new_scan_page):
 
 
 def test_submit_blocked_without_authorization_checkbox(new_scan_page):
-    new_scan_page.enter_target("testphp.vulnweb.com")
+    new_scan_page.enter_target("127.0.0.1")
     new_scan_page.enter_justification("QA test run, no authorization checked.")
     new_scan_page.submit()
     assert new_scan_page.is_loaded(timeout=5), \
@@ -79,7 +79,7 @@ def test_submit_blocked_without_target(new_scan_page):
 
 
 def test_submit_blocked_without_justification(new_scan_page):
-    new_scan_page.enter_target("testphp.vulnweb.com")
+    new_scan_page.enter_target("127.0.0.1")
     new_scan_page.toggle_authorization_confirmation()
     new_scan_page.submit()
     assert new_scan_page.is_loaded(timeout=5)
@@ -101,9 +101,9 @@ def test_submit_valid_scan_from_client(new_scan_page):
 def test_error_message_scenarios(new_scan_page, scenario):
     scenario_inputs = {
         "target_only_whitespace": ("   ", "valid justification text here"),
-        "justification_only_whitespace": ("testphp.vulnweb.com", "   "),
+        "justification_only_whitespace": ("127.0.0.1", "   "),
         "target_extremely_long": ("t" * 5000, "valid justification text here"),
-        "justification_extremely_long": ("testphp.vulnweb.com", "j" * 5000),
+        "justification_extremely_long": ("127.0.0.1", "j" * 5000),
         "both_fields_only_symbols": ("!@#$%^&*()", "!@#$%^&*()"),
     }
     target, justification = scenario_inputs[scenario]

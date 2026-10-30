@@ -55,7 +55,7 @@ class NewScanPage(BasePage):
                 return t
         return None
 
-    def fill_valid_scan(self, target: str = "testphp.vulnweb.com",
+    def fill_valid_scan(self, target: str = "127.0.0.1",
                          justification: str = "Authorized by security team for Q3 compliance testing."):
         self.enter_target(target)
         self.enter_justification(justification)

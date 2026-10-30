@@ -11,7 +11,7 @@ from pages.scan_status_page import ScanStatusPage
 pytestmark = pytest.mark.crud_operations
 
 
-def _create_scan(driver, target="testphp.vulnweb.com", justification="Authorized by security team for Q3 compliance testing."):
+def _create_scan(driver, target="127.0.0.1", justification="Authorized by security team for Q3 compliance testing."):
     scans = ScanListPage(driver)
     assert scans.is_loaded()
     scans.open_new_scan_fab()
