@@ -16,7 +16,14 @@ import 'firebase_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
   runApp(const ProviderScope(child: VulnaraApp()));
+
+  // Firebase is optional for the initial UI. Starting it after runApp keeps a
+  // slow or unavailable Google service from causing a blank launch screen.
+  try {
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform)
+        .timeout(const Duration(seconds: 15));
+  } on Object catch (error) {
+    debugPrint('Firebase initialization unavailable: $error');
+  }
 }

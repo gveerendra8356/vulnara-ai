@@ -307,12 +307,12 @@ class _NewScanScreenState extends ConsumerState<NewScanScreen> {
       _error = null;
     });
     try {
-      await ref.read(scanRepositoryProvider).createScan(
+      final scan = await ref.read(scanRepositoryProvider).createScan(
             target: _targetController.text.trim(),
             authorizationJustification: _justificationController.text.trim(),
             activeTestingEnabled: _activeTestingEnabled,
           );
-      if (mounted) context.pop(true);
+      if (mounted) context.pushReplacement('/scans/${scan.scanId}');
     } on ApiException catch (e) {
       setState(() => _error = e.message);
     } finally {
