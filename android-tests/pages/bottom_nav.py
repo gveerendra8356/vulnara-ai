@@ -38,14 +38,18 @@ class BottomNav(BasePage):
         # after rotation or with different system-bar insets.
         try:
             self.wait_visible(self.by_content_desc(TAB_LABELS[tab]), timeout=4).click()
-            return
+            # Give GoRouter one frame to apply the navigation. A positional
+            # second tap is harmless on the active tab and recovers when the
+            # semantics click was accepted but not delivered by TalkBack.
+            import time
+            time.sleep(0.5)
         except Exception:
             pass
         index = tabs.index(tab)
         size = self.driver.get_window_size()
         segment_w = size["width"] / len(tabs)
         x = int(segment_w * (index + 0.5))
-        y = int(size["height"] * 0.965)  # bottom nav sits flush at the screen edge
+        y = size["height"] - 72  # centre of the app bar, above system navigation
         self.driver.tap([(x, y)], 50)
 
     def is_visible(self, timeout: float = 5) -> bool:

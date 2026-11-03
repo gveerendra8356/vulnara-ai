@@ -43,7 +43,12 @@ class LoginPage(BasePage):
         for index, value in ((EMAIL_FIELD, email), (PASSWORD_FIELD, password)):
             el = self.wait_visible(self.edit_field(index))
             el.click()
-            el.clear()
+            # Flutter EditText.clear() is occasionally acknowledged by
+            # UiAutomator2 before Flutter applies it. Select-all + delete is
+            # synchronous at the Android input layer and prevents retries
+            # from appending a second copy of the email/password.
+            self.driver.press_keycode(29, metastate=4096)  # CTRL+A
+            self.driver.press_keycode(67)  # DEL
             el.send_keys(value)
         try:
             self.driver.hide_keyboard()

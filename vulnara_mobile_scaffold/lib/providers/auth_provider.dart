@@ -76,11 +76,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> logout() async {
     final storage = _ref.read(secureStorageProvider);
     final refreshToken = await storage.refreshToken;
-    if (refreshToken != null) {
-      await _ref.read(authRepositoryProvider).logout(refreshToken);
+    try {
+      if (refreshToken != null) {
+        await _ref.read(authRepositoryProvider).logout(refreshToken);
+      }
+    } finally {
+      // Local logout must always complete. A transient backend failure must
+      // not leave a user authenticated after they explicitly log out.
+      await storage.clearTokens();
+      state = const AuthLoggedOut();
     }
-    await storage.clearTokens();
-    state = const AuthLoggedOut();
   }
 
   /// Update the user's profile (name / email / password). Returns null on

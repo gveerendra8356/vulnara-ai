@@ -291,7 +291,11 @@ jobs:
             # Give TalkBack time to fully initialize. On CI emulators this
             # takes 5-8s; 15s is conservative but avoids the race completely.
             sleep 15
-            cd android-tests && export APK_PATH=$GITHUB_WORKSPACE/android-tests/apk/app-debug.apk && export APPIUM_SERVER_URL=http://127.0.0.1:4723 && export BACKEND_BASE_URL=http://127.0.0.1:8000 && pytest -p no:cacheprovider ${{ matrix.paths }}
+            # Install only after the emulator and TalkBack are fully ready.
+            # Appium then attaches to the installed package instead of racing
+            # package installation during its first session startup.
+            adb install -r "$GITHUB_WORKSPACE/android-tests/apk/app-debug.apk"
+            cd android-tests && export APK_PATH=$GITHUB_WORKSPACE/android-tests/apk/app-debug.apk && export APPIUM_SKIP_APP_INSTALL=true && export APPIUM_SERVER_URL=http://127.0.0.1:4723 && export BACKEND_BASE_URL=http://127.0.0.1:8000 && pytest -p no:cacheprovider ${{ matrix.paths }}
         continue-on-error: true
 
       # if: always() -- conftest.py now checkpoints execution-results*.json

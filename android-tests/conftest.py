@@ -114,6 +114,8 @@ def _app_smoke_check(_wait_for_backend):
             # occasionally starts before Flutter exposes its semantics
             # tree. Recreating the session is the recovery Appium itself
             # recommends; do not mutate app data between attempts.
+            force_stop_app(d)
+            bring_to_foreground(d)
             if page.is_loaded(timeout=30):
                 return
             failures.append(f"attempt {attempt}: login semantics absent")

@@ -1,6 +1,6 @@
 from pages.base_page import BasePage
 
-HEADER = "Global Analytics"
+HEADERS = ("Threat Analytics", "Global Analytics")
 OPEN_CRIT_VULNS_LABEL = "OPEN CRITICAL VULNERABILITIES"
 REMEDIATIONS_PENDING_LABEL = "REMEDIATIONS PENDING"
 INTEGRITY_LABEL = "SYSTEM INTEGRITY"
@@ -9,7 +9,11 @@ THREATS_OVER_TIME_LABEL = "Threats Over Time"
 
 class DashboardPage(BasePage):
     def is_loaded(self, timeout: float = 15) -> bool:
-        return self.is_present(self.by_text(HEADER), timeout=timeout)
+        per_header_timeout = max(timeout / len(HEADERS), 1)
+        return any(
+            self.is_present(self.by_text(header), timeout=per_header_timeout)
+            for header in HEADERS
+        )
 
     def has_metric_cards(self) -> bool:
         return self.is_present(self.by_text(OPEN_CRIT_VULNS_LABEL)) and \

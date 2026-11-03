@@ -1,4 +1,5 @@
 import logging
+import os
 import time
 
 from appium import webdriver
@@ -22,7 +23,12 @@ def new_driver():
     # "Unable to find an active device or emulator with OS 16".
     if config.PLATFORM_VERSION:
         options.platform_version = config.PLATFORM_VERSION
-    options.app = config.APK_PATH
+    # CI installs the APK explicitly after the emulator and accessibility
+    # service are ready. Skipping Appium's implicit install avoids a race in
+    # which the first session launches while package installation is still
+    # being finalized. Local runs retain Appium's convenient auto-install.
+    if os.environ.get("APPIUM_SKIP_APP_INSTALL", "false").lower() != "true":
+        options.app = config.APK_PATH
     options.app_package = config.APP_PACKAGE
     options.app_activity = config.APP_ACTIVITY
     options.new_command_timeout = config.NEW_COMMAND_TIMEOUT
