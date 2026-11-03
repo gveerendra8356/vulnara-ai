@@ -7,7 +7,6 @@ name: Selenium Web Test Suite (vulnara-web)
 
 on:
   push:
-    branches: [main]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -184,13 +183,15 @@ jobs:
           merge-multiple: false
 
       - name: Merge shard JSON into one execution-results.json
+        id: merge
+        continue-on-error: true
         working-directory: selenium-tests
         run: |
           python3 - <<'PY'
           import json, glob, os, time
 
           results = []
-          for path in glob.glob("reports/_shards/*/execution-results*.json"):
+          for path in glob.glob("reports/_shards/**/execution-results*.json", recursive=True):
               with open(path) as f:
                   data = json.load(f)
               # Each shard already produces a merged payload (its own
@@ -207,9 +208,9 @@ jobs:
           os.makedirs("reports", exist_ok=True)
           for kind in ("screenshots", "logs"):
               os.makedirs(f"reports/{kind}", exist_ok=True)
-          for path in glob.glob(f"reports/_shards/*/screenshots/*"):
+          for path in glob.glob("reports/_shards/**/screenshots/*", recursive=True):
               os.rename(path, f"reports/screenshots/{os.path.basename(path)}")
-          for path in glob.glob(f"reports/_shards/*/logs/*"):
+          for path in glob.glob("reports/_shards/**/logs/*", recursive=True):
               os.rename(path, f"reports/logs/{os.path.basename(path)}")
 
           total = len(results)
@@ -235,6 +236,9 @@ jobs:
           with open("reports/execution-results.json", "w") as f:
               json.dump(payload, f, indent=2)
           print(f"Merged {total} test results ({passed} passed, {failed} failed)")
+          expected = 420
+          if total != expected:
+              raise SystemExit(f"Expected {expected} collected Selenium results, but merged {total}")
           PY
 
       - name: Generate Excel/HTML/Markdown reports
@@ -267,7 +271,7 @@ jobs:
           retention-days: 30
 
       - name: Enforce quality gate
-        if: steps.reports.outcome == 'failure'
+        if: steps.reports.outcome == 'failure' || steps.merge.outcome == 'failure'
         run: |
-          echo "Pass rate fell below GATE_THRESHOLD=${GATE_THRESHOLD}% -- see summary.md / dashboard.html for the breakdown."
+          echo "Selenium results were incomplete or pass rate fell below GATE_THRESHOLD=${GATE_THRESHOLD}% -- see summary.md / dashboard.html for the breakdown."
           exit 1

@@ -2,10 +2,6 @@ name: Backend Tests
 
 on:
   push:
-    branches: [main]
-    paths:
-      - "backend/**"
-      - "backend-tests/**"
   pull_request:
     paths:
       - "backend/**"
@@ -14,7 +10,7 @@ on:
 
 jobs:
   backend-tests:
-    name: Backend regression suite (400 cases)
+    name: Backend regression suite (404 cases)
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -40,7 +36,7 @@ jobs:
         working-directory: backend-tests
         run: pip install -r requirements.txt
 
-      - name: Run the 400-case backend suite
+      - name: Run the 404-case backend suite
         working-directory: backend-tests
         # continue-on-error: this step is allowed to report test failures
         # without failing the job -- pytest's own exit code (1 on any test
@@ -112,7 +108,7 @@ jobs:
           lines.append("### Full reports")
           lines.append("")
           lines.append("Download the **backend-test-reports** artifact from this run for:")
-          lines.append("- `test-cases.xlsx` -- all 400 cases with pass/fail status")
+          lines.append("- `test-cases.xlsx` -- all 404 cases with pass/fail status")
           lines.append("- `findings.xlsx` -- confirmed, reviewed security/functional findings")
           lines.append("- `Automation_Test_Report.xlsx` -- Executed/Passed/Failed/Skipped/Metrics/Defects")
           lines.append("- `executive-summary.md`, `security-review.md`")
@@ -132,7 +128,8 @@ jobs:
             backend-tests/reports/junit.xml
           retention-days: 30
 
-      - name: Note any test failures (does not fail the build)
+      - name: Enforce backend test result
         if: steps.run_tests.outcome == 'failure'
         run: |
-          echo "::warning::One or more backend tests failed (see the Job Summary tab and the backend-test-reports artifact -- findings.xlsx and Automation_Test_Report.xlsx's 'Failed'/'Defect Summary' sheets). The build is NOT failed for this by design; treat this as a signal to review, not a blocked merge."
+          echo "::error::One or more backend tests failed. Reports were uploaded before this gate; download backend-test-reports for details."
+          exit 1
