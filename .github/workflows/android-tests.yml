@@ -26,6 +26,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # ubuntu-latest currently exposes Java 25, while this project's
+      # Gradle 8.14 wrapper supports Java 17. Pin the build JDK so hosted
+      # runner image updates cannot break APK compilation.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
       # --- final_year.md item 1: secrets check ---
       # Grepped .gitignore and android/app for firebase_options,
       # google-services, *.keystore, *.jks: none are gitignored, and
