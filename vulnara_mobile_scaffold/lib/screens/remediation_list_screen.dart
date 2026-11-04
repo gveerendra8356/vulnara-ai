@@ -10,7 +10,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../providers/auth_provider.dart';
 import '../providers/remediation_providers.dart';
 import '../theme/vulnara_theme.dart';
 import '../widgets/glass_panel.dart';
@@ -23,11 +22,7 @@ class RemediationListScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(authProvider);
-    final isClient =
-        authState is AuthLoggedIn && authState.user.role == 'client';
-    // Clients see ALL statuses (read-only overview); analysts/admins see
-    // only PENDING items so they can triage them.
+    // Analysts and admins (the only roles) see PENDING items to triage.
     final remediationsAsync = ref.watch(pendingRemediationsProvider(scanId));
 
     return Scaffold(
@@ -60,14 +55,12 @@ class RemediationListScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          isClient ? 'Remediations' : 'Pending Remediations',
+                          'Pending Remediations',
                           style: VulnaraFonts.headlineMd(),
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          isClient
-                              ? 'Remediation status for vulnerabilities in this scan.'
-                              : 'Fixes awaiting an analyst decision for this scan.',
+                          'Fixes awaiting an analyst decision for this scan.',
                           style: VulnaraFonts.codeSm(
                               color: VulnaraColors.onSurfaceVariant),
                         ),
@@ -81,9 +74,7 @@ class RemediationListScreen extends ConsumerWidget {
                     hasScrollBody: false,
                     child: Center(
                       child: Text(
-                        isClient
-                            ? 'No remediations for this scan yet.'
-                            : 'Nothing awaiting review for this scan.',
+                        'Nothing awaiting review for this scan.',
                         style: VulnaraFonts.codeSm(
                             color: VulnaraColors.onSurfaceVariant),
                       ),
@@ -106,10 +97,7 @@ class RemediationListScreen extends ConsumerWidget {
                           color: Colors.transparent,
                           child: InkWell(
                             borderRadius: BorderRadius.circular(VulnaraRadius.xl),
-                            // Clients can view but NOT approve/reject.
-                            onTap: isClient
-                                ? null
-                                : () async {
+                            onTap: () async {
                                     final decided = await context
                                         .push<bool>('/remediations/${r.remediationId}');
                                     if (decided == true) {

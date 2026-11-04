@@ -6,7 +6,7 @@ class User {
   final String userId;
   final String email;
   final String fullName;
-  final String role; // 'admin' | 'analyst' | 'client'
+  final String role; // 'admin' | 'analyst'
 
   factory User.fromJson(Map<String, dynamic> json) => User(
         userId: json['user_id'] as String,

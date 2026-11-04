@@ -22,24 +22,25 @@ Vulnara is built to provide an unparalleled security auditing and remediation ex
 ### 3. Automated Remediation & The Closed-Loop Workflow
 - **AI-Generated Fix Scripts:** The system doesn't just find problems; it writes the solutions. Vulnara generates highly specific, technical scripts (e.g., Python code, Bash commands, firewall rules) tailored to remediate the exact vulnerability found.
 - **Global Remediation Queue:** A centralized hub to track all AI-generated fixes across the entire organization, filterable by their current status (`PENDING`, `APPROVED`, `REJECTED`, `EXECUTED`).
-- **Analyst Review Process:** Security Analysts can review proposed AI scripts and click to explicitly **Approve** or **Reject** them (requiring a justification for rejection).
-- **Client Execution:** Once approved by an Analyst, end Clients can access the scripts, apply them to their infrastructure, and click **Mark Executed** to officially close the security loop.
+- **Analyst Review Process:** Security Analysts (and Admins) can review proposed AI scripts and click to explicitly **Approve** or **Reject** them (requiring a justification for rejection).
+- **Execution Tracking:** Once a script is approved, an Analyst or Admin applies it to the infrastructure and clicks **Mark Executed** to officially close the security loop.
 
 ### 4. Interactive Dashboards & Metrics
 - **Posture Overview:** At-a-glance metrics on the main dashboard detailing total vulnerabilities, critical-severity issues, and the number of pending remediations requiring attention.
 - **Recent Activity Feeds:** Quick links that allow users to immediately jump into recent scans or the remediation queue straight from the landing page.
 - **Vulnerability Status Management:** Analysts and Admins can update the state of individual vulnerabilities (e.g., marking an `OPEN` issue as a `FALSE_POSITIVE`).
 
-### 5. Multi-Tiered Role-Based Access Control (RBAC)
-Vulnara natively supports complex access control to separate duties between different stakeholders:
-- **System Administrator:** Can view all scans, manage overarching system configurations, approve/reject any remediation, and access all administrative features.
-- **Security Analyst:** Responsible for triaging. Can view all scans, review complex threat logs, change vulnerability statuses, and act as the gatekeeper for approving AI-generated scripts.
-- **Demo Client:** A restricted view where users can only initiate authorized scans for their own infrastructure, view their specific scan results, and mark approved remediations as "Executed".
+### 5. Role-Based Access Control (RBAC)
+Vulnara uses two roles to separate duties between stakeholders:
+- **System Administrator:** Can view all scans, manage overarching system configurations, approve/reject any remediation, mark remediations executed, and access all administrative features (including user management).
+- **Security Analyst:** Responsible for triaging. Can view all scans, run new scans, review complex threat logs, change vulnerability statuses, approve/reject AI-generated scripts, and mark approved remediations as **Executed** to close the loop.
+
+> Self-registration creates **Analyst** accounts only; **Admin** accounts are provisioned by an existing admin.
 
 ### 6. The Mobile Companion Experience
 - **Cross-Platform:** Available on iOS and Android.
 - **Live State Management:** Uses Riverpod and WebSockets to mirror the live state of the web application instantly.
-- **On-the-Go Approvals:** Analysts receive push alerts and can review or approve remediation scripts directly from their phone, unblocking clients instantly.
+- **On-the-Go Approvals:** Analysts and Admins receive push alerts and can review, approve, or mark remediation scripts executed directly from their phone.
 
 ---
 
@@ -83,9 +84,8 @@ The database comes pre-seeded with test accounts so you can immediately explore 
 
 | Role | Email | Password | Capabilities |
 |------|-------|----------|--------------|
-| **Admin** | `admin@vulnara.com` | `Admin123!` | Full system access, configurations, global approvals. |
-| **Analyst**| `analyst@vulnara.com` | `Analyst123!` | View threat logs, approve/reject AI fixes, mark false positives. |
-| **Client** | `client@vulnara.com` | `Client123!` | Run authorized scans, view personal scans, execute fixes. |
+| **Admin** | `admin@vulnara.com` | `Admin123!` | Full system access, configurations, global approvals, user management. |
+| **Analyst**| `analyst@vulnara.com` | `Analyst123!` | Run scans, view all scans & threat logs, approve/reject AI fixes, mark executed, mark false positives. |
 
 ---
 

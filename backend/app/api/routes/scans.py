@@ -111,7 +111,10 @@ async def list_scans(
       analyst -> all scans with user attribution (triage duty spans every
                  user's targets, per the product spec -- analysts are not
                  limited to scans they personally kicked off)
-      client  -> own scans only
+
+    Admin and analyst are the only roles in the system, and both see every
+    scan. The fallback branch below is kept only as a defensive default for
+    any unexpected role value.
     """
     from app.models.user import User as UserModel
 
@@ -140,7 +143,7 @@ async def list_scans(
             for row in rows
         ]
     else:
-        # analyst and client: own scans only
+        # Defensive fallback for any unexpected role: own scans only.
         stmt = (
             select(Scan)
             .where(Scan.user_id == current_user.user_id)

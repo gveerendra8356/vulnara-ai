@@ -66,7 +66,7 @@ async function register({ email, full_name, role }) {
     user_id: nextId("usr"),
     email,
     full_name,
-    role: role || "client",
+    role: role || "analyst",
     created_at: new Date().toISOString(),
   };
   state.users.push(user);

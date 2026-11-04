@@ -55,18 +55,11 @@ from app.models.scan import Scan
 from app.models.triage_models import Remediation, Vulnerability
 from app.schemas.triage import RemediationResponse, RemediationRejectRequest
 
-# Clients are restricted to their own infrastructure everywhere else in the
-# app (own scans, own findings) -- the remediation queue must honor the same
-# boundary instead of exposing every org's AI-generated fix scripts and
-# vulnerability context to every client. Admins and analysts triage globally
-# by design, so only "client" gets the ownership join below.
+# Admins and analysts are the only roles in the system, and both triage the
+# full remediation queue across every scan by design. This scoping hook is
+# kept as a single extension point should per-owner scoping ever be needed
+# again, but today it applies no additional restriction.
 def _scope_to_own_scans(stmt, current_user: CurrentUser):
-    if current_user.role == "client":
-        stmt = (
-            stmt.join(Vulnerability, Remediation.vuln_id == Vulnerability.vuln_id)
-            .join(Scan, Vulnerability.scan_id == Scan.scan_id)
-            .where(Scan.user_id == current_user.user_id)
-        )
     return stmt
 
 

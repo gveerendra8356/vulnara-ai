@@ -6,7 +6,6 @@ import { useAuth } from "../context/AuthContext";
 const ROLE_COLORS = {
   admin: "text-red-400 border-red-400/40 bg-red-400/10",
   analyst: "text-blue-400 border-blue-400/40 bg-blue-400/10",
-  client: "text-green-400 border-green-400/40 bg-green-400/10",
 };
 
 function FieldGroup({ label, children }) {
@@ -95,7 +94,7 @@ export function ProfilePage() {
   };
 
   const initials = user?.full_name?.slice(0, 2)?.toUpperCase() || "??";
-  const roleClass = ROLE_COLORS[user?.role] || ROLE_COLORS.client;
+  const roleClass = ROLE_COLORS[user?.role] || ROLE_COLORS.analyst;
 
   return (
     <div className="p-container-padding max-w-2xl mx-auto flex flex-col gap-8">

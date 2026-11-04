@@ -21,7 +21,6 @@ import 'package:go_router/go_router.dart';
 
 import '../core/api_exception.dart';
 import '../models/remediation.dart';
-import '../providers/auth_provider.dart';
 import '../providers/core_providers.dart';
 import '../providers/remediation_providers.dart';
 import '../theme/vulnara_theme.dart';
@@ -65,10 +64,8 @@ class _RemediationApprovalScreenState extends ConsumerState<RemediationApprovalS
   }
 
   Widget _buildContent(BuildContext context, Remediation remediation) {
-    final authState = ref.read(authProvider);
-    final user = authState is AuthLoggedIn ? authState.user : null;
-    final isClient = user?.role == 'client';
-
+    // Only analysts and admins reach this screen; both get the full action
+    // panel (approve / mark-executed / reject).
     final isPending = remediation.status == RemediationStatus.pending;
     final isApproved = remediation.status == RemediationStatus.approved;
     final alreadyDecided = remediation.status != RemediationStatus.pending;
@@ -144,43 +141,8 @@ class _RemediationApprovalScreenState extends ConsumerState<RemediationApprovalS
                     const SizedBox(height: 12),
                   ],
 
-                  // ── Clients: read-only status panel ───────────────────────
-                  if (isClient) ...[
-                    Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: VulnaraColors.surfaceContainerHigh,
-                        borderRadius: BorderRadius.circular(VulnaraRadius.lg),
-                        border: Border.all(color: VulnaraColors.outlineVariant),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.info_outline,
-                              size: 16, color: VulnaraColors.onSurfaceVariant),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              switch (remediation.status) {
-                                RemediationStatus.pending =>
-                                  'This remediation is awaiting analyst review.',
-                                RemediationStatus.approved =>
-                                  'Approved by an analyst. Awaiting execution.',
-                                RemediationStatus.rejected =>
-                                  'This remediation was rejected by an analyst.',
-                                RemediationStatus.executed =>
-                                  'Executed successfully.',
-                              },
-                              style: VulnaraFonts.codeSm(
-                                  color: VulnaraColors.onSurfaceVariant),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ]
-
                   // ── Analyst / Admin: full action panel ────────────────────
-                  else if (remediation.status == RemediationStatus.rejected ||
+                  if (remediation.status == RemediationStatus.rejected ||
                       remediation.status == RemediationStatus.executed)
                     Text('Already ${remediation.status.name}.',
                         style: VulnaraFonts.bodyBase(fontWeight: FontWeight.w600))

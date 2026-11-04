@@ -21,7 +21,7 @@ class UserRegisterRequest(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8)
     full_name: str
-    role: str = "client"
+    role: str = "analyst"
 
     _password_bytes = field_validator("password")(validate_password_bytes)
 

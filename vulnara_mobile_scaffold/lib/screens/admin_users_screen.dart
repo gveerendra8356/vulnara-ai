@@ -128,7 +128,7 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
-                      children: ['ALL', 'admin', 'analyst', 'client'].map((r) {
+                      children: ['ALL', 'admin', 'analyst'].map((r) {
                         final active = _roleFilter == r;
                         return Padding(
                           padding: const EdgeInsets.only(right: 8),
@@ -208,7 +208,7 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
                       separatorBuilder: (_, __) => const SizedBox(height: 10),
                       itemBuilder: (ctx, i) => _UserCard(
                         user: filtered[i],
-                        roleColor: _roleColor(filtered[i]['role'] as String? ?? 'client'),
+                        roleColor: _roleColor(filtered[i]['role'] as String? ?? 'analyst'),
                         onViewScans: () => _showUserScans(filtered[i]),
                         onToggleActive: () => _toggleActive(filtered[i]),
                       ),
@@ -243,7 +243,7 @@ class _UserCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final name = user['full_name'] as String? ?? '?';
     final email = user['email'] as String? ?? '';
-    final role = user['role'] as String? ?? 'client';
+    final role = user['role'] as String? ?? 'analyst';
     final isActive = user['is_active'] as bool? ?? true;
     final scanCount = user['scan_count'] as int? ?? 0;
     final lastLogin = user['last_login_at'] as String?;
@@ -461,7 +461,7 @@ class _UserScansSheet extends ConsumerWidget {
                 final user = data['user'] as Map<String, dynamic>;
                 final scans = (data['scans'] as List).cast<Map<String, dynamic>>();
                 final name = user['full_name'] as String? ?? 'User';
-                final role = user['role'] as String? ?? 'client';
+                final role = user['role'] as String? ?? 'analyst';
 
                 return Expanded(
                   child: Column(

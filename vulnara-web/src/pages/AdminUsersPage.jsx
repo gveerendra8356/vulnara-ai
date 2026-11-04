@@ -7,7 +7,6 @@ import { LoadingRow, EmptyState } from "../components/Primitives";
 const ROLE_BADGE = {
   admin: "bg-red-500/15 text-red-400 border border-red-500/30",
   analyst: "bg-blue-500/15 text-blue-400 border border-blue-500/30",
-  client: "bg-green-500/15 text-green-400 border border-green-500/30",
 };
 
 function UserDetailPanel({ userId, onClose }) {
@@ -40,7 +39,7 @@ function UserDetailPanel({ userId, onClose }) {
               <>
                 <h3 className="text-on-surface font-semibold text-lg">{data?.user?.full_name}</h3>
                 <p className="text-on-surface-variant text-sm mt-0.5">{data?.user?.email}</p>
-                <span className={`text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-full mt-2 inline-block ${ROLE_BADGE[data?.user?.role] || ROLE_BADGE.client}`}>
+                <span className={`text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-full mt-2 inline-block ${ROLE_BADGE[data?.user?.role] || ROLE_BADGE.analyst}`}>
                   {data?.user?.role}
                 </span>
               </>
@@ -121,7 +120,6 @@ export function AdminUsersPage() {
   const activeUsers = users.filter((u) => u.is_active).length;
   const adminCount = users.filter((u) => u.role === "admin").length;
   const analystCount = users.filter((u) => u.role === "analyst").length;
-  const clientCount = users.filter((u) => u.role === "client").length;
 
   return (
     <div className="p-container-padding max-w-7xl mx-auto flex flex-col gap-6">
@@ -145,8 +143,8 @@ export function AdminUsersPage() {
         {[
           { label: "Total Users", value: totalUsers, icon: "group", color: "text-primary" },
           { label: "Active", value: activeUsers, icon: "check_circle", color: "text-green-400" },
+          { label: "Admins", value: adminCount, icon: "shield_person", color: "text-red-400" },
           { label: "Analysts", value: analystCount, icon: "analytics", color: "text-blue-400" },
-          { label: "Clients", value: clientCount, icon: "person", color: "text-purple-400" },
         ].map(({ label, value, icon, color }) => (
           <div key={label} className="glass-panel rounded-xl p-4 flex items-center gap-3">
             <span className={`material-symbols-outlined text-[24px] ${color}`} style={{ fontVariationSettings: "'FILL' 1" }}>
@@ -165,7 +163,7 @@ export function AdminUsersPage() {
         <div className="p-4 border-b border-outline-variant/30 flex flex-wrap items-center gap-3 bg-surface-container-high/40">
           {/* Role tabs */}
           <div className="flex gap-2">
-            {["ALL", "admin", "analyst", "client"].map((r) => (
+            {["ALL", "admin", "analyst"].map((r) => (
               <button
                 key={r}
                 onClick={() => setRoleFilter(r)}
@@ -231,7 +229,7 @@ export function AdminUsersPage() {
                     </td>
                     {/* Role */}
                     <td className="px-5 py-3.5">
-                      <span className={`text-[10px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-full ${ROLE_BADGE[u.role] || ROLE_BADGE.client}`}>
+                      <span className={`text-[10px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-full ${ROLE_BADGE[u.role] || ROLE_BADGE.analyst}`}>
                         {u.role}
                       </span>
                     </td>

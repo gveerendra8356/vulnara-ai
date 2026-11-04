@@ -33,7 +33,7 @@ class AuthRepository {
         'email': email,
         'password': password,
         'full_name': fullName,
-        'role': 'client',
+        'role': 'analyst',
       });
       return User.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {

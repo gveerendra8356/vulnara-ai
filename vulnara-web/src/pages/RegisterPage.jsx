@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 export function RegisterPage() {
   const { register, login } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ full_name: "", email: "", password: "", role: "client" });
+  const [form, setForm] = useState({ full_name: "", email: "", password: "", role: "analyst" });
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -118,7 +118,6 @@ export function RegisterPage() {
                 value={form.role}
                 onChange={update("role")}
               >
-                <option value="client">Client — view findings &amp; approve on mobile</option>
                 <option value="analyst">Analyst — run scans &amp; review remediation</option>
               </select>
               <div className="text-[11px] text-on-surface-variant/70 mt-1">

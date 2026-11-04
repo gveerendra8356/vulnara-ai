@@ -50,23 +50,16 @@ async def seed_db():
             admin_id = uuid.UUID(str(admin_row))
             print("· Admin/Analyst users already exist, skipping.")
 
-        client_row = (await session.execute(
-            text("SELECT user_id FROM users WHERE role='client' LIMIT 1")
+        # Vulnara has exactly two roles: admin and analyst. Fetch the analyst
+        # id (works whether users were just created or already existed) so the
+        # demo scans/findings below have a valid owner among the live roles.
+        analyst_row = (await session.execute(
+            text("SELECT user_id FROM users WHERE email=:e"), {"e": analyst_email}
         )).scalar()
-        if not client_row:
-            client_id = uuid.uuid4()
-            session.add(User(
-                user_id=client_id,
-                email="client@vulnara.com",
-                password_hash=get_password_hash("Client123!"),
-                full_name="Demo Client",
-                role="client"
-            ))
-            await session.commit()
-            print("✓ Created Demo Client.")
-        else:
-            client_id = uuid.UUID(str(client_row))
-            print("· Demo Client already exists, skipping.")
+        analyst_id = uuid.UUID(str(analyst_row))
+
+        # The demo scans and their findings are owned by the analyst.
+        demo_owner_id = analyst_id
 
         # ── 2. CVE Definitions (required before vulns that reference them) ────
         cve_rows = [
@@ -92,7 +85,7 @@ async def seed_db():
         DEMO_TARGET = "https://demo.vulnerable-app.com"
         existing_scan = (await session.execute(
             text("SELECT scan_id FROM scans WHERE target=:t AND user_id=:u LIMIT 1"),
-            {"t": DEMO_TARGET, "u": str(client_id)}
+            {"t": DEMO_TARGET, "u": str(demo_owner_id)}
         )).scalar()
 
         now = datetime.now(timezone.utc)
@@ -102,7 +95,7 @@ async def seed_db():
             scan2_id = uuid.uuid4()
             session.add(Scan(
                 scan_id=scan_id,
-                user_id=client_id,
+                user_id=demo_owner_id,
                 target=DEMO_TARGET,
                 status="COMPLETED",
                 active_testing_enabled=True,
@@ -113,7 +106,7 @@ async def seed_db():
             ))
             session.add(Scan(
                 scan_id=scan2_id,
-                user_id=client_id,
+                user_id=demo_owner_id,
                 target="10.0.0.55",
                 status="PENDING",
                 active_testing_enabled=False,

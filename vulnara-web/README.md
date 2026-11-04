@@ -139,9 +139,9 @@ vulnara-web/
 ## 5. What's on each screen, and why
 
 **Login / Register** — Standard email+password auth against `/auth/*`.
-Registration lets a `client` or `analyst` self-signup; `admin` accounts
-are created by an existing admin (matches your API contract's note on
-endpoint 1.6), so there's no "admin" option in the signup role dropdown.
+Registration creates `analyst` accounts only; `admin` accounts are created
+by an existing admin, so there's no "admin" option in the signup role
+dropdown. (Vulnara has exactly two roles: `admin` and `analyst`.)
 
 **Dashboard** — The 30-second answer to "how exposed are we right now":
 total/in-progress scan counts, open critical findings, remediations

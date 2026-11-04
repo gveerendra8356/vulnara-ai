@@ -38,8 +38,9 @@ async def register(payload: UserRegisterRequest, session: AsyncSession = Depends
     if result.scalar_one_or_none() is not None:
         raise HTTPException(status_code=400, detail="Email already registered")
 
-    # Only 'client' or 'analyst' allowed for self-registration context per contract
-    if payload.role not in ["client", "analyst"]:
+    # Self-registration is restricted to the 'analyst' role. Admin accounts are
+    # provisioned by an existing admin, never via public sign-up.
+    if payload.role != "analyst":
         raise HTTPException(status_code=400, detail="Invalid role for self-registration")
 
     new_user = User(

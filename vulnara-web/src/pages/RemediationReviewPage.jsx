@@ -11,7 +11,6 @@ export function RemediationReviewPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const { user } = useAuth();
-  const isClient = user?.role === "client";
   const isAnalystOrAdmin = user?.role === "analyst" || user?.role === "admin";
 
   const [rejectOpen, setRejectOpen] = useState(false);
@@ -185,14 +184,6 @@ export function RemediationReviewPage() {
             </div>
           )}
 
-          {rem.status === "PENDING" && isClient && (
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <p className="text-xs text-on-surface-variant max-w-xl">
-                This remediation is currently pending review by an analyst. Check back later once it has been approved.
-              </p>
-            </div>
-          )}
-
           {rem.status === "APPROVED" && (
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <p className="text-xs text-on-surface-variant max-w-xl">
@@ -200,7 +191,7 @@ export function RemediationReviewPage() {
                 {rem.reviewed_at ? new Date(rem.reviewed_at).toLocaleString() : "—"}. Execution happens out-of-band —
                 use the button below only once that has actually happened, to record it.
               </p>
-              {isClient && (
+              {isAnalystOrAdmin && (
                 <button
                   onClick={() => setExecuteOpen(true)}
                   className="px-6 py-2 rounded-lg font-headline-sm text-sm font-semibold bg-primary text-on-primary hover:bg-primary/90 transition-colors flex items-center gap-2 shrink-0"

@@ -37,9 +37,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       if (authState case AuthLoggedIn loggedInState) {
         final role = loggedInState.user.role;
-        // Clients have no dashboard — redirect to their scans list.
-        if (loc == '/dashboard' && role == 'client') return '/scans';
-        // Admin-only routes: bounce analyst and client back to scans.
+        // Admin-only routes: bounce non-admins (analysts) back to scans.
         if ((loc.startsWith('/admin') || loc == '/audit-log') &&
             role != 'admin') {
           return '/scans';

@@ -1,12 +1,8 @@
 // widgets/vulnara_bottom_nav.dart -- the bottom nav bar shown on the
-// app's primary destinations. Tab set is role-aware:
+// app's primary destinations. Both roles (admin and analyst) get the full
+// tab set:
 //
 //   admin / analyst  →  Dashboard · Scans · Alerts · Profile  (4 tabs)
-//   client           →  Scans · Alerts · Profile               (3 tabs)
-//
-// Clients are not shown the Dashboard because it displays org-wide
-// analytics (all users' scans + global vulnerability totals) that they
-// should not have visibility into.
 
 import 'dart:ui';
 
@@ -14,7 +10,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../providers/auth_provider.dart';
 import '../theme/vulnara_theme.dart';
 
 enum VulnaraTab { dashboard, scans, alerts, profile }
@@ -47,14 +42,8 @@ class VulnaraBottomNav extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(authProvider);
-    final role =
-        authState is AuthLoggedIn ? authState.user.role : 'client';
-
-    // Clients don't get the Dashboard tab — it shows org-wide analytics.
-    final tabs = role == 'client'
-        ? [VulnaraTab.scans, VulnaraTab.alerts, VulnaraTab.profile]
-        : VulnaraTab.values;
+    // Admin and analyst both see the full tab set, including the Dashboard.
+    const tabs = VulnaraTab.values;
 
     return ClipRect(
       child: BackdropFilter(

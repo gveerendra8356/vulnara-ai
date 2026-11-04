@@ -34,7 +34,7 @@ class DashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final statsAsync = ref.watch(dashboardStatsProvider);
     final authState = ref.watch(authProvider);
-    final role = authState is AuthLoggedIn ? authState.user.role : 'client';
+    final role = authState is AuthLoggedIn ? authState.user.role : 'analyst';
 
     return Scaffold(
       backgroundColor: VulnaraColors.pageBackground,

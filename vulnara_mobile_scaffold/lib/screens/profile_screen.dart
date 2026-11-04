@@ -135,7 +135,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         ? (user?.fullName ?? '?').substring(0, 1).toUpperCase()
         : '?';
 
-    final roleColor = switch (user?.role ?? 'client') {
+    final roleColor = switch (user?.role ?? 'analyst') {
       'admin' => VulnaraColors.error,
       'analyst' => VulnaraColors.primary,
       _ => VulnaraColors.secondaryFixedDim,
@@ -191,7 +191,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       children: [
                         Icon(Icons.shield_outlined, size: 12, color: roleColor),
                         const SizedBox(width: 6),
-                        Text((user?.role ?? 'client').toUpperCase(),
+                        Text((user?.role ?? 'analyst').toUpperCase(),
                             style: VulnaraFonts.labelCaps(color: roleColor)),
                       ],
                     ),
@@ -346,7 +346,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             _SettingsRow(
               icon: Icons.group_outlined,
               title: 'User Management',
-              subtitle: 'Manage analyst & client accounts',
+              subtitle: 'Manage analyst accounts',
               onTap: () => context.push('/admin/users'),
             ),
           ]),

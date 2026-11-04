@@ -10,7 +10,6 @@ const STATUS_FILTERS = ["ALL", "PENDING", "IN_PROGRESS", "COMPLETED", "FAILED", 
 const ROLE_COLORS = {
   admin: "text-red-400",
   analyst: "text-blue-400",
-  client: "text-green-400",
 };
 
 export function ScansListPage() {
