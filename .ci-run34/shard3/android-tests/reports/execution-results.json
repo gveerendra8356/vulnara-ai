@@ -1,0 +1,571 @@
+{
+  "run_at": "2026-11-03T04:41:28+00:00",
+  "base_url": "android emulator @ http://127.0.0.1:4723",
+  "duration_seconds": 1913.42,
+  "total": 42,
+  "passed": 30,
+  "failed": 2,
+  "skipped": 10,
+  "errors": 0,
+  "pass_rate": 71.43,
+  "results": [
+    {
+      "nodeid": "tests/test_notifications.py::test_notifications_screen_loads[admin]",
+      "test_id": "test_notifications_screen_loads",
+      "full_name": "test_notifications_screen_loads[admin]",
+      "module": "notifications",
+      "markers": [
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 0.997,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_notifications.py::test_notifications_screen_loads[analyst]",
+      "test_id": "test_notifications_screen_loads",
+      "full_name": "test_notifications_screen_loads[analyst]",
+      "module": "notifications",
+      "markers": [
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 1.298,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_notifications.py::test_notifications_screen_loads[client]",
+      "test_id": "test_notifications_screen_loads",
+      "full_name": "test_notifications_screen_loads[client]",
+      "module": "notifications",
+      "markers": [
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 0.284,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_notifications.py::test_notifications_empty_or_list_state_renders",
+      "test_id": "test_notifications_empty_or_list_state_renders",
+      "full_name": "test_notifications_empty_or_list_state_renders",
+      "module": "notifications",
+      "markers": [
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 13.32,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_notifications.py::test_notifications_reachable_from_bottom_nav",
+      "test_id": "test_notifications_reachable_from_bottom_nav",
+      "full_name": "test_notifications_reachable_from_bottom_nav",
+      "module": "notifications",
+      "markers": [
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 1.285,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_notifications.py::test_notifications_header_present",
+      "test_id": "test_notifications_header_present",
+      "full_name": "test_notifications_header_present",
+      "module": "notifications",
+      "markers": [
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 0.44,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_notifications.py::test_notifications_no_crash_on_repeat_visits[1]",
+      "test_id": "test_notifications_no_crash_on_repeat_visits",
+      "full_name": "test_notifications_no_crash_on_repeat_visits[1]",
+      "module": "notifications",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 14.846,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_notifications.py::test_notifications_no_crash_on_repeat_visits[2]",
+      "test_id": "test_notifications_no_crash_on_repeat_visits",
+      "full_name": "test_notifications_no_crash_on_repeat_visits[2]",
+      "module": "notifications",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 14.833,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_notifications.py::test_notifications_no_crash_on_repeat_visits[3]",
+      "test_id": "test_notifications_no_crash_on_repeat_visits",
+      "full_name": "test_notifications_no_crash_on_repeat_visits[3]",
+      "module": "notifications",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 14.585,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_profile.py::test_profile_loads[admin]",
+      "test_id": "test_profile_loads",
+      "full_name": "test_profile_loads[admin]",
+      "module": "profile",
+      "markers": [
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 1.179,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_profile.py::test_profile_loads[analyst]",
+      "test_id": "test_profile_loads",
+      "full_name": "test_profile_loads[analyst]",
+      "module": "profile",
+      "markers": [
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 1.302,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_profile.py::test_profile_loads[client]",
+      "test_id": "test_profile_loads",
+      "full_name": "test_profile_loads[client]",
+      "module": "profile",
+      "markers": [
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 1.145,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_profile.py::test_profile_role_chip_matches_account_role[admin]",
+      "test_id": "test_profile_role_chip_matches_account_role",
+      "full_name": "test_profile_role_chip_matches_account_role[admin]",
+      "module": "profile",
+      "markers": [
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 1.272,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_profile.py::test_profile_role_chip_matches_account_role[analyst]",
+      "test_id": "test_profile_role_chip_matches_account_role",
+      "full_name": "test_profile_role_chip_matches_account_role[analyst]",
+      "module": "profile",
+      "markers": [
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 1.386,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_profile.py::test_profile_role_chip_matches_account_role[client]",
+      "test_id": "test_profile_role_chip_matches_account_role",
+      "full_name": "test_profile_role_chip_matches_account_role[client]",
+      "module": "profile",
+      "markers": [
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 1.218,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_profile.py::test_profile_account_settings_row_present",
+      "test_id": "test_profile_account_settings_row_present",
+      "full_name": "test_profile_account_settings_row_present",
+      "module": "profile",
+      "markers": [
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 1.279,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_profile.py::test_profile_version_label_present",
+      "test_id": "test_profile_version_label_present",
+      "full_name": "test_profile_version_label_present",
+      "module": "profile",
+      "markers": [
+        "navigation"
+      ],
+      "status": "SKIPPED",
+      "duration": 0.0,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_profile.py::test_logout_returns_to_login[admin]",
+      "test_id": "test_logout_returns_to_login",
+      "full_name": "test_logout_returns_to_login[admin]",
+      "module": "profile",
+      "markers": [
+        "navigation"
+      ],
+      "status": "FAILED",
+      "duration": 26.079,
+      "screenshot": "reports/screenshots/tests_test_profile.py_test_logout_returns_to_login[admin].png",
+      "error": "tests/test_profile.py:57: in test_logout_returns_to_login\n    assert login.is_loaded(timeout=15)\nE   assert False\nE    +  where False = is_loaded(timeout=15)\nE    +    where is_loaded = <pages.login_page.LoginPage object at 0x7fe776c57800>.is_loaded"
+    },
+    {
+      "nodeid": "tests/test_profile.py::test_logout_returns_to_login[analyst]",
+      "test_id": "test_logout_returns_to_login",
+      "full_name": "test_logout_returns_to_login[analyst]",
+      "module": "profile",
+      "markers": [
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 2.236,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_profile.py::test_logout_returns_to_login[client]",
+      "test_id": "test_logout_returns_to_login",
+      "full_name": "test_logout_returns_to_login[client]",
+      "module": "profile",
+      "markers": [
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 2.239,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_profile.py::test_logout_clears_session_requiring_relogin",
+      "test_id": "test_logout_clears_session_requiring_relogin",
+      "full_name": "test_logout_clears_session_requiring_relogin",
+      "module": "profile",
+      "markers": [
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 6.694,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_audit_log.py::test_audit_log_loads_for_admin",
+      "test_id": "test_audit_log_loads_for_admin",
+      "full_name": "test_audit_log_loads_for_admin",
+      "module": "audit_log",
+      "markers": [
+        "navigation"
+      ],
+      "status": "SKIPPED",
+      "duration": 24.85,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_audit_log.py::test_audit_log_reachability_by_role[admin]",
+      "test_id": "test_audit_log_reachability_by_role",
+      "full_name": "test_audit_log_reachability_by_role[admin]",
+      "module": "audit_log",
+      "markers": [
+        "navigation"
+      ],
+      "status": "SKIPPED",
+      "duration": 25.434,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_audit_log.py::test_audit_log_reachability_by_role[analyst]",
+      "test_id": "test_audit_log_reachability_by_role",
+      "full_name": "test_audit_log_reachability_by_role[analyst]",
+      "module": "audit_log",
+      "markers": [
+        "navigation"
+      ],
+      "status": "SKIPPED",
+      "duration": 24.699,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_audit_log.py::test_audit_log_reachability_by_role[client]",
+      "test_id": "test_audit_log_reachability_by_role",
+      "full_name": "test_audit_log_reachability_by_role[client]",
+      "module": "audit_log",
+      "markers": [
+        "navigation"
+      ],
+      "status": "SKIPPED",
+      "duration": 25.346,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_audit_log.py::test_audit_log_table_columns_present",
+      "test_id": "test_audit_log_table_columns_present",
+      "full_name": "test_audit_log_table_columns_present",
+      "module": "audit_log",
+      "markers": [
+        "navigation"
+      ],
+      "status": "SKIPPED",
+      "duration": 25.326,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_audit_log.py::test_audit_log_entry_count_text_present",
+      "test_id": "test_audit_log_entry_count_text_present",
+      "full_name": "test_audit_log_entry_count_text_present",
+      "module": "audit_log",
+      "markers": [
+        "navigation"
+      ],
+      "status": "SKIPPED",
+      "duration": 24.818,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_audit_log.py::test_audit_log_scroll_does_not_crash[1]",
+      "test_id": "test_audit_log_scroll_does_not_crash",
+      "full_name": "test_audit_log_scroll_does_not_crash[1]",
+      "module": "audit_log",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "SKIPPED",
+      "duration": 25.398,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_audit_log.py::test_audit_log_scroll_does_not_crash[2]",
+      "test_id": "test_audit_log_scroll_does_not_crash",
+      "full_name": "test_audit_log_scroll_does_not_crash[2]",
+      "module": "audit_log",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "SKIPPED",
+      "duration": 25.371,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_audit_log.py::test_audit_log_scroll_does_not_crash[3]",
+      "test_id": "test_audit_log_scroll_does_not_crash",
+      "full_name": "test_audit_log_scroll_does_not_crash[3]",
+      "module": "audit_log",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "SKIPPED",
+      "duration": 24.841,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_session_management.py::test_token_persists_across_background_foreground[admin]",
+      "test_id": "test_token_persists_across_background_foreground",
+      "full_name": "test_token_persists_across_background_foreground[admin]",
+      "module": "session_management",
+      "markers": [
+        "session_management"
+      ],
+      "status": "PASSED",
+      "duration": 17.61,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_session_management.py::test_token_persists_across_background_foreground[analyst]",
+      "test_id": "test_token_persists_across_background_foreground",
+      "full_name": "test_token_persists_across_background_foreground[analyst]",
+      "module": "session_management",
+      "markers": [
+        "session_management"
+      ],
+      "status": "PASSED",
+      "duration": 17.636,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_session_management.py::test_token_persists_across_background_foreground[client]",
+      "test_id": "test_token_persists_across_background_foreground",
+      "full_name": "test_token_persists_across_background_foreground[client]",
+      "module": "session_management",
+      "markers": [
+        "session_management"
+      ],
+      "status": "PASSED",
+      "duration": 30.631,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_session_management.py::test_pm_clear_removes_session_forcing_login",
+      "test_id": "test_pm_clear_removes_session_forcing_login",
+      "full_name": "test_pm_clear_removes_session_forcing_login",
+      "module": "session_management",
+      "markers": [
+        "session_management"
+      ],
+      "status": "PASSED",
+      "duration": 5.61,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_session_management.py::test_relogin_after_logout_requires_valid_credentials",
+      "test_id": "test_relogin_after_logout_requires_valid_credentials",
+      "full_name": "test_relogin_after_logout_requires_valid_credentials",
+      "module": "session_management",
+      "markers": [
+        "session_management"
+      ],
+      "status": "PASSED",
+      "duration": 8.215,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_session_management.py::test_session_isolated_between_consecutive_different_role_logins[client-analyst]",
+      "test_id": "test_session_isolated_between_consecutive_different_role_logins",
+      "full_name": "test_session_isolated_between_consecutive_different_role_logins[client-analyst]",
+      "module": "session_management",
+      "markers": [
+        "parametrize",
+        "session_management"
+      ],
+      "status": "PASSED",
+      "duration": 37.836,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_session_management.py::test_session_isolated_between_consecutive_different_role_logins[analyst-admin]",
+      "test_id": "test_session_isolated_between_consecutive_different_role_logins",
+      "full_name": "test_session_isolated_between_consecutive_different_role_logins[analyst-admin]",
+      "module": "session_management",
+      "markers": [
+        "parametrize",
+        "session_management"
+      ],
+      "status": "PASSED",
+      "duration": 37.835,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_session_management.py::test_session_isolated_between_consecutive_different_role_logins[admin-client]",
+      "test_id": "test_session_isolated_between_consecutive_different_role_logins",
+      "full_name": "test_session_isolated_between_consecutive_different_role_logins[admin-client]",
+      "module": "session_management",
+      "markers": [
+        "parametrize",
+        "session_management"
+      ],
+      "status": "FAILED",
+      "duration": 43.628,
+      "screenshot": "reports/screenshots/tests_test_session_management.py_test_session_isolated_between_consecutive_different_role_logins[admin-client].png",
+      "error": "tests/test_session_management.py:72: in test_session_isolated_between_consecutive_different_role_logins\n    assert login.is_loaded(timeout=15)\nE   assert False\nE    +  where False = is_loaded(timeout=15)\nE    +    where is_loaded = <pages.login_page.LoginPage object at 0x7fe776ad2ba0>.is_loaded"
+    },
+    {
+      "nodeid": "tests/test_session_management.py::test_cold_start_without_token_shows_login",
+      "test_id": "test_cold_start_without_token_shows_login",
+      "full_name": "test_cold_start_without_token_shows_login",
+      "module": "session_management",
+      "markers": [
+        "session_management"
+      ],
+      "status": "PASSED",
+      "duration": 0.644,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_session_management.py::test_multiple_background_foreground_cycles_preserve_session[1]",
+      "test_id": "test_multiple_background_foreground_cycles_preserve_session",
+      "full_name": "test_multiple_background_foreground_cycles_preserve_session[1]",
+      "module": "session_management",
+      "markers": [
+        "parametrize",
+        "session_management"
+      ],
+      "status": "PASSED",
+      "duration": 15.492,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_session_management.py::test_multiple_background_foreground_cycles_preserve_session[2]",
+      "test_id": "test_multiple_background_foreground_cycles_preserve_session",
+      "full_name": "test_multiple_background_foreground_cycles_preserve_session[2]",
+      "module": "session_management",
+      "markers": [
+        "parametrize",
+        "session_management"
+      ],
+      "status": "PASSED",
+      "duration": 15.544,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_session_management.py::test_multiple_background_foreground_cycles_preserve_session[3]",
+      "test_id": "test_multiple_background_foreground_cycles_preserve_session",
+      "full_name": "test_multiple_background_foreground_cycles_preserve_session[3]",
+      "module": "session_management",
+      "markers": [
+        "parametrize",
+        "session_management"
+      ],
+      "status": "PASSED",
+      "duration": 15.436,
+      "screenshot": null,
+      "error": null
+    }
+  ]
+}

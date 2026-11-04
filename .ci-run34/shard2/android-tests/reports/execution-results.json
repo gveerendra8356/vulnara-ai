@@ -1,0 +1,12 @@
+{
+  "run_at": "2026-11-03T04:12:01+00:00",
+  "base_url": "android emulator @ http://127.0.0.1:4723",
+  "duration_seconds": 149.8,
+  "total": 0,
+  "passed": 0,
+  "failed": 0,
+  "skipped": 0,
+  "errors": 0,
+  "pass_rate": 0.0,
+  "results": []
+}

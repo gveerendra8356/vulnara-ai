@@ -1,0 +1,1899 @@
+{
+  "run_at": "2026-11-03T05:12:54+00:00",
+  "base_url": "android emulator @ http://127.0.0.1:4723",
+  "duration_seconds": 3795.55,
+  "total": 136,
+  "passed": 129,
+  "failed": 1,
+  "skipped": 5,
+  "errors": 1,
+  "pass_rate": 94.85,
+  "results": [
+    {
+      "nodeid": "tests/test_authentication.py::test_login_screen_static_labels_present[VULNARA]",
+      "test_id": "test_login_screen_static_labels_present",
+      "full_name": "test_login_screen_static_labels_present[VULNARA]",
+      "module": "authentication",
+      "markers": [
+        "parametrize",
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 3.153,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_login_screen_static_labels_present[SECURE TERMINAL ACCESS]",
+      "test_id": "test_login_screen_static_labels_present",
+      "full_name": "test_login_screen_static_labels_present[SECURE TERMINAL ACCESS]",
+      "module": "authentication",
+      "markers": [
+        "parametrize",
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 1.007,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_login_screen_static_labels_present[OPERATOR ID / EMAIL]",
+      "test_id": "test_login_screen_static_labels_present",
+      "full_name": "test_login_screen_static_labels_present[OPERATOR ID / EMAIL]",
+      "module": "authentication",
+      "markers": [
+        "parametrize",
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 3.325,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_login_screen_static_labels_present[ACCESS KEY]",
+      "test_id": "test_login_screen_static_labels_present",
+      "full_name": "test_login_screen_static_labels_present[ACCESS KEY]",
+      "module": "authentication",
+      "markers": [
+        "parametrize",
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 0.64,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_login_screen_static_labels_present[INITIALIZE SESSION]",
+      "test_id": "test_login_screen_static_labels_present",
+      "full_name": "test_login_screen_static_labels_present[INITIALIZE SESSION]",
+      "module": "authentication",
+      "markers": [
+        "parametrize",
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 0.865,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_login_with_valid_credentials[admin]",
+      "test_id": "test_login_with_valid_credentials",
+      "full_name": "test_login_with_valid_credentials[admin]",
+      "module": "authentication",
+      "markers": [
+        "parametrize",
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 18.935,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_login_with_valid_credentials[analyst]",
+      "test_id": "test_login_with_valid_credentials",
+      "full_name": "test_login_with_valid_credentials[analyst]",
+      "module": "authentication",
+      "markers": [
+        "parametrize",
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 17.506,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_login_with_valid_credentials[client]",
+      "test_id": "test_login_with_valid_credentials",
+      "full_name": "test_login_with_valid_credentials[client]",
+      "module": "authentication",
+      "markers": [
+        "parametrize",
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 16.937,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_login_with_valid_credentials[client2]",
+      "test_id": "test_login_with_valid_credentials",
+      "full_name": "test_login_with_valid_credentials[client2]",
+      "module": "authentication",
+      "markers": [
+        "parametrize",
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 17.133,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_login_with_wrong_password[admin]",
+      "test_id": "test_login_with_wrong_password",
+      "full_name": "test_login_with_wrong_password[admin]",
+      "module": "authentication",
+      "markers": [
+        "parametrize",
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 6.16,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_login_with_wrong_password[analyst]",
+      "test_id": "test_login_with_wrong_password",
+      "full_name": "test_login_with_wrong_password[analyst]",
+      "module": "authentication",
+      "markers": [
+        "parametrize",
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 6.047,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_login_with_wrong_password[client]",
+      "test_id": "test_login_with_wrong_password",
+      "full_name": "test_login_with_wrong_password[client]",
+      "module": "authentication",
+      "markers": [
+        "parametrize",
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 6.06,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_login_with_wrong_password[client2]",
+      "test_id": "test_login_with_wrong_password",
+      "full_name": "test_login_with_wrong_password[client2]",
+      "module": "authentication",
+      "markers": [
+        "parametrize",
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 6.216,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_login_with_unknown_email",
+      "test_id": "test_login_with_unknown_email",
+      "full_name": "test_login_with_unknown_email",
+      "module": "authentication",
+      "markers": [
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 5.502,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_login_with_empty_email",
+      "test_id": "test_login_with_empty_email",
+      "full_name": "test_login_with_empty_email",
+      "module": "authentication",
+      "markers": [
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 4.87,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_login_with_empty_password",
+      "test_id": "test_login_with_empty_password",
+      "full_name": "test_login_with_empty_password",
+      "module": "authentication",
+      "markers": [
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 5.172,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_login_with_both_fields_empty",
+      "test_id": "test_login_with_both_fields_empty",
+      "full_name": "test_login_with_both_fields_empty",
+      "module": "authentication",
+      "markers": [
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 0.875,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_email_format_handling[plainaddress]",
+      "test_id": "test_email_format_handling",
+      "full_name": "test_email_format_handling[plainaddress]",
+      "module": "authentication",
+      "markers": [
+        "parametrize",
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 5.345,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_email_format_handling[no_at_symbol]",
+      "test_id": "test_email_format_handling",
+      "full_name": "test_email_format_handling[no_at_symbol]",
+      "module": "authentication",
+      "markers": [
+        "parametrize",
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 5.279,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_email_format_handling[no_tld]",
+      "test_id": "test_email_format_handling",
+      "full_name": "test_email_format_handling[no_tld]",
+      "module": "authentication",
+      "markers": [
+        "parametrize",
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 5.022,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_email_format_handling[double_at]",
+      "test_id": "test_email_format_handling",
+      "full_name": "test_email_format_handling[double_at]",
+      "module": "authentication",
+      "markers": [
+        "parametrize",
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 5.376,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_email_format_handling[leading_dot]",
+      "test_id": "test_email_format_handling",
+      "full_name": "test_email_format_handling[leading_dot]",
+      "module": "authentication",
+      "markers": [
+        "parametrize",
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 5.307,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_email_format_handling[trailing_dot]",
+      "test_id": "test_email_format_handling",
+      "full_name": "test_email_format_handling[trailing_dot]",
+      "module": "authentication",
+      "markers": [
+        "parametrize",
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 5.418,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_email_format_handling[spaces_in_local]",
+      "test_id": "test_email_format_handling",
+      "full_name": "test_email_format_handling[spaces_in_local]",
+      "module": "authentication",
+      "markers": [
+        "parametrize",
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 3.585,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_email_format_handling[comma_in_local]",
+      "test_id": "test_email_format_handling",
+      "full_name": "test_email_format_handling[comma_in_local]",
+      "module": "authentication",
+      "markers": [
+        "parametrize",
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 5.359,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_email_format_handling[semicolon_in_local]",
+      "test_id": "test_email_format_handling",
+      "full_name": "test_email_format_handling[semicolon_in_local]",
+      "module": "authentication",
+      "markers": [
+        "parametrize",
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 5.169,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_email_format_handling[unicode_domain]",
+      "test_id": "test_email_format_handling",
+      "full_name": "test_email_format_handling[unicode_domain]",
+      "module": "authentication",
+      "markers": [
+        "parametrize",
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 5.616,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_email_format_handling[very_long_local]",
+      "test_id": "test_email_format_handling",
+      "full_name": "test_email_format_handling[very_long_local]",
+      "module": "authentication",
+      "markers": [
+        "parametrize",
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 5.762,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_email_format_handling[empty_string]",
+      "test_id": "test_email_format_handling",
+      "full_name": "test_email_format_handling[empty_string]",
+      "module": "authentication",
+      "markers": [
+        "parametrize",
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 5.395,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_email_format_handling[simple]",
+      "test_id": "test_email_format_handling",
+      "full_name": "test_email_format_handling[simple]",
+      "module": "authentication",
+      "markers": [
+        "parametrize",
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 5.837,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_email_format_handling[plus_tag]",
+      "test_id": "test_email_format_handling",
+      "full_name": "test_email_format_handling[plus_tag]",
+      "module": "authentication",
+      "markers": [
+        "parametrize",
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 5.359,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_email_format_handling[subdomain]",
+      "test_id": "test_email_format_handling",
+      "full_name": "test_email_format_handling[subdomain]",
+      "module": "authentication",
+      "markers": [
+        "parametrize",
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 5.003,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_email_format_handling[short]",
+      "test_id": "test_email_format_handling",
+      "full_name": "test_email_format_handling[short]",
+      "module": "authentication",
+      "markers": [
+        "parametrize",
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 5.528,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_password_visibility_toggle",
+      "test_id": "test_password_visibility_toggle",
+      "full_name": "test_password_visibility_toggle",
+      "module": "authentication",
+      "markers": [
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 4.587,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_forgot_credentials_link_present",
+      "test_id": "test_forgot_credentials_link_present",
+      "full_name": "test_forgot_credentials_link_present",
+      "module": "authentication",
+      "markers": [
+        "authentication"
+      ],
+      "status": "SKIPPED",
+      "duration": 0.0,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_repeated_failed_login_shows_error_each_time[1]",
+      "test_id": "test_repeated_failed_login_shows_error_each_time",
+      "full_name": "test_repeated_failed_login_shows_error_each_time[1]",
+      "module": "authentication",
+      "markers": [
+        "parametrize",
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 5.997,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_repeated_failed_login_shows_error_each_time[2]",
+      "test_id": "test_repeated_failed_login_shows_error_each_time",
+      "full_name": "test_repeated_failed_login_shows_error_each_time[2]",
+      "module": "authentication",
+      "markers": [
+        "parametrize",
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 6.26,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_repeated_failed_login_shows_error_each_time[3]",
+      "test_id": "test_repeated_failed_login_shows_error_each_time",
+      "full_name": "test_repeated_failed_login_shows_error_each_time[3]",
+      "module": "authentication",
+      "markers": [
+        "parametrize",
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 6.195,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_login_email_case_sensitivity[upper]",
+      "test_id": "test_login_email_case_sensitivity",
+      "full_name": "test_login_email_case_sensitivity[upper]",
+      "module": "authentication",
+      "markers": [
+        "parametrize",
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 15.303,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authentication.py::test_login_email_case_sensitivity[mixed_case]",
+      "test_id": "test_login_email_case_sensitivity",
+      "full_name": "test_login_email_case_sensitivity[mixed_case]",
+      "module": "authentication",
+      "markers": [
+        "parametrize",
+        "authentication"
+      ],
+      "status": "PASSED",
+      "duration": 15.716,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_role_can_reach_each_static_screen[admin-dashboard]",
+      "test_id": "test_role_can_reach_each_static_screen",
+      "full_name": "test_role_can_reach_each_static_screen[admin-dashboard]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.165,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_role_can_reach_each_static_screen[admin-scans]",
+      "test_id": "test_role_can_reach_each_static_screen",
+      "full_name": "test_role_can_reach_each_static_screen[admin-scans]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.13,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_role_can_reach_each_static_screen[admin-scans/new]",
+      "test_id": "test_role_can_reach_each_static_screen",
+      "full_name": "test_role_can_reach_each_static_screen[admin-scans/new]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.007,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_role_can_reach_each_static_screen[admin-notifications]",
+      "test_id": "test_role_can_reach_each_static_screen",
+      "full_name": "test_role_can_reach_each_static_screen[admin-notifications]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.112,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_role_can_reach_each_static_screen[admin-profile]",
+      "test_id": "test_role_can_reach_each_static_screen",
+      "full_name": "test_role_can_reach_each_static_screen[admin-profile]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.105,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_role_can_reach_each_static_screen[admin-audit-log]",
+      "test_id": "test_role_can_reach_each_static_screen",
+      "full_name": "test_role_can_reach_each_static_screen[admin-audit-log]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.008,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_role_can_reach_each_static_screen[analyst-dashboard]",
+      "test_id": "test_role_can_reach_each_static_screen",
+      "full_name": "test_role_can_reach_each_static_screen[analyst-dashboard]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.108,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_role_can_reach_each_static_screen[analyst-scans]",
+      "test_id": "test_role_can_reach_each_static_screen",
+      "full_name": "test_role_can_reach_each_static_screen[analyst-scans]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.131,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_role_can_reach_each_static_screen[analyst-scans/new]",
+      "test_id": "test_role_can_reach_each_static_screen",
+      "full_name": "test_role_can_reach_each_static_screen[analyst-scans/new]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.01,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_role_can_reach_each_static_screen[analyst-notifications]",
+      "test_id": "test_role_can_reach_each_static_screen",
+      "full_name": "test_role_can_reach_each_static_screen[analyst-notifications]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.111,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_role_can_reach_each_static_screen[analyst-profile]",
+      "test_id": "test_role_can_reach_each_static_screen",
+      "full_name": "test_role_can_reach_each_static_screen[analyst-profile]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.127,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_role_can_reach_each_static_screen[analyst-audit-log]",
+      "test_id": "test_role_can_reach_each_static_screen",
+      "full_name": "test_role_can_reach_each_static_screen[analyst-audit-log]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "ERROR",
+      "duration": 72.287,
+      "screenshot": null,
+      "error": "conftest.py:244: in login_as_any_role\n    _login_with_one_recovery(page, account, f\"login_as_any_role[{role}]\")\nconftest.py:209: in _login_with_one_recovery\n    raise AssertionError(\nE   AssertionError: login_as_any_role[analyst]: login did not navigate away after two verified input attempts; visible text=['VULNARA', 'SECURE TERMINAL ACCESS', 'Something went wrong (HTTP 422).', 'OPERATOR ID / EMAIL', 'analyst.qa@vulnara-qa-suite.comanalyst.qa@vulnara-qa-suite.com', 'ACCESS KEY', '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022', 'INITIALIZE SESSION', 'SYSTEM STATUS: OPTIMAL', 'NODE: V-77X']"
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_role_can_reach_each_static_screen[client-dashboard]",
+      "test_id": "test_role_can_reach_each_static_screen",
+      "full_name": "test_role_can_reach_each_static_screen[client-dashboard]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 13.331,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_role_can_reach_each_static_screen[client-scans]",
+      "test_id": "test_role_can_reach_each_static_screen",
+      "full_name": "test_role_can_reach_each_static_screen[client-scans]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.111,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_role_can_reach_each_static_screen[client-scans/new]",
+      "test_id": "test_role_can_reach_each_static_screen",
+      "full_name": "test_role_can_reach_each_static_screen[client-scans/new]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.007,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_role_can_reach_each_static_screen[client-notifications]",
+      "test_id": "test_role_can_reach_each_static_screen",
+      "full_name": "test_role_can_reach_each_static_screen[client-notifications]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.108,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_role_can_reach_each_static_screen[client-profile]",
+      "test_id": "test_role_can_reach_each_static_screen",
+      "full_name": "test_role_can_reach_each_static_screen[client-profile]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.116,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_role_can_reach_each_static_screen[client-audit-log]",
+      "test_id": "test_role_can_reach_each_static_screen",
+      "full_name": "test_role_can_reach_each_static_screen[client-audit-log]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.007,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_unauthenticated_direct_navigation_redirects_to_login[dashboard]",
+      "test_id": "test_unauthenticated_direct_navigation_redirects_to_login",
+      "full_name": "test_unauthenticated_direct_navigation_redirects_to_login[dashboard]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 1.123,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_unauthenticated_direct_navigation_redirects_to_login[scans]",
+      "test_id": "test_unauthenticated_direct_navigation_redirects_to_login",
+      "full_name": "test_unauthenticated_direct_navigation_redirects_to_login[scans]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 1.147,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_unauthenticated_direct_navigation_redirects_to_login[scans/new]",
+      "test_id": "test_unauthenticated_direct_navigation_redirects_to_login",
+      "full_name": "test_unauthenticated_direct_navigation_redirects_to_login[scans/new]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 1.007,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_unauthenticated_direct_navigation_redirects_to_login[notifications]",
+      "test_id": "test_unauthenticated_direct_navigation_redirects_to_login",
+      "full_name": "test_unauthenticated_direct_navigation_redirects_to_login[notifications]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 1.618,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_unauthenticated_direct_navigation_redirects_to_login[profile]",
+      "test_id": "test_unauthenticated_direct_navigation_redirects_to_login",
+      "full_name": "test_unauthenticated_direct_navigation_redirects_to_login[profile]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.798,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_unauthenticated_direct_navigation_redirects_to_login[audit-log]",
+      "test_id": "test_unauthenticated_direct_navigation_redirects_to_login",
+      "full_name": "test_unauthenticated_direct_navigation_redirects_to_login[audit-log]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 1.355,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_all_roles_can_reach_audit_log_route[admin]",
+      "test_id": "test_all_roles_can_reach_audit_log_route",
+      "full_name": "test_all_roles_can_reach_audit_log_route[admin]",
+      "module": "authorization",
+      "markers": [
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.007,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_all_roles_can_reach_audit_log_route[analyst]",
+      "test_id": "test_all_roles_can_reach_audit_log_route",
+      "full_name": "test_all_roles_can_reach_audit_log_route[analyst]",
+      "module": "authorization",
+      "markers": [
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.008,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_all_roles_can_reach_audit_log_route[client]",
+      "test_id": "test_all_roles_can_reach_audit_log_route",
+      "full_name": "test_all_roles_can_reach_audit_log_route[client]",
+      "module": "authorization",
+      "markers": [
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.008,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_remediation_action_buttons_visible_regardless_of_role[admin-approve]",
+      "test_id": "test_remediation_action_buttons_visible_regardless_of_role",
+      "full_name": "test_remediation_action_buttons_visible_regardless_of_role[admin-approve]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.0,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_remediation_action_buttons_visible_regardless_of_role[admin-execute]",
+      "test_id": "test_remediation_action_buttons_visible_regardless_of_role",
+      "full_name": "test_remediation_action_buttons_visible_regardless_of_role[admin-execute]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.0,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_remediation_action_buttons_visible_regardless_of_role[admin-reject]",
+      "test_id": "test_remediation_action_buttons_visible_regardless_of_role",
+      "full_name": "test_remediation_action_buttons_visible_regardless_of_role[admin-reject]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.0,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_remediation_action_buttons_visible_regardless_of_role[analyst-approve]",
+      "test_id": "test_remediation_action_buttons_visible_regardless_of_role",
+      "full_name": "test_remediation_action_buttons_visible_regardless_of_role[analyst-approve]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.0,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_remediation_action_buttons_visible_regardless_of_role[analyst-execute]",
+      "test_id": "test_remediation_action_buttons_visible_regardless_of_role",
+      "full_name": "test_remediation_action_buttons_visible_regardless_of_role[analyst-execute]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.0,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_remediation_action_buttons_visible_regardless_of_role[analyst-reject]",
+      "test_id": "test_remediation_action_buttons_visible_regardless_of_role",
+      "full_name": "test_remediation_action_buttons_visible_regardless_of_role[analyst-reject]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.0,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_remediation_action_buttons_visible_regardless_of_role[client-approve]",
+      "test_id": "test_remediation_action_buttons_visible_regardless_of_role",
+      "full_name": "test_remediation_action_buttons_visible_regardless_of_role[client-approve]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.0,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_remediation_action_buttons_visible_regardless_of_role[client-execute]",
+      "test_id": "test_remediation_action_buttons_visible_regardless_of_role",
+      "full_name": "test_remediation_action_buttons_visible_regardless_of_role[client-execute]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.0,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_remediation_action_buttons_visible_regardless_of_role[client-reject]",
+      "test_id": "test_remediation_action_buttons_visible_regardless_of_role",
+      "full_name": "test_remediation_action_buttons_visible_regardless_of_role[client-reject]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.0,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_no_client_side_role_guard_on_remediation_buttons",
+      "test_id": "test_no_client_side_role_guard_on_remediation_buttons",
+      "full_name": "test_no_client_side_role_guard_on_remediation_buttons",
+      "module": "authorization",
+      "markers": [
+        "authorization"
+      ],
+      "status": "SKIPPED",
+      "duration": 0.0,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_login_page_unreachable_once_authenticated[admin]",
+      "test_id": "test_login_page_unreachable_once_authenticated",
+      "full_name": "test_login_page_unreachable_once_authenticated[admin]",
+      "module": "authorization",
+      "markers": [
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 12.058,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_login_page_unreachable_once_authenticated[analyst]",
+      "test_id": "test_login_page_unreachable_once_authenticated",
+      "full_name": "test_login_page_unreachable_once_authenticated[analyst]",
+      "module": "authorization",
+      "markers": [
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 12.06,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_login_page_unreachable_once_authenticated[client]",
+      "test_id": "test_login_page_unreachable_once_authenticated",
+      "full_name": "test_login_page_unreachable_once_authenticated[client]",
+      "module": "authorization",
+      "markers": [
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 12.051,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_bottom_nav_tabs_reachable_by_role[admin-dashboard]",
+      "test_id": "test_bottom_nav_tabs_reachable_by_role",
+      "full_name": "test_bottom_nav_tabs_reachable_by_role[admin-dashboard]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.122,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_bottom_nav_tabs_reachable_by_role[admin-scans]",
+      "test_id": "test_bottom_nav_tabs_reachable_by_role",
+      "full_name": "test_bottom_nav_tabs_reachable_by_role[admin-scans]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.146,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_bottom_nav_tabs_reachable_by_role[admin-alerts]",
+      "test_id": "test_bottom_nav_tabs_reachable_by_role",
+      "full_name": "test_bottom_nav_tabs_reachable_by_role[admin-alerts]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.125,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_bottom_nav_tabs_reachable_by_role[admin-profile]",
+      "test_id": "test_bottom_nav_tabs_reachable_by_role",
+      "full_name": "test_bottom_nav_tabs_reachable_by_role[admin-profile]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.125,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_bottom_nav_tabs_reachable_by_role[analyst-dashboard]",
+      "test_id": "test_bottom_nav_tabs_reachable_by_role",
+      "full_name": "test_bottom_nav_tabs_reachable_by_role[analyst-dashboard]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.109,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_bottom_nav_tabs_reachable_by_role[analyst-scans]",
+      "test_id": "test_bottom_nav_tabs_reachable_by_role",
+      "full_name": "test_bottom_nav_tabs_reachable_by_role[analyst-scans]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.219,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_bottom_nav_tabs_reachable_by_role[analyst-alerts]",
+      "test_id": "test_bottom_nav_tabs_reachable_by_role",
+      "full_name": "test_bottom_nav_tabs_reachable_by_role[analyst-alerts]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.135,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_bottom_nav_tabs_reachable_by_role[analyst-profile]",
+      "test_id": "test_bottom_nav_tabs_reachable_by_role",
+      "full_name": "test_bottom_nav_tabs_reachable_by_role[analyst-profile]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.104,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_bottom_nav_tabs_reachable_by_role[client-dashboard]",
+      "test_id": "test_bottom_nav_tabs_reachable_by_role",
+      "full_name": "test_bottom_nav_tabs_reachable_by_role[client-dashboard]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 13.021,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_bottom_nav_tabs_reachable_by_role[client-scans]",
+      "test_id": "test_bottom_nav_tabs_reachable_by_role",
+      "full_name": "test_bottom_nav_tabs_reachable_by_role[client-scans]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.137,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_bottom_nav_tabs_reachable_by_role[client-alerts]",
+      "test_id": "test_bottom_nav_tabs_reachable_by_role",
+      "full_name": "test_bottom_nav_tabs_reachable_by_role[client-alerts]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.107,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_bottom_nav_tabs_reachable_by_role[client-profile]",
+      "test_id": "test_bottom_nav_tabs_reachable_by_role",
+      "full_name": "test_bottom_nav_tabs_reachable_by_role[client-profile]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 0.124,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_logged_in_state_persists_across_navigation[admin-scans]",
+      "test_id": "test_logged_in_state_persists_across_navigation",
+      "full_name": "test_logged_in_state_persists_across_navigation[admin-scans]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 12.142,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_logged_in_state_persists_across_navigation[admin-dashboard]",
+      "test_id": "test_logged_in_state_persists_across_navigation",
+      "full_name": "test_logged_in_state_persists_across_navigation[admin-dashboard]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 12.165,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_logged_in_state_persists_across_navigation[admin-profile]",
+      "test_id": "test_logged_in_state_persists_across_navigation",
+      "full_name": "test_logged_in_state_persists_across_navigation[admin-profile]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 12.178,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_logged_in_state_persists_across_navigation[analyst-scans]",
+      "test_id": "test_logged_in_state_persists_across_navigation",
+      "full_name": "test_logged_in_state_persists_across_navigation[analyst-scans]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 12.16,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_logged_in_state_persists_across_navigation[analyst-dashboard]",
+      "test_id": "test_logged_in_state_persists_across_navigation",
+      "full_name": "test_logged_in_state_persists_across_navigation[analyst-dashboard]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 12.141,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_logged_in_state_persists_across_navigation[analyst-profile]",
+      "test_id": "test_logged_in_state_persists_across_navigation",
+      "full_name": "test_logged_in_state_persists_across_navigation[analyst-profile]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 12.169,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_logged_in_state_persists_across_navigation[client-scans]",
+      "test_id": "test_logged_in_state_persists_across_navigation",
+      "full_name": "test_logged_in_state_persists_across_navigation[client-scans]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 12.169,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_logged_in_state_persists_across_navigation[client-dashboard]",
+      "test_id": "test_logged_in_state_persists_across_navigation",
+      "full_name": "test_logged_in_state_persists_across_navigation[client-dashboard]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 24.893,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_authorization.py::test_logged_in_state_persists_across_navigation[client-profile]",
+      "test_id": "test_logged_in_state_persists_across_navigation",
+      "full_name": "test_logged_in_state_persists_across_navigation[client-profile]",
+      "module": "authorization",
+      "markers": [
+        "parametrize",
+        "authorization"
+      ],
+      "status": "PASSED",
+      "duration": 12.169,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_navigation.py::test_bottom_nav_navigates_to_each_tab[admin-dashboard]",
+      "test_id": "test_bottom_nav_navigates_to_each_tab",
+      "full_name": "test_bottom_nav_navigates_to_each_tab[admin-dashboard]",
+      "module": "navigation",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 2.44,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_navigation.py::test_bottom_nav_navigates_to_each_tab[admin-scans]",
+      "test_id": "test_bottom_nav_navigates_to_each_tab",
+      "full_name": "test_bottom_nav_navigates_to_each_tab[admin-scans]",
+      "module": "navigation",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 12.222,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_navigation.py::test_bottom_nav_navigates_to_each_tab[admin-alerts]",
+      "test_id": "test_bottom_nav_navigates_to_each_tab",
+      "full_name": "test_bottom_nav_navigates_to_each_tab[admin-alerts]",
+      "module": "navigation",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 0.395,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_navigation.py::test_bottom_nav_navigates_to_each_tab[admin-profile]",
+      "test_id": "test_bottom_nav_navigates_to_each_tab",
+      "full_name": "test_bottom_nav_navigates_to_each_tab[admin-profile]",
+      "module": "navigation",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 0.471,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_navigation.py::test_bottom_nav_navigates_to_each_tab[analyst-dashboard]",
+      "test_id": "test_bottom_nav_navigates_to_each_tab",
+      "full_name": "test_bottom_nav_navigates_to_each_tab[analyst-dashboard]",
+      "module": "navigation",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "FAILED",
+      "duration": 12.153,
+      "screenshot": "reports/screenshots/tests_test_navigation.py_test_bottom_nav_navigates_to_each_tab[analyst-dashboard].png",
+      "error": "tests/test_navigation.py:29: in test_bottom_nav_navigates_to_each_tab\n    assert page_by_tab[tab].is_loaded(timeout=12), f\"{tab} did not load after nav tap ({actual_role})\"\nE   AssertionError: dashboard did not load after nav tap (analyst)\nE   assert False\nE    +  where False = is_loaded(timeout=12)\nE    +    where is_loaded = <pages.dashboard_page.DashboardPage object at 0x7fad42bcc320>.is_loaded"
+    },
+    {
+      "nodeid": "tests/test_navigation.py::test_bottom_nav_navigates_to_each_tab[analyst-scans]",
+      "test_id": "test_bottom_nav_navigates_to_each_tab",
+      "full_name": "test_bottom_nav_navigates_to_each_tab[analyst-scans]",
+      "module": "navigation",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 0.383,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_navigation.py::test_bottom_nav_navigates_to_each_tab[analyst-alerts]",
+      "test_id": "test_bottom_nav_navigates_to_each_tab",
+      "full_name": "test_bottom_nav_navigates_to_each_tab[analyst-alerts]",
+      "module": "navigation",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 0.378,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_navigation.py::test_bottom_nav_navigates_to_each_tab[analyst-profile]",
+      "test_id": "test_bottom_nav_navigates_to_each_tab",
+      "full_name": "test_bottom_nav_navigates_to_each_tab[analyst-profile]",
+      "module": "navigation",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 0.483,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_navigation.py::test_bottom_nav_navigates_to_each_tab[client-dashboard]",
+      "test_id": "test_bottom_nav_navigates_to_each_tab",
+      "full_name": "test_bottom_nav_navigates_to_each_tab[client-dashboard]",
+      "module": "navigation",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "SKIPPED",
+      "duration": 0.0,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_navigation.py::test_bottom_nav_navigates_to_each_tab[client-scans]",
+      "test_id": "test_bottom_nav_navigates_to_each_tab",
+      "full_name": "test_bottom_nav_navigates_to_each_tab[client-scans]",
+      "module": "navigation",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 0.249,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_navigation.py::test_bottom_nav_navigates_to_each_tab[client-alerts]",
+      "test_id": "test_bottom_nav_navigates_to_each_tab",
+      "full_name": "test_bottom_nav_navigates_to_each_tab[client-alerts]",
+      "module": "navigation",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 0.334,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_navigation.py::test_bottom_nav_navigates_to_each_tab[client-profile]",
+      "test_id": "test_bottom_nav_navigates_to_each_tab",
+      "full_name": "test_bottom_nav_navigates_to_each_tab[client-profile]",
+      "module": "navigation",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 0.478,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_navigation.py::test_bottom_nav_tap_is_idempotent[scans]",
+      "test_id": "test_bottom_nav_tap_is_idempotent",
+      "full_name": "test_bottom_nav_tap_is_idempotent[scans]",
+      "module": "navigation",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 0.464,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_navigation.py::test_bottom_nav_tap_is_idempotent[alerts]",
+      "test_id": "test_bottom_nav_tap_is_idempotent",
+      "full_name": "test_bottom_nav_tap_is_idempotent[alerts]",
+      "module": "navigation",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 1.526,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_navigation.py::test_bottom_nav_tap_is_idempotent[profile]",
+      "test_id": "test_bottom_nav_tap_is_idempotent",
+      "full_name": "test_bottom_nav_tap_is_idempotent[profile]",
+      "module": "navigation",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 0.907,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_navigation.py::test_back_button_from_new_scan_returns_to_scan_list",
+      "test_id": "test_back_button_from_new_scan_returns_to_scan_list",
+      "full_name": "test_back_button_from_new_scan_returns_to_scan_list",
+      "module": "navigation",
+      "markers": [
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 1.245,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_navigation.py::test_navigating_all_tabs_in_sequence_never_crashes[admin]",
+      "test_id": "test_navigating_all_tabs_in_sequence_never_crashes",
+      "full_name": "test_navigating_all_tabs_in_sequence_never_crashes[admin]",
+      "module": "navigation",
+      "markers": [
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 2.115,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_navigation.py::test_navigating_all_tabs_in_sequence_never_crashes[analyst]",
+      "test_id": "test_navigating_all_tabs_in_sequence_never_crashes",
+      "full_name": "test_navigating_all_tabs_in_sequence_never_crashes[analyst]",
+      "module": "navigation",
+      "markers": [
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 2.378,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_navigation.py::test_navigating_all_tabs_in_sequence_never_crashes[client]",
+      "test_id": "test_navigating_all_tabs_in_sequence_never_crashes",
+      "full_name": "test_navigating_all_tabs_in_sequence_never_crashes[client]",
+      "module": "navigation",
+      "markers": [
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 1.392,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_navigation.py::test_app_bar_wordmark_area_renders_without_crash[Active Scans]",
+      "test_id": "test_app_bar_wordmark_area_renders_without_crash",
+      "full_name": "test_app_bar_wordmark_area_renders_without_crash[Active Scans]",
+      "module": "navigation",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 0.267,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_navigation.py::test_app_bar_wordmark_area_renders_without_crash[Alerts Hub]",
+      "test_id": "test_app_bar_wordmark_area_renders_without_crash",
+      "full_name": "test_app_bar_wordmark_area_renders_without_crash[Alerts Hub]",
+      "module": "navigation",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 0.388,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_navigation.py::test_app_bar_wordmark_area_renders_without_crash[New Target Configuration]",
+      "test_id": "test_app_bar_wordmark_area_renders_without_crash",
+      "full_name": "test_app_bar_wordmark_area_renders_without_crash[New Target Configuration]",
+      "module": "navigation",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 0.641,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_navigation.py::test_direct_post_login_landing_screen_is_reachable[admin-scans]",
+      "test_id": "test_direct_post_login_landing_screen_is_reachable",
+      "full_name": "test_direct_post_login_landing_screen_is_reachable[admin-scans]",
+      "module": "navigation",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 0.141,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_navigation.py::test_direct_post_login_landing_screen_is_reachable[admin-dashboard]",
+      "test_id": "test_direct_post_login_landing_screen_is_reachable",
+      "full_name": "test_direct_post_login_landing_screen_is_reachable[admin-dashboard]",
+      "module": "navigation",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 0.118,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_navigation.py::test_direct_post_login_landing_screen_is_reachable[admin-notifications]",
+      "test_id": "test_direct_post_login_landing_screen_is_reachable",
+      "full_name": "test_direct_post_login_landing_screen_is_reachable[admin-notifications]",
+      "module": "navigation",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 0.131,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_navigation.py::test_direct_post_login_landing_screen_is_reachable[admin-profile]",
+      "test_id": "test_direct_post_login_landing_screen_is_reachable",
+      "full_name": "test_direct_post_login_landing_screen_is_reachable[admin-profile]",
+      "module": "navigation",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 0.116,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_navigation.py::test_direct_post_login_landing_screen_is_reachable[analyst-scans]",
+      "test_id": "test_direct_post_login_landing_screen_is_reachable",
+      "full_name": "test_direct_post_login_landing_screen_is_reachable[analyst-scans]",
+      "module": "navigation",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 0.118,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_navigation.py::test_direct_post_login_landing_screen_is_reachable[analyst-dashboard]",
+      "test_id": "test_direct_post_login_landing_screen_is_reachable",
+      "full_name": "test_direct_post_login_landing_screen_is_reachable[analyst-dashboard]",
+      "module": "navigation",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 0.115,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_navigation.py::test_direct_post_login_landing_screen_is_reachable[analyst-notifications]",
+      "test_id": "test_direct_post_login_landing_screen_is_reachable",
+      "full_name": "test_direct_post_login_landing_screen_is_reachable[analyst-notifications]",
+      "module": "navigation",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 0.102,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_navigation.py::test_direct_post_login_landing_screen_is_reachable[analyst-profile]",
+      "test_id": "test_direct_post_login_landing_screen_is_reachable",
+      "full_name": "test_direct_post_login_landing_screen_is_reachable[analyst-profile]",
+      "module": "navigation",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 0.108,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_navigation.py::test_direct_post_login_landing_screen_is_reachable[client-scans]",
+      "test_id": "test_direct_post_login_landing_screen_is_reachable",
+      "full_name": "test_direct_post_login_landing_screen_is_reachable[client-scans]",
+      "module": "navigation",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 0.119,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_navigation.py::test_direct_post_login_landing_screen_is_reachable[client-dashboard]",
+      "test_id": "test_direct_post_login_landing_screen_is_reachable",
+      "full_name": "test_direct_post_login_landing_screen_is_reachable[client-dashboard]",
+      "module": "navigation",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "SKIPPED",
+      "duration": 0.0,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_navigation.py::test_direct_post_login_landing_screen_is_reachable[client-notifications]",
+      "test_id": "test_direct_post_login_landing_screen_is_reachable",
+      "full_name": "test_direct_post_login_landing_screen_is_reachable[client-notifications]",
+      "module": "navigation",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 0.112,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_navigation.py::test_direct_post_login_landing_screen_is_reachable[client-profile]",
+      "test_id": "test_direct_post_login_landing_screen_is_reachable",
+      "full_name": "test_direct_post_login_landing_screen_is_reachable[client-profile]",
+      "module": "navigation",
+      "markers": [
+        "parametrize",
+        "navigation"
+      ],
+      "status": "PASSED",
+      "duration": 0.096,
+      "screenshot": null,
+      "error": null
+    },
+    {
+      "nodeid": "tests/test_navigation.py::test_pending_remediations_icon_present_on_scan_status",
+      "test_id": "test_pending_remediations_icon_present_on_scan_status",
+      "full_name": "test_pending_remediations_icon_present_on_scan_status",
+      "module": "navigation",
+      "markers": [
+        "navigation"
+      ],
+      "status": "SKIPPED",
+      "duration": 60.234,
+      "screenshot": null,
+      "error": null
+    }
+  ]
+}

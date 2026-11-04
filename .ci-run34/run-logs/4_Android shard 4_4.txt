@@ -1,0 +1,1021 @@
+﻿2026-11-03T04:06:37.8211360Z Current runner version: '2.338.2'
+2026-11-03T04:06:37.8247996Z ##[group]Runner Image Provisioner
+2026-11-03T04:06:37.8249264Z Hosted Compute Agent
+2026-11-03T04:06:37.8250383Z Version: 20261021.618
+2026-11-03T04:06:37.8251456Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-11-03T04:06:37.8252674Z Build Date: 2026-10-21T00:45:21Z
+2026-11-03T04:06:37.8254191Z Worker ID: {e0051672-c21f-4567-af2e-4d234512caab}
+2026-11-03T04:06:37.8255403Z Region: eastus
+2026-11-03T04:06:37.8256402Z Cloud: Azure
+2026-11-03T04:06:37.8257313Z ##[endgroup]
+2026-11-03T04:06:37.8259817Z ##[group]Operating System
+2026-11-03T04:06:37.8260903Z Ubuntu
+2026-11-03T04:06:37.8261747Z 24.04.5
+2026-11-03T04:06:37.8262640Z LTS
+2026-11-03T04:06:37.8263441Z ##[endgroup]
+2026-11-03T04:06:37.8264836Z ##[group]Runner Image
+2026-11-03T04:06:37.8265993Z Image: ubuntu-24.04
+2026-11-03T04:06:37.8266891Z Version: 20261025.353.1
+2026-11-03T04:06:37.8269091Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261025.353/images/ubuntu/Ubuntu2404-Readme.md
+2026-11-03T04:06:37.8271948Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261025.353
+2026-11-03T04:06:37.8273893Z ##[endgroup]
+2026-11-03T04:06:37.8276080Z ##[group]GITHUB_TOKEN Permissions
+2026-11-03T04:06:37.8279000Z Contents: read
+2026-11-03T04:06:37.8280087Z Metadata: read
+2026-11-03T04:06:37.8280989Z Packages: read
+2026-11-03T04:06:37.8281931Z ##[endgroup]
+2026-11-03T04:06:37.8285311Z Secret source: Actions
+2026-11-03T04:06:37.8286838Z Cache mode: write
+2026-11-03T04:06:37.8288093Z Prepare workflow directory
+2026-11-03T04:06:37.9065303Z Prepare all required actions
+2026-11-03T04:06:37.9141120Z Getting action download info
+2026-11-03T04:06:38.1947104Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-11-03T04:06:38.2838613Z Download action repository 'actions/download-artifact@v4' (SHA:d3f86a106a0bac45b974a628896c90dbdf5c8093)
+2026-11-03T04:06:38.4398459Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+2026-11-03T04:06:38.5266445Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+2026-11-03T04:06:38.6093184Z Download action repository 'reactivecircus/android-emulator-runner@v2' (SHA:a421e43855164a8197daf9d8d40fe71c6996bb0d)
+2026-11-03T04:06:38.7510656Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-11-03T04:06:39.0043194Z Complete job name: Android shard 4/4
+2026-11-03T04:06:39.1202097Z ##[group]Run actions/checkout@v4
+2026-11-03T04:06:39.1203485Z with:
+2026-11-03T04:06:39.1204555Z   repository: gveerendra8356/vulnara-ai
+2026-11-03T04:06:39.1214254Z   token: ***
+2026-11-03T04:06:39.1215176Z   ssh-strict: true
+2026-11-03T04:06:39.1216019Z   ssh-user: git
+2026-11-03T04:06:39.1216870Z   persist-credentials: true
+2026-11-03T04:06:39.1217814Z   clean: true
+2026-11-03T04:06:39.1218684Z   sparse-checkout-cone-mode: true
+2026-11-03T04:06:39.1219734Z   fetch-depth: 1
+2026-11-03T04:06:39.1220563Z   fetch-tags: false
+2026-11-03T04:06:39.1221417Z   show-progress: true
+2026-11-03T04:06:39.1222283Z   lfs: false
+2026-11-03T04:06:39.1223093Z   submodules: false
+2026-11-03T04:06:39.1224093Z   set-safe-directory: true
+2026-11-03T04:06:39.1225083Z   allow-unsafe-pr-checkout: false
+2026-11-03T04:06:39.1226361Z env:
+2026-11-03T04:06:39.1227133Z   GATE_THRESHOLD: 70
+2026-11-03T04:06:39.1227989Z ##[endgroup]
+2026-11-03T04:06:39.3818488Z Syncing repository: gveerendra8356/vulnara-ai
+2026-11-03T04:06:39.3822171Z ##[group]Getting Git version info
+2026-11-03T04:06:39.3824805Z Working directory is '/home/runner/work/vulnara-ai/vulnara-ai'
+2026-11-03T04:06:39.3828161Z [command]/usr/bin/git version
+2026-11-03T04:06:39.3872352Z git version 2.56.0
+2026-11-03T04:06:39.3898708Z ##[endgroup]
+2026-11-03T04:06:39.3916880Z Temporarily overriding HOME='/home/runner/work/_temp/c40745bd-7c21-4988-8ccf-b5aa0070d30b' before making global git config changes
+2026-11-03T04:06:39.3920810Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-03T04:06:39.3924261Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/vulnara-ai/vulnara-ai
+2026-11-03T04:06:39.3975974Z Deleting the contents of '/home/runner/work/vulnara-ai/vulnara-ai'
+2026-11-03T04:06:39.3980227Z ##[group]Initializing the repository
+2026-11-03T04:06:39.3983947Z [command]/usr/bin/git init /home/runner/work/vulnara-ai/vulnara-ai
+2026-11-03T04:06:39.4088728Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-11-03T04:06:39.4090770Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-11-03T04:06:39.4092645Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-11-03T04:06:39.4094392Z hint: call:
+2026-11-03T04:06:39.4095274Z hint:
+2026-11-03T04:06:39.4096943Z hint: 	git config --global init.defaultBranch <name>
+2026-11-03T04:06:39.4098927Z hint:
+2026-11-03T04:06:39.4100052Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-11-03T04:06:39.4101882Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-11-03T04:06:39.4103346Z hint:
+2026-11-03T04:06:39.4104501Z hint: 	git branch -m <name>
+2026-11-03T04:06:39.4105415Z hint:
+2026-11-03T04:06:39.4106622Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-11-03T04:06:39.4118724Z Initialized empty Git repository in /home/runner/work/vulnara-ai/vulnara-ai/.git/
+2026-11-03T04:06:39.4132113Z [command]/usr/bin/git remote add origin https://github.com/gveerendra8356/vulnara-ai
+2026-11-03T04:06:39.4186244Z ##[endgroup]
+2026-11-03T04:06:39.4188810Z ##[group]Disabling automatic garbage collection
+2026-11-03T04:06:39.4191152Z [command]/usr/bin/git config --local gc.auto 0
+2026-11-03T04:06:39.4228888Z ##[endgroup]
+2026-11-03T04:06:39.4231341Z ##[group]Setting up auth
+2026-11-03T04:06:39.4236130Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-03T04:06:39.4277948Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-03T04:06:39.4668126Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-03T04:06:39.4718911Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-03T04:06:39.4992955Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-03T04:06:39.5044010Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-03T04:06:39.5297145Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-11-03T04:06:39.5348624Z ##[endgroup]
+2026-11-03T04:06:39.5350121Z ##[group]Fetching the repository
+2026-11-03T04:06:39.5362095Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +f582f8d8325bb9a1acb1873e4ff2abb5ca808d0d:refs/remotes/origin/main
+2026-11-03T04:06:39.8774329Z From https://github.com/gveerendra8356/vulnara-ai
+2026-11-03T04:06:39.8776245Z  * [new ref]         f582f8d8325bb9a1acb1873e4ff2abb5ca808d0d -> origin/main
+2026-11-03T04:06:39.8781017Z ##[endgroup]
+2026-11-03T04:06:39.8783082Z ##[group]Determining the checkout info
+2026-11-03T04:06:39.8785306Z ##[endgroup]
+2026-11-03T04:06:39.8789420Z [command]/usr/bin/git sparse-checkout disable
+2026-11-03T04:06:39.8855880Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-11-03T04:06:39.8908769Z ##[group]Checking out the ref
+2026-11-03T04:06:39.8912245Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-11-03T04:06:39.9441449Z Switched to a new branch 'main'
+2026-11-03T04:06:39.9445846Z branch 'main' set up to track 'origin/main'.
+2026-11-03T04:06:39.9456500Z ##[endgroup]
+2026-11-03T04:06:39.9512697Z [command]/usr/bin/git log -1 --format=%H
+2026-11-03T04:06:39.9548608Z f582f8d8325bb9a1acb1873e4ff2abb5ca808d0d
+2026-11-03T04:06:39.9812689Z ##[group]Run echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+2026-11-03T04:06:39.9815975Z [36;1mecho 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules[0m
+2026-11-03T04:06:39.9818106Z [36;1msudo udevadm control --reload-rules[0m
+2026-11-03T04:06:39.9819422Z [36;1msudo udevadm trigger --name-match=kvm[0m
+2026-11-03T04:06:39.9845483Z shell: /usr/bin/bash -e {0}
+2026-11-03T04:06:39.9846519Z env:
+2026-11-03T04:06:39.9847343Z   GATE_THRESHOLD: 70
+2026-11-03T04:06:39.9848254Z ##[endgroup]
+2026-11-03T04:06:39.9993136Z KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"
+2026-11-03T04:06:40.0408727Z ##[group]Run if [ -e /dev/kvm ] && [ -r /dev/kvm ] && [ -w /dev/kvm ]; then
+2026-11-03T04:06:40.0410455Z [36;1mif [ -e /dev/kvm ] && [ -r /dev/kvm ] && [ -w /dev/kvm ]; then[0m
+2026-11-03T04:06:40.0412517Z [36;1m  echo "/dev/kvm present and read/write-accessible -- hardware acceleration should be available."[0m
+2026-11-03T04:06:40.0414654Z [36;1melse[0m
+2026-11-03T04:06:40.0415514Z [36;1m  ls -la /dev/kvm 2>&1 || true[0m
+2026-11-03T04:06:40.0420467Z [36;1m  echo "::warning::/dev/kvm is missing or not accessible on this runner -- the emulator will likely fall back to slow software CPU emulation, which can make every test in this shard time out even though nothing is wrong with the app or test code. If this shard's tests fail uniformly (including ones unrelated to whatever the last real bug was), re-run the job rather than debugging test code."[0m
+2026-11-03T04:06:40.0425636Z [36;1mfi[0m
+2026-11-03T04:06:40.0448032Z shell: /usr/bin/bash -e {0}
+2026-11-03T04:06:40.0449038Z env:
+2026-11-03T04:06:40.0449810Z   GATE_THRESHOLD: 70
+2026-11-03T04:06:40.0450664Z ##[endgroup]
+2026-11-03T04:06:40.0505168Z /dev/kvm present and read/write-accessible -- hardware acceleration should be available.
+2026-11-03T04:06:40.0638372Z ##[group]Run actions/download-artifact@v4
+2026-11-03T04:06:40.0639499Z with:
+2026-11-03T04:06:40.0640348Z   name: vulnara-mobile-debug-apk
+2026-11-03T04:06:40.0641394Z   path: android-tests/apk
+2026-11-03T04:06:40.0642353Z   merge-multiple: false
+2026-11-03T04:06:40.0643319Z   repository: gveerendra8356/vulnara-ai
+2026-11-03T04:06:40.0644605Z   run-id: 41575715243
+2026-11-03T04:06:40.0645483Z env:
+2026-11-03T04:06:40.0646266Z   GATE_THRESHOLD: 70
+2026-11-03T04:06:40.0647140Z ##[endgroup]
+2026-11-03T04:06:40.2347768Z Downloading single artifact
+2026-11-03T04:06:40.2546398Z (node:2333) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-03T04:06:40.2550886Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-03T04:06:40.3308866Z Preparing to download the following artifacts:
+2026-11-03T04:06:40.3312149Z - vulnara-mobile-debug-apk (ID: 13202953963, Size: 83726369, Expected Digest: sha256:dc14e2d56b6fb883776d45befa738d3189297d93eeb70601df134f07bc3dae25)
+2026-11-03T04:06:40.4442595Z Redirecting to blob download url: https://productionresultssa9.blob.core.windows.net/actions-results/7de0693f-c0c7-8190-af5d-100fcba1107d/workflow-job-run-f5fd5e20-cf84-5db9-b6b5-c5a6f8ff4abe/artifacts/0c4ef1798fc4ab1f30dc4bc13bef7603c5a234dab1dd7a22ef5dc761e0611384.zip
+2026-11-03T04:06:40.4451581Z Starting download of artifact to: /home/runner/work/vulnara-ai/vulnara-ai/android-tests/apk
+2026-11-03T04:06:40.5858948Z (node:2333) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+2026-11-03T04:06:42.5635835Z SHA256 digest of downloaded artifact is dc14e2d56b6fb883776d45befa738d3189297d93eeb70601df134f07bc3dae25
+2026-11-03T04:06:42.5637420Z Artifact download completed successfully.
+2026-11-03T04:06:42.5637984Z Total of 1 artifact(s) downloaded
+2026-11-03T04:06:42.5644721Z Download artifact has finished successfully
+2026-11-03T04:06:42.5894998Z ##[group]Run actions/setup-python@v5
+2026-11-03T04:06:42.5895587Z with:
+2026-11-03T04:06:42.5895971Z   python-version: 3.12
+2026-11-03T04:06:42.5896406Z   cache: pip
+2026-11-03T04:06:42.5897081Z   cache-dependency-path: android-tests/requirements.txt
+backend/requirements.txt
+
+2026-11-03T04:06:42.5897887Z   check-latest: false
+2026-11-03T04:06:42.5903285Z   token: ***
+2026-11-03T04:06:42.5903949Z   update-environment: true
+2026-11-03T04:06:42.5904331Z   allow-prereleases: false
+2026-11-03T04:06:42.5904627Z   freethreaded: false
+2026-11-03T04:06:42.5904898Z env:
+2026-11-03T04:06:42.5905148Z   GATE_THRESHOLD: 70
+2026-11-03T04:06:42.5905395Z ##[endgroup]
+2026-11-03T04:06:42.7309347Z ##[group]Installed versions
+2026-11-03T04:06:42.7439917Z (node:2346) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-03T04:06:42.7440954Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-03T04:06:42.7441845Z Successfully set up CPython (3.12.15)
+2026-11-03T04:06:42.7442406Z ##[endgroup]
+2026-11-03T04:06:42.7781464Z [command]/opt/hostedtoolcache/Python/3.12.15/x64/bin/pip cache dir
+2026-11-03T04:06:43.0795267Z /home/runner/.cache/pip
+2026-11-03T04:06:43.1667277Z Cache hit for: setup-python-Linux-x64-24.04-Ubuntu-python-3.12.15-pip-001c6f1301c99f10d14f388ad35f8bac4eccaf0e8aaa990ac893743fe90cc662
+2026-11-03T04:06:43.1772347Z (node:2346) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-11-03T04:06:43.7142020Z Received 74565996 of 74565996 (100.0%), 139.2 MBs/sec
+2026-11-03T04:06:43.7142886Z Cache Size: ~71 MB (74565996 B)
+2026-11-03T04:06:43.7207777Z [command]/usr/bin/tar -xf /home/runner/work/_temp/ace459d8-e5d9-4f24-a1ac-76963c741b32/cache.tzst -P -C /home/runner/work/vulnara-ai/vulnara-ai --use-compress-program unzstd
+2026-11-03T04:06:43.8806537Z Cache restored successfully
+2026-11-03T04:06:43.8856774Z Cache restored from key: setup-python-Linux-x64-24.04-Ubuntu-python-3.12.15-pip-001c6f1301c99f10d14f388ad35f8bac4eccaf0e8aaa990ac893743fe90cc662
+2026-11-03T04:06:43.9123418Z ##[group]Run pip install -r requirements.txt
+2026-11-03T04:06:43.9124225Z [36;1mpip install -r requirements.txt[0m
+2026-11-03T04:06:43.9147668Z shell: /usr/bin/bash -e {0}
+2026-11-03T04:06:43.9147974Z env:
+2026-11-03T04:06:43.9148213Z   GATE_THRESHOLD: 70
+2026-11-03T04:06:43.9148547Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:06:43.9149050Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib/pkgconfig
+2026-11-03T04:06:43.9149536Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:06:43.9149980Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:06:43.9150398Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:06:43.9150814Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib
+2026-11-03T04:06:43.9151174Z ##[endgroup]
+2026-11-03T04:06:44.7774707Z Collecting pytest==9.1.1 (from -r requirements.txt (line 8))
+2026-11-03T04:06:44.7791012Z   Using cached pytest-9.1.1-py3-none-any.whl.metadata (7.6 kB)
+2026-11-03T04:06:44.8537293Z Collecting pytest-xdist==3.8.0 (from -r requirements.txt (line 9))
+2026-11-03T04:06:44.8550583Z   Using cached pytest_xdist-3.8.0-py3-none-any.whl.metadata (3.0 kB)
+2026-11-03T04:06:44.9542090Z Collecting Appium-Python-Client==5.3.1 (from -r requirements.txt (line 10))
+2026-11-03T04:06:44.9555133Z   Using cached appium_python_client-5.3.1-py3-none-any.whl.metadata (20 kB)
+2026-11-03T04:06:45.0301603Z Collecting openpyxl==3.1.5 (from -r requirements.txt (line 11))
+2026-11-03T04:06:45.0314658Z   Using cached openpyxl-3.1.5-py2.py3-none-any.whl.metadata (2.5 kB)
+2026-11-03T04:06:45.1022369Z Collecting iniconfig>=1.0.1 (from pytest==9.1.1->-r requirements.txt (line 8))
+2026-11-03T04:06:45.1035453Z   Using cached iniconfig-2.3.1-py3-none-any.whl.metadata (2.8 kB)
+2026-11-03T04:06:45.1777450Z Collecting packaging>=22 (from pytest==9.1.1->-r requirements.txt (line 8))
+2026-11-03T04:06:45.1790550Z   Using cached packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+2026-11-03T04:06:45.2534782Z Collecting pluggy<2,>=1.5 (from pytest==9.1.1->-r requirements.txt (line 8))
+2026-11-03T04:06:45.2552840Z   Using cached pluggy-1.7.0-py3-none-any.whl.metadata (5.0 kB)
+2026-11-03T04:06:45.3371582Z Collecting pygments>=2.7.2 (from pytest==9.1.1->-r requirements.txt (line 8))
+2026-11-03T04:06:45.3384878Z   Using cached pygments-2.21.0-py3-none-any.whl.metadata (2.5 kB)
+2026-11-03T04:06:45.4182172Z Collecting execnet>=2.1 (from pytest-xdist==3.8.0->-r requirements.txt (line 9))
+2026-11-03T04:06:45.4199090Z   Using cached execnet-2.1.2-py3-none-any.whl.metadata (2.9 kB)
+2026-11-03T04:06:45.5052984Z Collecting selenium<5.0,>=4.26 (from Appium-Python-Client==5.3.1->-r requirements.txt (line 10))
+2026-11-03T04:06:45.5065672Z   Using cached selenium-4.52.0-py3-none-any.whl.metadata (7.5 kB)
+2026-11-03T04:06:45.5833341Z Collecting typing-extensions~=4.13 (from Appium-Python-Client==5.3.1->-r requirements.txt (line 10))
+2026-11-03T04:06:45.5852105Z   Using cached typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+2026-11-03T04:06:45.6577147Z Collecting et-xmlfile (from openpyxl==3.1.5->-r requirements.txt (line 11))
+2026-11-03T04:06:45.6589981Z   Using cached et_xmlfile-2.0.0-py3-none-any.whl.metadata (2.7 kB)
+2026-11-03T04:06:45.7341496Z Collecting certifi>=2026.10.23 (from selenium<5.0,>=4.26->Appium-Python-Client==5.3.1->-r requirements.txt (line 10))
+2026-11-03T04:06:45.7353767Z   Using cached certifi-2026.10.23-py3-none-any.whl.metadata (2.5 kB)
+2026-11-03T04:06:45.8160080Z Collecting trio<1.0,>=0.31.0 (from selenium<5.0,>=4.26->Appium-Python-Client==5.3.1->-r requirements.txt (line 10))
+2026-11-03T04:06:46.0434509Z   Downloading trio-0.35.0-py3-none-any.whl.metadata (8.5 kB)
+2026-11-03T04:06:46.1228428Z Collecting trio-websocket<1.0,>=0.12.2 (from selenium<5.0,>=4.26->Appium-Python-Client==5.3.1->-r requirements.txt (line 10))
+2026-11-03T04:06:46.1241890Z   Using cached trio_websocket-0.12.2-py3-none-any.whl.metadata (5.1 kB)
+2026-11-03T04:06:46.2155501Z Collecting urllib3<3.0,>=2.6.3 (from urllib3[socks]<3.0,>=2.6.3->selenium<5.0,>=4.26->Appium-Python-Client==5.3.1->-r requirements.txt (line 10))
+2026-11-03T04:06:46.2167824Z   Using cached urllib3-2.8.0-py3-none-any.whl.metadata (7.4 kB)
+2026-11-03T04:06:46.2947565Z Collecting websocket-client<2.0,>=1.8.0 (from selenium<5.0,>=4.26->Appium-Python-Client==5.3.1->-r requirements.txt (line 10))
+2026-11-03T04:06:46.2960873Z   Using cached websocket_client-1.9.2-py3-none-any.whl.metadata (8.3 kB)
+2026-11-03T04:06:46.3692985Z Collecting attrs>=23.2.0 (from trio<1.0,>=0.31.0->selenium<5.0,>=4.26->Appium-Python-Client==5.3.1->-r requirements.txt (line 10))
+2026-11-03T04:06:46.3706137Z   Using cached attrs-26.1.0-py3-none-any.whl.metadata (8.8 kB)
+2026-11-03T04:06:46.4419071Z Collecting sortedcontainers (from trio<1.0,>=0.31.0->selenium<5.0,>=4.26->Appium-Python-Client==5.3.1->-r requirements.txt (line 10))
+2026-11-03T04:06:46.4431457Z   Using cached sortedcontainers-2.4.0-py2.py3-none-any.whl.metadata (10 kB)
+2026-11-03T04:06:46.5155178Z Collecting idna (from trio<1.0,>=0.31.0->selenium<5.0,>=4.26->Appium-Python-Client==5.3.1->-r requirements.txt (line 10))
+2026-11-03T04:06:46.5168387Z   Using cached idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+2026-11-03T04:06:46.5861645Z Collecting outcome (from trio<1.0,>=0.31.0->selenium<5.0,>=4.26->Appium-Python-Client==5.3.1->-r requirements.txt (line 10))
+2026-11-03T04:06:46.5874046Z   Using cached outcome-1.3.0.post0-py2.py3-none-any.whl.metadata (2.6 kB)
+2026-11-03T04:06:46.6575828Z Collecting sniffio>=1.3.0 (from trio<1.0,>=0.31.0->selenium<5.0,>=4.26->Appium-Python-Client==5.3.1->-r requirements.txt (line 10))
+2026-11-03T04:06:46.6587626Z   Using cached sniffio-1.3.1-py3-none-any.whl.metadata (3.9 kB)
+2026-11-03T04:06:46.7292624Z Collecting wsproto>=0.14 (from trio-websocket<1.0,>=0.12.2->selenium<5.0,>=4.26->Appium-Python-Client==5.3.1->-r requirements.txt (line 10))
+2026-11-03T04:06:46.7304976Z   Using cached wsproto-1.3.2-py3-none-any.whl.metadata (5.2 kB)
+2026-11-03T04:06:46.8052015Z Collecting pysocks!=1.5.7,<2.0,>=1.5.6 (from urllib3[socks]<3.0,>=2.6.3->selenium<5.0,>=4.26->Appium-Python-Client==5.3.1->-r requirements.txt (line 10))
+2026-11-03T04:06:46.8064713Z   Using cached PySocks-1.7.1-py3-none-any.whl.metadata (13 kB)
+2026-11-03T04:06:46.8824987Z Collecting h11<1,>=0.16.0 (from wsproto>=0.14->trio-websocket<1.0,>=0.12.2->selenium<5.0,>=4.26->Appium-Python-Client==5.3.1->-r requirements.txt (line 10))
+2026-11-03T04:06:46.8837260Z   Using cached h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+2026-11-03T04:06:46.8882011Z Using cached pytest-9.1.1-py3-none-any.whl (386 kB)
+2026-11-03T04:06:46.8902697Z Using cached pytest_xdist-3.8.0-py3-none-any.whl (46 kB)
+2026-11-03T04:06:46.8915270Z Using cached appium_python_client-5.3.1-py3-none-any.whl (351 kB)
+2026-11-03T04:06:46.8928570Z Using cached openpyxl-3.1.5-py2.py3-none-any.whl (250 kB)
+2026-11-03T04:06:46.8941341Z Using cached pluggy-1.7.0-py3-none-any.whl (27 kB)
+2026-11-03T04:06:46.8953552Z Using cached selenium-4.52.0-py3-none-any.whl (12.1 MB)
+2026-11-03T04:06:46.9652647Z Downloading trio-0.35.0-py3-none-any.whl (513 kB)
+2026-11-03T04:06:47.1807602Z Using cached trio_websocket-0.12.2-py3-none-any.whl (21 kB)
+2026-11-03T04:06:47.1819382Z Using cached typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+2026-11-03T04:06:47.1831731Z Using cached urllib3-2.8.0-py3-none-any.whl (135 kB)
+2026-11-03T04:06:47.1844072Z Using cached PySocks-1.7.1-py3-none-any.whl (16 kB)
+2026-11-03T04:06:47.1856367Z Using cached websocket_client-1.9.2-py3-none-any.whl (95 kB)
+2026-11-03T04:06:47.1868641Z Using cached attrs-26.1.0-py3-none-any.whl (67 kB)
+2026-11-03T04:06:47.1880727Z Using cached certifi-2026.10.23-py3-none-any.whl (135 kB)
+2026-11-03T04:06:47.1892924Z Using cached execnet-2.1.2-py3-none-any.whl (40 kB)
+2026-11-03T04:06:47.1905062Z Using cached iniconfig-2.3.1-py3-none-any.whl (7.6 kB)
+2026-11-03T04:06:47.1916969Z Using cached outcome-1.3.0.post0-py2.py3-none-any.whl (10 kB)
+2026-11-03T04:06:47.1929087Z Using cached packaging-26.3-py3-none-any.whl (129 kB)
+2026-11-03T04:06:47.1941224Z Using cached pygments-2.21.0-py3-none-any.whl (1.3 MB)
+2026-11-03T04:06:47.1957865Z Using cached sniffio-1.3.1-py3-none-any.whl (10 kB)
+2026-11-03T04:06:47.1969774Z Using cached wsproto-1.3.2-py3-none-any.whl (24 kB)
+2026-11-03T04:06:47.1981621Z Using cached h11-0.16.0-py3-none-any.whl (37 kB)
+2026-11-03T04:06:47.1993687Z Using cached et_xmlfile-2.0.0-py3-none-any.whl (18 kB)
+2026-11-03T04:06:47.2005767Z Using cached idna-3.20-py3-none-any.whl (69 kB)
+2026-11-03T04:06:47.2017875Z Using cached sortedcontainers-2.4.0-py2.py3-none-any.whl (29 kB)
+2026-11-03T04:06:47.3379815Z Installing collected packages: sortedcontainers, websocket-client, urllib3, typing-extensions, sniffio, pysocks, pygments, pluggy, packaging, iniconfig, idna, h11, execnet, et-xmlfile, certifi, attrs, wsproto, pytest, outcome, openpyxl, trio, pytest-xdist, trio-websocket, selenium, Appium-Python-Client
+2026-11-03T04:06:50.8002708Z 
+2026-11-03T04:06:50.8032329Z Successfully installed Appium-Python-Client-5.3.1 attrs-26.1.0 certifi-2026.10.23 et-xmlfile-2.0.0 execnet-2.1.2 h11-0.16.0 idna-3.20 iniconfig-2.3.1 openpyxl-3.1.5 outcome-1.3.0.post0 packaging-26.3 pluggy-1.7.0 pygments-2.21.0 pysocks-1.7.1 pytest-9.1.1 pytest-xdist-3.8.0 selenium-4.52.0 sniffio-1.3.1 sortedcontainers-2.4.0 trio-0.35.0 trio-websocket-0.12.2 typing-extensions-4.16.0 urllib3-2.8.0 websocket-client-1.9.2 wsproto-1.3.2
+2026-11-03T04:06:50.8717027Z ##[group]Run pip install -r requirements.txt
+2026-11-03T04:06:50.8717784Z [36;1mpip install -r requirements.txt[0m
+2026-11-03T04:06:50.8748305Z shell: /usr/bin/bash -e {0}
+2026-11-03T04:06:50.8749296Z env:
+2026-11-03T04:06:50.8749667Z   GATE_THRESHOLD: 70
+2026-11-03T04:06:50.8750246Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:06:50.8751080Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib/pkgconfig
+2026-11-03T04:06:50.8751893Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:06:50.8752631Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:06:50.8753356Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:06:50.8754342Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib
+2026-11-03T04:06:50.8754944Z ##[endgroup]
+2026-11-03T04:06:51.5088483Z Collecting fastapi>=0.111 (from -r requirements.txt (line 1))
+2026-11-03T04:06:51.5104167Z   Using cached fastapi-0.162.0-py3-none-any.whl.metadata (26 kB)
+2026-11-03T04:06:51.5998087Z Collecting uvicorn>=0.30 (from uvicorn[standard]>=0.30->-r requirements.txt (line 2))
+2026-11-03T04:06:51.6011364Z   Using cached uvicorn-0.54.0-py3-none-any.whl.metadata (6.6 kB)
+2026-11-03T04:06:51.9765848Z Collecting sqlalchemy>=2.0 (from sqlalchemy[asyncio]>=2.0->-r requirements.txt (line 3))
+2026-11-03T04:06:51.9784338Z   Using cached sqlalchemy-2.1.6-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (9.7 kB)
+2026-11-03T04:06:52.0859160Z Collecting asyncpg>=0.29 (from -r requirements.txt (line 4))
+2026-11-03T04:06:52.0874758Z   Using cached asyncpg-0.32.0-cp312-cp312-manylinux_2_28_x86_64.whl.metadata (4.4 kB)
+2026-11-03T04:06:52.2509738Z Collecting pydantic>=2.7 (from -r requirements.txt (line 5))
+2026-11-03T04:06:52.2524564Z   Using cached pydantic-2.14.2-py3-none-any.whl.metadata (137 kB)
+2026-11-03T04:06:52.3294388Z Collecting python-jose>=3.3 (from python-jose[cryptography]>=3.3->-r requirements.txt (line 6))
+2026-11-03T04:06:52.3308991Z   Using cached python_jose-3.5.0-py2.py3-none-any.whl.metadata (5.5 kB)
+2026-11-03T04:06:52.6953455Z Collecting websockets>=12.0 (from -r requirements.txt (line 7))
+2026-11-03T04:06:52.9264588Z   Downloading websockets-17.4-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (6.3 kB)
+2026-11-03T04:06:53.0047050Z Collecting httpx>=0.27 (from -r requirements.txt (line 8))
+2026-11-03T04:06:53.0060188Z   Using cached httpx-0.28.1-py3-none-any.whl.metadata (7.1 kB)
+2026-11-03T04:06:53.0845140Z Collecting groq>=0.4 (from -r requirements.txt (line 9))
+2026-11-03T04:06:53.0857544Z   Using cached groq-1.7.0-py3-none-any.whl.metadata (16 kB)
+2026-11-03T04:06:53.1619935Z Collecting firebase-admin>=6.5 (from -r requirements.txt (line 10))
+2026-11-03T04:06:53.1634076Z   Using cached firebase_admin-7.7.0-py3-none-any.whl.metadata (1.8 kB)
+2026-11-03T04:06:53.2396047Z Collecting passlib>=1.7.4 (from passlib[bcrypt]>=1.7.4->-r requirements.txt (line 11))
+2026-11-03T04:06:53.2410252Z   Using cached passlib-1.7.4-py2.py3-none-any.whl.metadata (1.7 kB)
+2026-11-03T04:06:53.3143204Z Collecting email-validator>=2.1.0 (from -r requirements.txt (line 12))
+2026-11-03T04:06:53.3157006Z   Using cached email_validator-2.3.0-py3-none-any.whl.metadata (26 kB)
+2026-11-03T04:06:53.3884027Z Collecting aiosqlite (from -r requirements.txt (line 13))
+2026-11-03T04:06:53.3897346Z   Using cached aiosqlite-0.22.1-py3-none-any.whl.metadata (4.3 kB)
+2026-11-03T04:06:53.4647566Z Collecting python-dotenv>=1.0 (from -r requirements.txt (line 14))
+2026-11-03T04:06:53.4660857Z   Using cached python_dotenv-1.2.4-py3-none-any.whl.metadata (29 kB)
+2026-11-03T04:06:53.5546317Z Collecting starlette>=0.46.0 (from fastapi>=0.111->-r requirements.txt (line 1))
+2026-11-03T04:06:53.5560064Z   Using cached starlette-1.10.0-py3-none-any.whl.metadata (6.6 kB)
+2026-11-03T04:06:53.5618630Z Requirement already satisfied: typing-extensions>=4.8.0 in /opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages (from fastapi>=0.111->-r requirements.txt (line 1)) (4.16.0)
+2026-11-03T04:06:53.6312755Z Collecting typing-inspection>=0.4.2 (from fastapi>=0.111->-r requirements.txt (line 1))
+2026-11-03T04:06:53.6325620Z   Using cached typing_inspection-0.4.4-py3-none-any.whl.metadata (2.6 kB)
+2026-11-03T04:06:53.7025267Z Collecting annotated-doc>=0.0.2 (from fastapi>=0.111->-r requirements.txt (line 1))
+2026-11-03T04:06:53.7037591Z   Using cached annotated_doc-0.0.5-py3-none-any.whl.metadata (6.5 kB)
+2026-11-03T04:06:53.7819792Z Collecting opentelemetry-api>=1.44.0 (from fastapi>=0.111->-r requirements.txt (line 1))
+2026-11-03T04:06:53.7832755Z   Using cached opentelemetry_api-1.45.2-py3-none-any.whl.metadata (1.4 kB)
+2026-11-03T04:06:53.8602711Z Collecting click>=7.0 (from uvicorn>=0.30->uvicorn[standard]>=0.30->-r requirements.txt (line 2))
+2026-11-03T04:06:53.8616554Z   Using cached click-8.5.0-py3-none-any.whl.metadata (2.6 kB)
+2026-11-03T04:06:53.8635495Z Requirement already satisfied: h11>=0.8 in /opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages (from uvicorn>=0.30->uvicorn[standard]>=0.30->-r requirements.txt (line 2)) (0.16.0)
+2026-11-03T04:06:53.9359182Z Collecting annotated-types>=0.6.0 (from pydantic>=2.7->-r requirements.txt (line 5))
+2026-11-03T04:06:53.9371204Z   Using cached annotated_types-0.8.0-py3-none-any.whl.metadata (15 kB)
+2026-11-03T04:06:54.6781530Z Collecting pydantic-core==2.50.2 (from pydantic>=2.7->-r requirements.txt (line 5))
+2026-11-03T04:06:54.6796199Z   Using cached pydantic_core-2.50.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (6.5 kB)
+2026-11-03T04:06:54.7541293Z Collecting ecdsa!=0.15 (from python-jose>=3.3->python-jose[cryptography]>=3.3->-r requirements.txt (line 6))
+2026-11-03T04:06:54.7553654Z   Using cached ecdsa-0.19.2-py2.py3-none-any.whl.metadata (29 kB)
+2026-11-03T04:06:54.8297918Z Collecting rsa!=4.1.1,!=4.4,<5.0,>=4.0 (from python-jose>=3.3->python-jose[cryptography]>=3.3->-r requirements.txt (line 6))
+2026-11-03T04:06:54.8310168Z   Using cached rsa-4.9.1-py3-none-any.whl.metadata (5.6 kB)
+2026-11-03T04:06:54.9130102Z Collecting pyasn1>=0.5.0 (from python-jose>=3.3->python-jose[cryptography]>=3.3->-r requirements.txt (line 6))
+2026-11-03T04:06:54.9143276Z   Using cached pyasn1-0.6.5-py3-none-any.whl.metadata (8.4 kB)
+2026-11-03T04:06:54.9978111Z Collecting anyio (from httpx>=0.27->-r requirements.txt (line 8))
+2026-11-03T04:06:55.0627857Z   Downloading anyio-4.16.0-py3-none-any.whl.metadata (4.7 kB)
+2026-11-03T04:06:55.0708305Z Requirement already satisfied: certifi in /opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages (from httpx>=0.27->-r requirements.txt (line 8)) (2026.10.23)
+2026-11-03T04:06:55.1630973Z Collecting httpcore==1.* (from httpx>=0.27->-r requirements.txt (line 8))
+2026-11-03T04:06:55.1643651Z   Using cached httpcore-1.0.9-py3-none-any.whl.metadata (21 kB)
+2026-11-03T04:06:55.1678021Z Requirement already satisfied: idna in /opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages (from httpx>=0.27->-r requirements.txt (line 8)) (3.20)
+2026-11-03T04:06:55.2407570Z Collecting distro<2,>=1.7.0 (from groq>=0.4->-r requirements.txt (line 9))
+2026-11-03T04:06:55.2420073Z   Using cached distro-1.9.0-py3-none-any.whl.metadata (6.8 kB)
+2026-11-03T04:06:55.2485504Z Requirement already satisfied: sniffio in /opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages (from groq>=0.4->-r requirements.txt (line 9)) (1.3.1)
+2026-11-03T04:06:55.3227239Z Collecting cachecontrol>=0.14.3 (from firebase-admin>=6.5->-r requirements.txt (line 10))
+2026-11-03T04:06:55.3240332Z   Using cached cachecontrol-0.14.4-py3-none-any.whl.metadata (3.1 kB)
+2026-11-03T04:06:55.4123931Z Collecting google-api-core<3.0.0dev,>=2.25.1 (from google-api-core[grpc]<3.0.0dev,>=2.25.1; platform_python_implementation != "PyPy"->firebase-admin>=6.5->-r requirements.txt (line 10))
+2026-11-03T04:06:55.4135710Z   Using cached google_api_core-2.43.2-py3-none-any.whl.metadata (3.2 kB)
+2026-11-03T04:06:55.4944606Z Collecting google-cloud-firestore>=2.21.0 (from firebase-admin>=6.5->-r requirements.txt (line 10))
+2026-11-03T04:06:55.4956308Z   Using cached google_cloud_firestore-2.34.1-py3-none-any.whl.metadata (9.5 kB)
+2026-11-03T04:06:55.5775060Z Collecting google-cloud-storage>=3.1.1 (from firebase-admin>=6.5->-r requirements.txt (line 10))
+2026-11-03T04:06:55.5788094Z   Using cached google_cloud_storage-3.17.1-py3-none-any.whl.metadata (14 kB)
+2026-11-03T04:06:55.6572851Z Collecting pyjwt>=2.10.1 (from pyjwt[crypto]>=2.10.1->firebase-admin>=6.5->-r requirements.txt (line 10))
+2026-11-03T04:06:55.6585649Z   Using cached pyjwt-2.15.1-py3-none-any.whl.metadata (3.5 kB)
+2026-11-03T04:06:55.7371989Z Collecting h2<5,>=3 (from httpx[http2]==0.28.1->firebase-admin>=6.5->-r requirements.txt (line 10))
+2026-11-03T04:06:55.7384653Z   Using cached h2-4.4.1-py3-none-any.whl.metadata (3.8 kB)
+2026-11-03T04:06:55.8172761Z Collecting googleapis-common-protos<2.0.0,>=1.69.2 (from google-api-core<3.0.0dev,>=2.25.1->google-api-core[grpc]<3.0.0dev,>=2.25.1; platform_python_implementation != "PyPy"->firebase-admin>=6.5->-r requirements.txt (line 10))
+2026-11-03T04:06:55.8189088Z   Using cached googleapis_common_protos-1.76.0-py3-none-any.whl.metadata (8.5 kB)
+2026-11-03T04:06:56.0224395Z Collecting protobuf<8.0.0,>=6.33.5 (from google-api-core<3.0.0dev,>=2.25.1->google-api-core[grpc]<3.0.0dev,>=2.25.1; platform_python_implementation != "PyPy"->firebase-admin>=6.5->-r requirements.txt (line 10))
+2026-11-03T04:06:56.0238127Z   Using cached protobuf-7.36.2-cp310-abi3-manylinux2014_x86_64.whl.metadata (595 bytes)
+2026-11-03T04:06:56.1011591Z Collecting proto-plus<2.0.0,>=1.26.1 (from google-api-core<3.0.0dev,>=2.25.1->google-api-core[grpc]<3.0.0dev,>=2.25.1; platform_python_implementation != "PyPy"->firebase-admin>=6.5->-r requirements.txt (line 10))
+2026-11-03T04:06:56.1023929Z   Using cached proto_plus-1.29.0-py3-none-any.whl.metadata (2.2 kB)
+2026-11-03T04:06:56.2005117Z Collecting google-auth<3.0.0,>=2.14.1 (from google-api-core<3.0.0dev,>=2.25.1->google-api-core[grpc]<3.0.0dev,>=2.25.1; platform_python_implementation != "PyPy"->firebase-admin>=6.5->-r requirements.txt (line 10))
+2026-11-03T04:06:56.2653238Z   Downloading google_auth-2.62.1-py3-none-any.whl.metadata (6.0 kB)
+2026-11-03T04:06:56.3584506Z Collecting requests<3.0.0,>=2.33.0 (from google-api-core<3.0.0dev,>=2.25.1->google-api-core[grpc]<3.0.0dev,>=2.25.1; platform_python_implementation != "PyPy"->firebase-admin>=6.5->-r requirements.txt (line 10))
+2026-11-03T04:06:56.3596317Z   Using cached requests-2.34.2-py3-none-any.whl.metadata (4.8 kB)
+2026-11-03T04:06:57.0789985Z Collecting grpcio<2.0.0,>=1.59.0 (from google-api-core[grpc]<3.0.0dev,>=2.25.1; platform_python_implementation != "PyPy"->firebase-admin>=6.5->-r requirements.txt (line 10))
+2026-11-03T04:06:57.1439319Z   Downloading grpcio-1.85.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (3.8 kB)
+2026-11-03T04:06:57.2383502Z Collecting grpcio-status<2.0.0,>=1.59.0 (from google-api-core[grpc]<3.0.0dev,>=2.25.1; platform_python_implementation != "PyPy"->firebase-admin>=6.5->-r requirements.txt (line 10))
+2026-11-03T04:06:57.3030830Z   Downloading grpcio_status-1.85.1-py3-none-any.whl.metadata (1.3 kB)
+2026-11-03T04:06:57.3891956Z Collecting pyasn1-modules>=0.2.1 (from google-auth<3.0.0,>=2.14.1->google-api-core<3.0.0dev,>=2.25.1->google-api-core[grpc]<3.0.0dev,>=2.25.1; platform_python_implementation != "PyPy"->firebase-admin>=6.5->-r requirements.txt (line 10))
+2026-11-03T04:06:57.3904341Z   Using cached pyasn1_modules-0.4.2-py3-none-any.whl.metadata (3.5 kB)
+2026-11-03T04:06:57.6318987Z Collecting cryptography>=38.0.3 (from google-auth<3.0.0,>=2.14.1->google-api-core<3.0.0dev,>=2.25.1->google-api-core[grpc]<3.0.0dev,>=2.25.1; platform_python_implementation != "PyPy"->firebase-admin>=6.5->-r requirements.txt (line 10))
+2026-11-03T04:06:57.6333513Z   Using cached cryptography-50.0.2-cp311-abi3-manylinux_2_34_x86_64.whl.metadata (4.4 kB)
+2026-11-03T04:06:57.7126745Z Collecting hyperframe<7,>=6.1 (from h2<5,>=3->httpx[http2]==0.28.1->firebase-admin>=6.5->-r requirements.txt (line 10))
+2026-11-03T04:06:57.7138326Z   Using cached hyperframe-6.1.0-py3-none-any.whl.metadata (4.3 kB)
+2026-11-03T04:06:57.7855725Z Collecting hpack<5,>=4.2 (from h2<5,>=3->httpx[http2]==0.28.1->firebase-admin>=6.5->-r requirements.txt (line 10))
+2026-11-03T04:06:57.7867670Z   Using cached hpack-4.2.0-py3-none-any.whl.metadata (3.3 kB)
+2026-11-03T04:06:57.9712264Z Collecting charset_normalizer<4,>=2 (from requests<3.0.0,>=2.33.0->google-api-core<3.0.0dev,>=2.25.1->google-api-core[grpc]<3.0.0dev,>=2.25.1; platform_python_implementation != "PyPy"->firebase-admin>=6.5->-r requirements.txt (line 10))
+2026-11-03T04:06:57.9726181Z   Using cached charset_normalizer-3.5.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (46 kB)
+2026-11-03T04:06:57.9773062Z Requirement already satisfied: urllib3<3,>=1.26 in /opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages (from requests<3.0.0,>=2.33.0->google-api-core<3.0.0dev,>=2.25.1->google-api-core[grpc]<3.0.0dev,>=2.25.1; platform_python_implementation != "PyPy"->firebase-admin>=6.5->-r requirements.txt (line 10)) (2.8.0)
+2026-11-03T04:06:58.0639860Z Collecting dnspython>=2.0.0 (from email-validator>=2.1.0->-r requirements.txt (line 12))
+2026-11-03T04:06:58.0652332Z   Using cached dnspython-2.9.1-py3-none-any.whl.metadata (5.8 kB)
+2026-11-03T04:06:58.2164584Z Collecting msgpack<2.0.0,>=0.5.2 (from cachecontrol>=0.14.3->firebase-admin>=6.5->-r requirements.txt (line 10))
+2026-11-03T04:06:58.2179016Z   Using cached msgpack-1.2.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (8.3 kB)
+2026-11-03T04:06:58.4226792Z Collecting cffi>=2.0.0 (from cryptography>=38.0.3->google-auth<3.0.0,>=2.14.1->google-api-core<3.0.0dev,>=2.25.1->google-api-core[grpc]<3.0.0dev,>=2.25.1; platform_python_implementation != "PyPy"->firebase-admin>=6.5->-r requirements.txt (line 10))
+2026-11-03T04:06:58.4240391Z   Using cached cffi-2.1.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (2.5 kB)
+2026-11-03T04:06:58.4963268Z Collecting pycparser (from cffi>=2.0.0->cryptography>=38.0.3->google-auth<3.0.0,>=2.14.1->google-api-core<3.0.0dev,>=2.25.1->google-api-core[grpc]<3.0.0dev,>=2.25.1; platform_python_implementation != "PyPy"->firebase-admin>=6.5->-r requirements.txt (line 10))
+2026-11-03T04:06:58.4975013Z   Using cached pycparser-3.12-py3-none-any.whl.metadata (9.7 kB)
+2026-11-03T04:06:58.5721536Z Collecting six>=1.9.0 (from ecdsa!=0.15->python-jose>=3.3->python-jose[cryptography]>=3.3->-r requirements.txt (line 6))
+2026-11-03T04:06:58.5735031Z   Using cached six-1.17.0-py2.py3-none-any.whl.metadata (1.7 kB)
+2026-11-03T04:06:58.6556988Z Collecting google-cloud-core<3.0.0,>=2.0.0 (from google-cloud-firestore>=2.21.0->firebase-admin>=6.5->-r requirements.txt (line 10))
+2026-11-03T04:06:58.6570456Z   Using cached google_cloud_core-2.8.0-py3-none-any.whl.metadata (2.9 kB)
+2026-11-03T04:06:58.7427811Z Collecting google-resumable-media<3.0.0,>=2.7.2 (from google-cloud-storage>=3.1.1->firebase-admin>=6.5->-r requirements.txt (line 10))
+2026-11-03T04:06:58.7441295Z   Using cached google_resumable_media-2.11.0-py3-none-any.whl.metadata (2.3 kB)
+2026-11-03T04:06:58.8573363Z Collecting google-crc32c<2.0.0,>=1.6.0 (from google-cloud-storage>=3.1.1->firebase-admin>=6.5->-r requirements.txt (line 10))
+2026-11-03T04:06:58.8588366Z   Using cached google_crc32c-1.9.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (2.2 kB)
+2026-11-03T04:06:58.9618091Z Collecting bcrypt>=3.1.0 (from passlib[bcrypt]>=1.7.4->-r requirements.txt (line 11))
+2026-11-03T04:06:58.9632629Z   Using cached bcrypt-5.0.0-cp39-abi3-manylinux_2_34_x86_64.whl.metadata (10 kB)
+2026-11-03T04:06:59.1866834Z Collecting greenlet>=1 (from sqlalchemy[asyncio]>=2.0->-r requirements.txt (line 3))
+2026-11-03T04:06:59.1880745Z   Using cached greenlet-3.5.6-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (3.8 kB)
+2026-11-03T04:06:59.2898843Z Collecting httptools>=0.8.0 (from uvicorn[standard]>=0.30->-r requirements.txt (line 2))
+2026-11-03T04:06:59.2911564Z   Using cached httptools-0.9.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (3.5 kB)
+2026-11-03T04:06:59.3879815Z Collecting pyyaml>=5.1 (from uvicorn[standard]>=0.30->-r requirements.txt (line 2))
+2026-11-03T04:06:59.3893437Z   Using cached pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.4 kB)
+2026-11-03T04:06:59.4895312Z Collecting uvloop>=0.15.1 (from uvicorn[standard]>=0.30->-r requirements.txt (line 2))
+2026-11-03T04:06:59.4909000Z   Using cached uvloop-0.23.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (5.1 kB)
+2026-11-03T04:06:59.6261524Z Collecting watchfiles>=0.20 (from uvicorn[standard]>=0.30->-r requirements.txt (line 2))
+2026-11-03T04:06:59.6277576Z   Using cached watchfiles-1.3.0-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.9 kB)
+2026-11-03T04:06:59.6415736Z Using cached fastapi-0.162.0-py3-none-any.whl (148 kB)
+2026-11-03T04:06:59.6429046Z Using cached uvicorn-0.54.0-py3-none-any.whl (87 kB)
+2026-11-03T04:06:59.6442023Z Using cached sqlalchemy-2.1.6-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (4.7 MB)
+2026-11-03T04:06:59.6471294Z Using cached asyncpg-0.32.0-cp312-cp312-manylinux_2_28_x86_64.whl (3.8 MB)
+2026-11-03T04:06:59.6497854Z Using cached pydantic-2.14.2-py3-none-any.whl (490 kB)
+2026-11-03T04:06:59.6511817Z Using cached pydantic_core-2.50.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (2.2 MB)
+2026-11-03T04:06:59.6531956Z Using cached python_jose-3.5.0-py2.py3-none-any.whl (34 kB)
+2026-11-03T04:06:59.6543559Z Using cached rsa-4.9.1-py3-none-any.whl (34 kB)
+2026-11-03T04:06:59.7199933Z Downloading websockets-17.4-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (226 kB)
+2026-11-03T04:06:59.8743852Z Using cached httpx-0.28.1-py3-none-any.whl (73 kB)
+2026-11-03T04:06:59.8756136Z Using cached httpcore-1.0.9-py3-none-any.whl (78 kB)
+2026-11-03T04:06:59.8768244Z Using cached groq-1.7.0-py3-none-any.whl (143 kB)
+2026-11-03T04:06:59.9417355Z Downloading anyio-4.16.0-py3-none-any.whl (134 kB)
+2026-11-03T04:06:59.9590114Z Using cached distro-1.9.0-py3-none-any.whl (20 kB)
+2026-11-03T04:06:59.9602474Z Using cached firebase_admin-7.7.0-py3-none-any.whl (144 kB)
+2026-11-03T04:06:59.9615427Z Using cached google_api_core-2.43.2-py3-none-any.whl (224 kB)
+2026-11-03T04:07:00.0269966Z Downloading google_auth-2.62.1-py3-none-any.whl (267 kB)
+2026-11-03T04:07:00.0593003Z Using cached googleapis_common_protos-1.76.0-py3-none-any.whl (307 kB)
+2026-11-03T04:07:00.1244300Z Downloading grpcio-1.85.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (7.4 MB)
+2026-11-03T04:07:00.3597736Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 7.4/7.4 MB 32.3 MB/s  0:00:00
+2026-11-03T04:07:00.4249849Z Downloading grpcio_status-1.85.1-py3-none-any.whl (14 kB)
+2026-11-03T04:07:00.4283417Z Using cached h2-4.4.1-py3-none-any.whl (62 kB)
+2026-11-03T04:07:00.4295865Z Using cached hpack-4.2.0-py3-none-any.whl (34 kB)
+2026-11-03T04:07:00.4307705Z Using cached hyperframe-6.1.0-py3-none-any.whl (13 kB)
+2026-11-03T04:07:00.4319402Z Using cached opentelemetry_api-1.45.2-py3-none-any.whl (60 kB)
+2026-11-03T04:07:00.4330966Z Using cached proto_plus-1.29.0-py3-none-any.whl (50 kB)
+2026-11-03T04:07:00.4342834Z Using cached protobuf-7.36.2-cp310-abi3-manylinux2014_x86_64.whl (343 kB)
+2026-11-03T04:07:00.4356064Z Using cached requests-2.34.2-py3-none-any.whl (73 kB)
+2026-11-03T04:07:00.4368474Z Using cached charset_normalizer-3.5.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (257 kB)
+2026-11-03T04:07:00.4380297Z Using cached passlib-1.7.4-py2.py3-none-any.whl (525 kB)
+2026-11-03T04:07:00.4393677Z Using cached email_validator-2.3.0-py3-none-any.whl (35 kB)
+2026-11-03T04:07:00.4405475Z Using cached aiosqlite-0.22.1-py3-none-any.whl (17 kB)
+2026-11-03T04:07:00.4417310Z Using cached python_dotenv-1.2.4-py3-none-any.whl (23 kB)
+2026-11-03T04:07:00.4429601Z Using cached annotated_doc-0.0.5-py3-none-any.whl (5.3 kB)
+2026-11-03T04:07:00.4440977Z Using cached annotated_types-0.8.0-py3-none-any.whl (13 kB)
+2026-11-03T04:07:00.4452617Z Using cached cachecontrol-0.14.4-py3-none-any.whl (22 kB)
+2026-11-03T04:07:00.4464555Z Using cached msgpack-1.2.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (475 kB)
+2026-11-03T04:07:00.4477947Z Using cached click-8.5.0-py3-none-any.whl (125 kB)
+2026-11-03T04:07:00.4490433Z Using cached cryptography-50.0.2-cp311-abi3-manylinux_2_34_x86_64.whl (4.8 MB)
+2026-11-03T04:07:00.4521418Z Using cached cffi-2.1.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (221 kB)
+2026-11-03T04:07:00.4533393Z Using cached dnspython-2.9.1-py3-none-any.whl (360 kB)
+2026-11-03T04:07:00.4546250Z Using cached ecdsa-0.19.2-py2.py3-none-any.whl (150 kB)
+2026-11-03T04:07:00.4558219Z Using cached google_cloud_firestore-2.34.1-py3-none-any.whl (443 kB)
+2026-11-03T04:07:00.4571294Z Using cached google_cloud_core-2.8.0-py3-none-any.whl (31 kB)
+2026-11-03T04:07:00.4583090Z Using cached google_cloud_storage-3.17.1-py3-none-any.whl (345 kB)
+2026-11-03T04:07:00.4596502Z Using cached google_crc32c-1.9.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (36 kB)
+2026-11-03T04:07:00.4607948Z Using cached google_resumable_media-2.11.0-py3-none-any.whl (81 kB)
+2026-11-03T04:07:00.4619874Z Using cached bcrypt-5.0.0-cp39-abi3-manylinux_2_34_x86_64.whl (278 kB)
+2026-11-03T04:07:00.4632187Z Using cached pyasn1-0.6.5-py3-none-any.whl (84 kB)
+2026-11-03T04:07:00.4643954Z Using cached pyasn1_modules-0.4.2-py3-none-any.whl (181 kB)
+2026-11-03T04:07:00.4656259Z Using cached pyjwt-2.15.1-py3-none-any.whl (33 kB)
+2026-11-03T04:07:00.4667717Z Using cached six-1.17.0-py2.py3-none-any.whl (11 kB)
+2026-11-03T04:07:00.4679641Z Using cached greenlet-3.5.6-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (621 kB)
+2026-11-03T04:07:00.4693151Z Using cached starlette-1.10.0-py3-none-any.whl (80 kB)
+2026-11-03T04:07:00.4705093Z Using cached typing_inspection-0.4.4-py3-none-any.whl (14 kB)
+2026-11-03T04:07:00.4717023Z Using cached httptools-0.9.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (552 kB)
+2026-11-03T04:07:00.4730801Z Using cached pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (807 kB)
+2026-11-03T04:07:00.4745756Z Using cached uvloop-0.23.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (4.5 MB)
+2026-11-03T04:07:00.4773588Z Using cached watchfiles-1.3.0-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (458 kB)
+2026-11-03T04:07:00.4787381Z Using cached pycparser-3.12-py3-none-any.whl (62 kB)
+2026-11-03T04:07:00.7650065Z Installing collected packages: passlib, websockets, uvloop, typing-inspection, sqlalchemy, six, pyyaml, python-dotenv, pyjwt, pydantic-core, pycparser, pyasn1, protobuf, opentelemetry-api, msgpack, hyperframe, httptools, httpcore, hpack, grpcio, greenlet, google-crc32c, dnspython, distro, click, charset_normalizer, bcrypt, asyncpg, anyio, annotated-types, annotated-doc, aiosqlite, watchfiles, uvicorn, starlette, rsa, requests, pydantic, pyasn1-modules, proto-plus, httpx, h2, googleapis-common-protos, google-resumable-media, email-validator, ecdsa, cffi, python-jose, grpcio-status, groq, fastapi, cryptography, cachecontrol, google-auth, google-api-core, google-cloud-core, google-cloud-storage, google-cloud-firestore, firebase-admin
+2026-11-03T04:07:06.5335371Z 
+2026-11-03T04:07:06.5406066Z Successfully installed aiosqlite-0.22.1 annotated-doc-0.0.5 annotated-types-0.8.0 anyio-4.16.0 asyncpg-0.32.0 bcrypt-5.0.0 cachecontrol-0.14.4 cffi-2.1.1 charset_normalizer-3.5.2 click-8.5.0 cryptography-50.0.2 distro-1.9.0 dnspython-2.9.1 ecdsa-0.19.2 email-validator-2.3.0 fastapi-0.162.0 firebase-admin-7.7.0 google-api-core-2.43.2 google-auth-2.62.1 google-cloud-core-2.8.0 google-cloud-firestore-2.34.1 google-cloud-storage-3.17.1 google-crc32c-1.9.0 google-resumable-media-2.11.0 googleapis-common-protos-1.76.0 greenlet-3.5.6 groq-1.7.0 grpcio-1.85.1 grpcio-status-1.85.1 h2-4.4.1 hpack-4.2.0 httpcore-1.0.9 httptools-0.9.0 httpx-0.28.1 hyperframe-6.1.0 msgpack-1.2.4 opentelemetry-api-1.45.2 passlib-1.7.4 proto-plus-1.29.0 protobuf-7.36.2 pyasn1-0.6.5 pyasn1-modules-0.4.2 pycparser-3.12 pydantic-2.14.2 pydantic-core-2.50.2 pyjwt-2.15.1 python-dotenv-1.2.4 python-jose-3.5.0 pyyaml-6.0.3 requests-2.34.2 rsa-4.9.1 six-1.17.0 sqlalchemy-2.1.6 starlette-1.10.0 typing-inspection-0.4.4 uvicorn-0.54.0 uvloop-0.23.0 watchfiles-1.3.0 websockets-17.4
+2026-11-03T04:07:06.7576040Z ##[group]Run python3 apply_migration.py
+2026-11-03T04:07:06.7576434Z [36;1mpython3 apply_migration.py[0m
+2026-11-03T04:07:06.7597707Z shell: /usr/bin/bash -e {0}
+2026-11-03T04:07:06.7597993Z env:
+2026-11-03T04:07:06.7598214Z   GATE_THRESHOLD: 70
+2026-11-03T04:07:06.7598541Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:07:06.7599003Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib/pkgconfig
+2026-11-03T04:07:06.7599467Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:07:06.7599875Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:07:06.7600296Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:07:06.7600714Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib
+2026-11-03T04:07:06.7601109Z   DATABASE_URL: sqlite+aiosqlite:///./vulnara.db
+2026-11-03T04:07:06.7601438Z ##[endgroup]
+2026-11-03T04:07:07.2132236Z Connecting to the configured database to create/update tables...
+2026-11-03T04:07:07.2132861Z Database schema is ready.
+2026-11-03T04:07:07.2702855Z ##[group]Run python3 "/home/runner/work/vulnara-ai/vulnara-ai/backend-tests/seed_test_accounts.py"
+2026-11-03T04:07:07.2703938Z [36;1mpython3 "/home/runner/work/vulnara-ai/vulnara-ai/backend-tests/seed_test_accounts.py"[0m
+2026-11-03T04:07:07.2704691Z [36;1mpython3 "/home/runner/work/vulnara-ai/vulnara-ai/backend-tests/seed_fixture_data.py"[0m
+2026-11-03T04:07:07.2725169Z shell: /usr/bin/bash -e {0}
+2026-11-03T04:07:07.2725453Z env:
+2026-11-03T04:07:07.2725685Z   GATE_THRESHOLD: 70
+2026-11-03T04:07:07.2726032Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:07:07.2726502Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib/pkgconfig
+2026-11-03T04:07:07.2726971Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:07:07.2727388Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:07:07.2727808Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:07:07.2728254Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib
+2026-11-03T04:07:07.2728653Z   DATABASE_URL: sqlite+aiosqlite:///./vulnara.db
+2026-11-03T04:07:07.2729086Z   VULNARA_SECRET_KEY: ci-ephemeral-secret-key-do-not-use-in-prod
+2026-11-03T04:07:07.2729555Z   PYTHONPATH: /home/runner/work/vulnara-ai/vulnara-ai/backend
+2026-11-03T04:07:07.2729953Z   PYTHONIOENCODING: utf-8
+2026-11-03T04:07:07.2730216Z ##[endgroup]
+2026-11-03T04:07:08.7127151Z ✓ seeded admin: admin.qa@vulnara-qa-suite.com
+2026-11-03T04:07:08.7127982Z ✓ seeded analyst: analyst.qa@vulnara-qa-suite.com
+2026-11-03T04:07:08.7128697Z ✓ seeded client: client1.qa@vulnara-qa-suite.com
+2026-11-03T04:07:08.7129321Z ✓ seeded client: client2.qa@vulnara-qa-suite.com
+2026-11-03T04:07:08.7129849Z QA account seeding complete.
+2026-11-03T04:07:09.1107157Z {"scan_id": "e39b99c9-2cf3-4dd8-8a4c-e46204159f48", "vuln_id": "7d57f26e-4bfa-4299-81cd-7862529a6a49", "remediation_id": "d7aab44e-0f3c-48a7-9473-5ddbbec8c4ff", "remediation_id_2": "0784d77a-ddeb-4014-90cd-8ea0b78474fb"}
+2026-11-03T04:07:09.1694417Z ##[group]Run nohup python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --log-level info > backend.log 2>&1 &
+2026-11-03T04:07:09.1695309Z [36;1mnohup python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --log-level info > backend.log 2>&1 &[0m
+2026-11-03T04:07:09.1695861Z [36;1mecho "Waiting for backend health..."[0m
+2026-11-03T04:07:09.1696192Z [36;1mfor i in $(seq 1 20); do[0m
+2026-11-03T04:07:09.1696578Z [36;1m  curl -sf http://127.0.0.1:8000/health > /dev/null && break[0m
+2026-11-03T04:07:09.1697171Z [36;1m  sleep 1.5[0m
+2026-11-03T04:07:09.1697410Z [36;1mdone[0m
+2026-11-03T04:07:09.1697896Z [36;1mcurl -sf http://127.0.0.1:8000/health || (echo "::error::backend never became healthy" && cat backend.log && exit 1)[0m
+2026-11-03T04:07:09.1719107Z shell: /usr/bin/bash -e {0}
+2026-11-03T04:07:09.1719390Z env:
+2026-11-03T04:07:09.1719613Z   GATE_THRESHOLD: 70
+2026-11-03T04:07:09.1719929Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:07:09.1720430Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib/pkgconfig
+2026-11-03T04:07:09.1720892Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:07:09.1721302Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:07:09.1721740Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:07:09.1722157Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib
+2026-11-03T04:07:09.1722568Z   DATABASE_URL: sqlite+aiosqlite:///./vulnara.db
+2026-11-03T04:07:09.1723003Z   VULNARA_SECRET_KEY: ci-ephemeral-secret-key-do-not-use-in-prod
+2026-11-03T04:07:09.1723402Z   ENVIRONMENT: development
+2026-11-03T04:07:09.1723865Z ##[endgroup]
+2026-11-03T04:07:09.1768381Z Waiting for backend health...
+2026-11-03T04:07:10.7298606Z {"status":"ok","db":"ok"}
+2026-11-03T04:07:10.7370624Z ##[group]Run actions/setup-node@v4
+2026-11-03T04:07:10.7370950Z with:
+2026-11-03T04:07:10.7371184Z   node-version: 20
+2026-11-03T04:07:10.7371426Z   always-auth: false
+2026-11-03T04:07:10.7371688Z   check-latest: false
+2026-11-03T04:07:10.7374872Z   token: ***
+2026-11-03T04:07:10.7375154Z env:
+2026-11-03T04:07:10.7375372Z   GATE_THRESHOLD: 70
+2026-11-03T04:07:10.7375695Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:07:10.7376161Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib/pkgconfig
+2026-11-03T04:07:10.7376621Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:07:10.7377035Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:07:10.7377457Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:07:10.7377880Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib
+2026-11-03T04:07:10.7378235Z ##[endgroup]
+2026-11-03T04:07:10.8959988Z Attempting to download 20...
+2026-11-03T04:07:10.9073617Z (node:2454) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-03T04:07:10.9075126Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-03T04:07:11.4071744Z Acquiring 20.20.2 - x64 from https://github.com/actions/node-versions/releases/download/20.20.2-23521894959/node-20.20.2-linux-x64.tar.gz
+2026-11-03T04:07:11.7886460Z Extracting ...
+2026-11-03T04:07:11.8029431Z [command]/usr/bin/tar xz --strip 1 --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/3575fe9e-c092-404c-8d87-79855eb9be55 -f /home/runner/work/_temp/4002d6fd-86af-4467-bb27-782eb4e5b23c
+2026-11-03T04:07:12.7990064Z Adding to the cache ...
+2026-11-03T04:07:14.3572745Z ##[group]Environment details
+2026-11-03T04:07:14.6026619Z node: v20.20.2
+2026-11-03T04:07:14.6027130Z npm: 10.8.2
+2026-11-03T04:07:14.6027590Z yarn: 1.22.22
+2026-11-03T04:07:14.6028440Z ##[endgroup]
+2026-11-03T04:07:14.6209395Z ##[group]Run npm install -g appium@3.6.0
+2026-11-03T04:07:14.6209804Z [36;1mnpm install -g appium@3.6.0[0m
+2026-11-03T04:07:14.6210143Z [36;1mappium driver install uiautomator2@8.4.0[0m
+2026-11-03T04:07:14.6210502Z [36;1mappium driver list --installed[0m
+2026-11-03T04:07:14.6231776Z shell: /usr/bin/bash -e {0}
+2026-11-03T04:07:14.6232069Z env:
+2026-11-03T04:07:14.6232290Z   GATE_THRESHOLD: 70
+2026-11-03T04:07:14.6232616Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:07:14.6233084Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib/pkgconfig
+2026-11-03T04:07:14.6233537Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:07:14.6234266Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:07:14.6234904Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:07:14.6235315Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib
+2026-11-03T04:07:14.6235669Z ##[endgroup]
+2026-11-03T04:07:22.5037107Z 
+2026-11-03T04:07:22.5046769Z added 297 packages in 8s
+2026-11-03T04:07:22.5047497Z 
+2026-11-03T04:07:22.5048024Z 72 packages are looking for funding
+2026-11-03T04:07:22.5048766Z   run `npm fund` for details
+2026-11-03T04:07:23.1444124Z - Checking if 'appium-uiautomator2-driver' is compatible
+2026-11-03T04:07:23.5659797Z ✔ Checking if 'appium-uiautomator2-driver' is compatible
+2026-11-03T04:07:23.5660647Z - Installing 'uiautomator2@8.4.0'
+2026-11-03T04:07:28.0334933Z ✔ Installing 'uiautomator2@8.4.0'
+2026-11-03T04:07:28.0336045Z - Validating 'uiautomator2@8.4.0'
+2026-11-03T04:07:28.0337710Z ✔ Validating 'uiautomator2@8.4.0'
+2026-11-03T04:07:28.0374590Z ℹ Driver uiautomator2@8.4.0 successfully installed
+2026-11-03T04:07:28.0375387Z - automationName: UiAutomator2
+2026-11-03T04:07:28.0376043Z - platformNames: ["Android"]
+2026-11-03T04:07:28.6435173Z - Listing installed drivers (rerun with --verbose for more info)
+2026-11-03T04:07:28.6437720Z ✔ Listing installed drivers (rerun with --verbose for more info)
+2026-11-03T04:07:28.6444443Z - uiautomator2@8.4.0 [installed (npm)]
+2026-11-03T04:07:28.6645228Z ##[group]Run nohup appium --address 127.0.0.1 --port 4723 --relaxed-security > appium.log 2>&1 &
+2026-11-03T04:07:28.6646420Z [36;1mnohup appium --address 127.0.0.1 --port 4723 --relaxed-security > appium.log 2>&1 &[0m
+2026-11-03T04:07:28.6647242Z [36;1mecho "Waiting for Appium server..."[0m
+2026-11-03T04:07:28.6647795Z [36;1mfor i in $(seq 1 20); do[0m
+2026-11-03T04:07:28.6648431Z [36;1m  curl -sf http://127.0.0.1:4723/status > /dev/null && break[0m
+2026-11-03T04:07:28.6649071Z [36;1m  sleep 1.5[0m
+2026-11-03T04:07:28.6649462Z [36;1mdone[0m
+2026-11-03T04:07:28.6650254Z [36;1mcurl -sf http://127.0.0.1:4723/status || (echo "::error::Appium server never came up" && cat appium.log && exit 1)[0m
+2026-11-03T04:07:28.6682332Z shell: /usr/bin/bash -e {0}
+2026-11-03T04:07:28.6682797Z env:
+2026-11-03T04:07:28.6683145Z   GATE_THRESHOLD: 70
+2026-11-03T04:07:28.6683834Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:07:28.6684657Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib/pkgconfig
+2026-11-03T04:07:28.6685518Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:07:28.6686230Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:07:28.6686949Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:07:28.6687692Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib
+2026-11-03T04:07:28.6688342Z ##[endgroup]
+2026-11-03T04:07:28.6770376Z Waiting for Appium server...
+2026-11-03T04:07:30.2107857Z {"value":{"ready":true,"message":"The server is ready to accept new connections","build":{"version":"3.6.0"}}}
+2026-11-03T04:07:30.2226320Z ##[group]Run reactivecircus/android-emulator-runner@v2
+2026-11-03T04:07:30.2226740Z with:
+2026-11-03T04:07:30.2226964Z   api-level: 34
+2026-11-03T04:07:30.2227204Z   target: google_apis
+2026-11-03T04:07:30.2227451Z   arch: x86_64
+2026-11-03T04:07:30.2227675Z   profile: pixel_6
+2026-11-03T04:07:30.2228121Z   emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+2026-11-03T04:07:30.2228644Z   disable-animations: true
+2026-11-03T04:07:30.2234309Z   script: # Ensure ADB sees the emulator before issuing settings commands.
+adb wait-for-device
+adb shell 'while [ "$(getprop sys.boot_completed)" != "1" ]; do sleep 1; done'
+# Wait for the emulator to be fully stable (beyond just sys.boot_completed).
+# Without this, the accessibility service set commands race against
+# Android's own boot-time service initialization and can be ignored.
+sleep 10
+# Enable TalkBack BEFORE any Appium session is created.
+# Flutter only builds its semantics/accessibility tree when an
+# accessibility service is attached. UiAutomator2 instrumentation
+# will crash ("process cannot be initialized") if TalkBack is
+# enabled AFTER the first session starts because they fight over
+# the same instrumentation slot. Doing this here (before pytest
+# creates its first session) mirrors exactly how run_local.ps1
+# works: TalkBack is enabled once, before Appium is even started.
+adb shell settings put secure enabled_accessibility_services com.google.android.marvin.talkback/com.google.android.marvin.talkback.TalkBackService
+adb shell settings put secure accessibility_enabled 1
+# Give TalkBack time to fully initialize. On CI emulators this
+# takes 5-8s; 15s is conservative but avoids the race completely.
+sleep 15
+cd android-tests && export APK_PATH=$GITHUB_WORKSPACE/android-tests/apk/app-debug.apk && export APPIUM_SERVER_URL=http://127.0.0.1:4723 && export BACKEND_BASE_URL=http://127.0.0.1:8000 && pytest -p no:cacheprovider tests/test_input_validation.py tests/test_error_handling.py tests/test_accessibility.py tests/test_responsive_orientation.py
+
+2026-11-03T04:07:30.2239947Z   cores: 2
+2026-11-03T04:07:30.2240164Z   avd-name: test
+2026-11-03T04:07:30.2240413Z   force-avd-creation: true
+2026-11-03T04:07:30.2240694Z   emulator-boot-timeout: 600
+2026-11-03T04:07:30.2240974Z   emulator-port: 5554
+2026-11-03T04:07:30.2241228Z   disable-spellchecker: false
+2026-11-03T04:07:30.2241519Z   disable-linux-hw-accel: auto
+2026-11-03T04:07:30.2241813Z   enable-hw-keyboard: false
+2026-11-03T04:07:30.2242073Z   channel: stable
+2026-11-03T04:07:30.2242304Z env:
+2026-11-03T04:07:30.2242523Z   GATE_THRESHOLD: 70
+2026-11-03T04:07:30.2242826Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:07:30.2243302Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib/pkgconfig
+2026-11-03T04:07:30.2244082Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:07:30.2244496Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:07:30.2244905Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:07:30.2245319Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib
+2026-11-03T04:07:30.2245672Z ##[endgroup]
+2026-11-03T04:07:30.2834813Z ##[group]Configure emulator
+2026-11-03T04:07:30.2837876Z API level: 34
+2026-11-03T04:07:30.2838365Z System image API level: 34
+2026-11-03T04:07:30.2838792Z target: google_apis
+2026-11-03T04:07:30.2839538Z CPU architecture: x86_64
+2026-11-03T04:07:30.2840148Z Hardware profile: pixel_6
+2026-11-03T04:07:30.2842415Z Cores: 2
+2026-11-03T04:07:30.2842897Z RAM size: 
+2026-11-03T04:07:30.2843324Z Heap size: 
+2026-11-03T04:07:30.2844052Z SD card path or size: 
+2026-11-03T04:07:30.2844529Z Disk size: 
+2026-11-03T04:07:30.2844960Z AVD name: test
+2026-11-03T04:07:30.2845442Z force avd creation: true
+2026-11-03T04:07:30.2846017Z Emulator boot timeout: 600
+2026-11-03T04:07:30.2846580Z emulator port: 5554
+2026-11-03T04:07:30.2848191Z emulator options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+2026-11-03T04:07:30.2849347Z disable animations: true
+2026-11-03T04:07:30.2849869Z disable spellchecker: false
+2026-11-03T04:07:30.2850554Z disable Linux hardware acceleration: false
+2026-11-03T04:07:30.2851257Z enable hardware keyboard: false
+2026-11-03T04:07:30.2851812Z Channel: 0 (stable)
+2026-11-03T04:07:30.2852244Z Script:
+2026-11-03T04:07:30.2852671Z adb wait-for-device
+2026-11-03T04:07:30.2853460Z adb shell 'while [ "$(getprop sys.boot_completed)" != "1" ]; do sleep 1; done'
+2026-11-03T04:07:30.2854489Z sleep 10
+2026-11-03T04:07:30.2855894Z adb shell settings put secure enabled_accessibility_services com.google.android.marvin.talkback/com.google.android.marvin.talkback.TalkBackService
+2026-11-03T04:07:30.2857213Z adb shell settings put secure accessibility_enabled 1
+2026-11-03T04:07:30.2857567Z sleep 15
+2026-11-03T04:07:30.2859409Z cd android-tests && export APK_PATH=$GITHUB_WORKSPACE/android-tests/apk/app-debug.apk && export APPIUM_SERVER_URL=http://127.0.0.1:4723 && export BACKEND_BASE_URL=http://127.0.0.1:8000 && pytest -p no:cacheprovider tests/test_input_validation.py tests/test_error_handling.py tests/test_accessibility.py tests/test_responsive_orientation.py
+2026-11-03T04:07:30.2861023Z Pre emulator launch script:
+2026-11-03T04:07:30.2861591Z ##[endgroup]
+2026-11-03T04:07:30.2862159Z ##[group]Install Android SDK
+2026-11-03T04:07:30.2921502Z [command]/usr/bin/sh -c \yes | sdkmanager --licenses > /dev/null
+2026-11-03T04:07:36.6362755Z Installing latest build tools, platform tools, and platform.
+2026-11-03T04:07:36.6377793Z [command]/usr/bin/sh -c \sdkmanager --install 'build-tools;37.0.0' platform-tools 'platforms;android-34'> /dev/null
+2026-11-03T04:07:38.4640601Z Installing latest emulator.
+2026-11-03T04:07:38.4657989Z [command]/usr/bin/sh -c \sdkmanager --install emulator --channel=0 > /dev/null
+2026-11-03T04:07:46.9635490Z Installing system images.
+2026-11-03T04:07:46.9654189Z [command]/usr/bin/sh -c \sdkmanager --install 'system-images;android-34;google_apis;x86_64' --channel=0 > /dev/null
+2026-11-03T04:08:15.2190755Z ##[endgroup]
+2026-11-03T04:08:15.2192078Z ##[group]Create AVD
+2026-11-03T04:08:15.2192990Z Creating AVD.
+2026-11-03T04:08:15.2212371Z [command]/usr/bin/sh -c \echo no | avdmanager create avd --force -n test --package 'system-images;android-34;google_apis;x86_64' --device 'pixel_6'
+2026-11-03T04:08:16.0280303Z Loading local repository...                                                     
+2026-11-03T04:08:16.0285504Z [=========                              ] 25% Loading local repository...       
+2026-11-03T04:08:16.0286974Z [=========                              ] 25% Fetch remote repository...        
+2026-11-03T04:08:16.0288206Z [=======================================] 100% Fetch remote repository...       
+2026-11-03T04:08:16.0985227Z Auto-selecting single ABI x86_64
+2026-11-03T04:08:16.6421442Z [command]/usr/bin/sh -c \printf 'hw.cpu.ncore=2\n' >> /home/runner/.android/avd/test.avd/config.ini
+2026-11-03T04:08:16.6445677Z ##[endgroup]
+2026-11-03T04:08:16.6447070Z ##[group]Launch Emulator
+2026-11-03T04:08:16.6447633Z Starting emulator.
+2026-11-03T04:08:16.6468549Z [command]/usr/bin/sh -c \/usr/local/lib/android/sdk/emulator/emulator -port 5554 -avd test -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none &
+2026-11-03T04:08:16.6588094Z INFO         | Android emulator version 37.2.13.0 (build_id 16740729) (CL:N/A)
+2026-11-03T04:08:16.6589031Z INFO         | Graphics backend: gfxstream
+2026-11-03T04:08:16.6590055Z INFO         | Found systemPath /usr/local/lib/android/sdk/system-images/android-34/google_apis/x86_64/
+2026-11-03T04:08:16.7075282Z INFO         | Saving last run QEMU version for the AVD to 2
+2026-11-03T04:08:16.7076433Z INFO         | Increasing RAM size to 2560MB
+2026-11-03T04:08:16.7077696Z ##############################################################################
+2026-11-03T04:08:16.7078724Z ##                        WARNING - ACTION REQUIRED                         ##
+2026-11-03T04:08:16.7080445Z ##  Consider using the '-metrics-collection' flag to help improve the       ##
+2026-11-03T04:08:16.7081883Z ##  emulator by sending anonymized usage data. Or use the '-no-metrics'     ##
+2026-11-03T04:08:16.7083073Z ##  flag to bypass this warning and turn off the metrics collection.        ##
+2026-11-03T04:08:16.7084406Z ##  In a future release this warning will turn into a one-time blocking     ##
+2026-11-03T04:08:16.7085522Z ##  prompt to ask for explicit user input regarding metrics collection.     ##
+2026-11-03T04:08:16.7086486Z ##                                                                          ##
+2026-11-03T04:08:16.7089328Z ##  Please see '-help-metrics-collection' for more details. You can use     ##
+2026-11-03T04:08:16.7090303Z ##  '-metrics-to-file' or '-metrics-to-console' flags to see what type of   ##
+2026-11-03T04:08:16.7091339Z ##  data is being collected by emulator as part of usage statistics.        ##
+2026-11-03T04:08:16.7092245Z ##############################################################################
+2026-11-03T04:08:16.7092996Z INFO         | Guest GLES Driver: Auto (ext controls)
+2026-11-03T04:08:16.7094601Z INFO         | emuglConfig_init: vulkan_mode_selected:swiftshader gles_mode_selected:swiftshader
+2026-11-03T04:08:16.7095554Z INFO         | Checking system compatibility:
+2026-11-03T04:08:16.7096230Z INFO         |   Checking: hasSufficientDiskSpace
+2026-11-03T04:08:16.7097006Z INFO         |      Ok: Disk space requirements to run avd: `test` are met
+2026-11-03T04:08:16.7097667Z INFO         |   Checking: hasSufficientHwGpu
+2026-11-03T04:08:16.7098350Z INFO         |      Ok: Hardware GPU compatibility checks are not required
+2026-11-03T04:08:16.7098993Z INFO         |   Checking: hasSufficientSystem
+2026-11-03T04:08:16.7099756Z INFO         |      Ok: System requirements to run avd: `test` are met
+2026-11-03T04:08:16.7101566Z WARNING      | Feature QuickbootFileBacked is disabled due to stability issues, if you really want that, the environment variable ANDROID_EMU_FORCE_QUICKBOOT_FILE_BACKED need to set to 1
+2026-11-03T04:08:17.3678043Z ERROR        | Unable to connect to adb daemon on port: 5037
+2026-11-03T04:08:17.3711614Z INFO         | Storing crashdata in: /tmp/android-runner/emu-crash-37.2.13.db, detection is enabled for process: 2890
+2026-11-03T04:08:17.3712894Z INFO         | Initializing gfxstream backend
+2026-11-03T04:08:17.3723373Z INFO         | startOpenglesRendererImpl: gpu info
+2026-11-03T04:08:17.3724254Z INFO         | 
+2026-11-03T04:08:17.3727131Z INFO         | initIcdPaths: ICD set to 'swiftshader', using Swiftshader ICD
+2026-11-03T04:08:17.3728804Z INFO         | Setting ICD filenames for the loader = /usr/local/lib/android/sdk/emulator/lib64/vulkan/vk_swiftshader_icd.json
+2026-11-03T04:08:17.3730696Z INFO         | SharedLibrary::open for [/usr/local/lib/android/sdk/emulator/qemu/linux-x86_64/lib64/vulkan/libvulkan.so]
+2026-11-03T04:08:17.3732503Z INFO         | SharedLibrary::open for [/usr/local/lib/android/sdk/emulator/qemu/linux-x86_64/lib64/vulkan/libvulkan.so.1]
+2026-11-03T04:08:17.3734254Z INFO         | SharedLibrary::open for [/usr/local/lib/android/sdk/emulator/lib64/vulkan/libvulkan.so]
+2026-11-03T04:08:17.3735399Z INFO         | Added library: /usr/local/lib/android/sdk/emulator/lib64/vulkan/libvulkan.so
+2026-11-03T04:08:17.3781602Z INFO         | Selecting Vulkan device: SwiftShader Device (Subzero), Version: 1.3.0
+2026-11-03T04:08:17.3785334Z INFO         | Using Vulkan externalMemoryMode: OpaqueFd for VkEmulation
+2026-11-03T04:08:17.4478040Z INFO         | Format VK_FORMAT_G10X6_B10X6R10X6_2PLANE_422_UNORM_3PACK16 does not support YCbCr sampler conversion
+2026-11-03T04:08:17.4509589Z INFO         | SharedLibrary::open for [libX11]
+2026-11-03T04:08:17.4510431Z WARNING      | Could not open libX11.so, try libX11.so.6
+2026-11-03T04:08:17.4511302Z INFO         | SharedLibrary::open for [libX11.so.6]
+2026-11-03T04:08:17.4512035Z INFO         | SharedLibrary::open for [libX11-xcb]
+2026-11-03T04:08:17.4512791Z WARNING      | Could not open libX11-xcb.so, try libX11-xcb.so.1
+2026-11-03T04:08:17.4513582Z INFO         | SharedLibrary::open for [libX11-xcb.so.1]
+2026-11-03T04:08:17.4654566Z INFO         | Initializing VkEmulation features:
+2026-11-03T04:08:17.4655363Z INFO         |     glInteropSupported: false
+2026-11-03T04:08:17.4656011Z INFO         |     useDeferredCommands: true
+2026-11-03T04:08:17.4656706Z INFO         |     createResourceWithRequirements: true
+2026-11-03T04:08:17.4657407Z INFO         |     useVulkanComposition: false
+2026-11-03T04:08:17.4658095Z INFO         |     useVulkanNativeSwapchain: false
+2026-11-03T04:08:17.4658779Z INFO         |     enable guestRenderDoc: false
+2026-11-03T04:08:17.4659422Z INFO         |     ASTC LDR emulation mode: Gpu
+2026-11-03T04:08:17.4660074Z INFO         |     enable ETC2 emulation: true
+2026-11-03T04:08:17.4660706Z INFO         |     enable Ycbcr emulation: false
+2026-11-03T04:08:17.4661351Z INFO         |     guestVulkanOnly: false
+2026-11-03T04:08:17.4662079Z INFO         |     useDedicatedAllocations: false
+2026-11-03T04:08:17.4662536Z INFO         |     guestVulkanMaxApiVersion: 1.3.0
+2026-11-03T04:08:17.4663880Z INFO         |     enableProtectedMemoryEmulation: false
+2026-11-03T04:08:17.4664710Z INFO         | Graphics Adapter Vendor Google (Google Inc.)
+2026-11-03T04:08:17.4665549Z INFO         | Graphics Adapter Android Emulator OpenGL ES Translator (Google SwiftShader)
+2026-11-03T04:08:17.4666553Z INFO         | Graphics API Version OpenGL ES 3.0 (OpenGL ES 3.0 SwiftShader 4.0.0.1)
+2026-11-03T04:08:17.4669611Z INFO         | Graphics API Extensions GL_OES_EGL_sync GL_OES_EGL_image GL_OES_EGL_image_external GL_OES_depth24 GL_OES_depth32 GL_OES_element_index_uint GL_OES_texture_float GL_OES_texture_float_linear GL_OES_compressed_paletted_texture GL_OES_compressed_ETC1_RGB8_texture GL_OES_depth_texture GL_OES_texture_half_float GL_OES_texture_half_float_linear GL_OES_packed_depth_stencil GL_OES_vertex_half_float GL_OES_standard_derivatives GL_OES_texture_npot GL_OES_rgb8_rgba8 GL_EXT_color_buffer_float GL_EXT_color_buffer_half_float GL_EXT_texture_format_BGRA8888 GL_APPLE_texture_format_BGRA8888 
+2026-11-03T04:08:17.4671885Z INFO         | Graphics Device Extensions N/A
+2026-11-03T04:08:17.4672316Z INFO         | Disabling sparse binding feature support
+2026-11-03T04:08:17.4759467Z INFO         | Sending adb public key [QAAAAI/N5mmRThxqQFU3DIMAwKW69A0ycffGBnbkpEenbRTZc6WTjtaXWAxlPdwwjip2g5N7ml7a/lB0Ojo10fOwIv9pgnvydT5Rlqh/aprRZ0yum5Tufo5BqdYlIBRmuHKadPvPge1NhqV7hCwS5ZaH8VzjmeQ2953HwqQcWYdHolc97um1SVaXkPZ4ChFaMMaj0Z8CoR9DkMFvM6xt1mLGR+ERjtpvGFYDUQ9+p9yZ1jVSPAT9WWKqaton5cTL5pxmVSshExDy8jtYSfPUSsYVcxswygVJb/1QtoGDaVFftBiLAR2s7DEbAcLc69StNME9WOkY/oDx4c5+aY6Ux/utwuxVUG2+eyJO6j6IjXWpkqA5M6LtxSDLdswh0oQNy7NCkJkOGNuPxHpiD/kehcmDjOI4+K1wBFfG8OYjH+2fl9mahwEAU4fRTED3IQq109mqEWYGZQxXV0ipDsE+NCCaleW8VRCTwyhJZSHftz7vWS1eAil3sU3YXT5IMJDIusiO0ZcKgxVtC1tezSTqR0ju8wVuF6HpoTqGnWUE1uyjhvwH0099y0SogB7Lf1fW8MY8+O3PdI8Esf39B85wP45p57UJH9gkITtxLhsNSRV8+xWGhJWBclNtDHrF9n8qvAJRLEQurxRnhpYHzpNuV4N+Qk8nm3aINsIRq8fHzllZXLTSbeNiTQEAAQA= runner@unknown]
+2026-11-03T04:08:17.4767065Z INFO         | Userspace boot properties:
+2026-11-03T04:08:17.4767682Z INFO         |   androidboot.boot_devices=pci0000:00/0000:00:03.0 pci0000:00/0000:00:06.0
+2026-11-03T04:08:17.4768223Z INFO         |   androidboot.dalvik.vm.heapsize=576m
+2026-11-03T04:08:17.4768671Z INFO         |   androidboot.debug.hwui.renderer=skiagl
+2026-11-03T04:08:17.4769111Z INFO         |   androidboot.debug.sf.nobootanimation=1
+2026-11-03T04:08:17.4769517Z INFO         |   androidboot.hardware=ranchu
+2026-11-03T04:08:17.4769940Z INFO         |   androidboot.hardware.gltransport=pipe
+2026-11-03T04:08:17.4770375Z INFO         |   androidboot.hardware.vulkan=ranchu
+2026-11-03T04:08:17.4770770Z INFO         |   androidboot.logcat=*:V
+2026-11-03T04:08:17.4771166Z INFO         |   androidboot.opengles.version=196608
+2026-11-03T04:08:17.4771551Z INFO         |   androidboot.qemu=1
+2026-11-03T04:08:17.4776734Z INFO         |   androidboot.qemu.adb.pubkey=QAAAAI/N5mmRThxqQFU3DIMAwKW69A0ycffGBnbkpEenbRTZc6WTjtaXWAxlPdwwjip2g5N7ml7a/lB0Ojo10fOwIv9pgnvydT5Rlqh/aprRZ0yum5Tufo5BqdYlIBRmuHKadPvPge1NhqV7hCwS5ZaH8VzjmeQ2953HwqQcWYdHolc97um1SVaXkPZ4ChFaMMaj0Z8CoR9DkMFvM6xt1mLGR+ERjtpvGFYDUQ9+p9yZ1jVSPAT9WWKqaton5cTL5pxmVSshExDy8jtYSfPUSsYVcxswygVJb/1QtoGDaVFftBiLAR2s7DEbAcLc69StNME9WOkY/oDx4c5+aY6Ux/utwuxVUG2+eyJO6j6IjXWpkqA5M6LtxSDLdswh0oQNy7NCkJkOGNuPxHpiD/kehcmDjOI4+K1wBFfG8OYjH+2fl9mahwEAU4fRTED3IQq109mqEWYGZQxXV0ipDsE+NCCaleW8VRCTwyhJZSHftz7vWS1eAil3sU3YXT5IMJDIusiO0ZcKgxVtC1tezSTqR0ju8wVuF6HpoTqGnWUE1uyjhvwH0099y0SogB7Lf1fW8MY8+O3PdI8Esf39B85wP45p57UJH9gkITtxLhsNSRV8+xWGhJWBclNtDHrF9n8qvAJRLEQurxRnhpYHzpNuV4N+Qk8nm3aINsIRq8fHzllZXLTSbeNiTQEAAQA= runner@unknown
+2026-11-03T04:08:17.4780743Z INFO         |   androidboot.qemu.avd_name=test
+2026-11-03T04:08:17.4781205Z INFO         |   androidboot.qemu.camera_hq_edge_processing=0
+2026-11-03T04:08:17.4781663Z INFO         |   androidboot.qemu.camera_protocol_ver=1
+2026-11-03T04:08:17.4782152Z INFO         |   androidboot.qemu.cpuvulkan.version=4206592
+2026-11-03T04:08:17.4782667Z INFO         |   androidboot.qemu.gltransport.drawFlushInterval=800
+2026-11-03T04:08:17.4783291Z INFO         |   androidboot.qemu.gltransport.name=pipe
+2026-11-03T04:08:17.4783961Z INFO         |   androidboot.qemu.hwcodec.avcdec=2
+2026-11-03T04:08:17.4784395Z INFO         |   androidboot.qemu.hwcodec.hevcdec=2
+2026-11-03T04:08:17.4784813Z INFO         |   androidboot.qemu.hwcodec.vpxdec=2
+2026-11-03T04:08:17.4785331Z INFO         |   androidboot.qemu.settings.system.screen_off_timeout=2147483647
+2026-11-03T04:08:17.4785827Z INFO         |   androidboot.qemu.skin=1080x2400
+2026-11-03T04:08:17.4786223Z INFO         |   androidboot.qemu.virtiowifi=1
+2026-11-03T04:08:17.4786607Z INFO         |   androidboot.qemu.vsync=60
+2026-11-03T04:08:17.4787009Z INFO         |   androidboot.serialno=EMULATOR37X2X13X0
+2026-11-03T04:08:17.4787664Z INFO         |   androidboot.vbmeta.digest=451e57ed688ff746d2c636d52169ade253e2bc5bb30a5c3ff23679ca15d3bcd3
+2026-11-03T04:08:17.4788270Z INFO         |   androidboot.vbmeta.hash_alg=sha256
+2026-11-03T04:08:17.4788676Z INFO         |   androidboot.vbmeta.size=6656
+2026-11-03T04:08:17.4789066Z INFO         |   androidboot.veritymode=enforcing
+2026-11-03T04:08:17.4985718Z WARNING: cannnot unmap ptr 0x7f64bb401000 as it is in the protected range from 0x7f641b400000 to 0x7f64bb600000
+2026-11-03T04:08:17.5301099Z INFO         | Monitoring duration of emulator setup.
+2026-11-03T04:08:18.5271634Z INFO         | Activated packet streamer for bluetooth emulation
+2026-11-03T04:08:18.5272498Z INFO         | Successfully initialized netsim WiFi
+2026-11-03T04:08:18.5331252Z INFO         | Setting display: 0 configuration to: 1080x2400, dpi: 420x420 
+2026-11-03T04:08:18.5332219Z INFO         | setDisplayActiveConfig: id:0, 1080x2400
+2026-11-03T04:08:18.5333408Z INFO         | emulatorSetupEnvironment: Environment scene is not required
+2026-11-03T04:08:18.5408052Z INFO         | Loading snapshot 'default_boot'...
+2026-11-03T04:08:18.5409593Z WARNING      | Failed to process .ini file /home/runner/.android/emu-update-last-check.ini for reading.
+2026-11-03T04:08:18.5708074Z WARNING      | Device 'cache' does not have the requested snapshot 'default_boot'
+2026-11-03T04:08:18.5708772Z 
+2026-11-03T04:08:18.5709314Z WARNING      | Failed to load snapshot 'default_boot'
+2026-11-03T04:08:18.5710552Z USER_INFO    | The emulator is performing a cold boot without a saved state because there's no snapshot and you have configured it not to save on exit.
+2026-11-03T04:08:18.7035038Z WARNING      | Failed to process .ini file /home/runner/.android/emu-update-last-check.ini for reading.
+2026-11-03T04:08:26.6534347Z [command]/usr/local/lib/android/sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed
+2026-11-03T04:08:26.6581669Z * daemon not running; starting now at tcp:5037
+2026-11-03T04:08:26.7270669Z * daemon started successfully
+2026-11-03T04:08:26.7272829Z adb: device offline
+2026-11-03T04:08:26.7281790Z The process '/usr/local/lib/android/sdk/platform-tools/adb' failed with exit code 1
+2026-11-03T04:08:28.7317884Z [command]/usr/local/lib/android/sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed
+2026-11-03T04:08:28.7352157Z adb: device offline
+2026-11-03T04:08:28.7358704Z The process '/usr/local/lib/android/sdk/platform-tools/adb' failed with exit code 1
+2026-11-03T04:08:30.7419320Z [command]/usr/local/lib/android/sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed
+2026-11-03T04:08:30.7549839Z 
+2026-11-03T04:08:32.7639353Z [command]/usr/local/lib/android/sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed
+2026-11-03T04:08:32.8080845Z 
+2026-11-03T04:08:34.8155720Z [command]/usr/local/lib/android/sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed
+2026-11-03T04:08:34.8418005Z 
+2026-11-03T04:08:36.8495854Z [command]/usr/local/lib/android/sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed
+2026-11-03T04:08:36.8726601Z 
+2026-11-03T04:08:38.8865144Z [command]/usr/local/lib/android/sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed
+2026-11-03T04:08:38.9116293Z 
+2026-11-03T04:08:40.9224033Z [command]/usr/local/lib/android/sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed
+2026-11-03T04:08:40.9554505Z 
+2026-11-03T04:08:42.9595525Z [command]/usr/local/lib/android/sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed
+2026-11-03T04:08:42.9998523Z 
+2026-11-03T04:08:45.0056394Z [command]/usr/local/lib/android/sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed
+2026-11-03T04:08:45.0407253Z 
+2026-11-03T04:08:47.0461027Z [command]/usr/local/lib/android/sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed
+2026-11-03T04:08:47.0781294Z 
+2026-11-03T04:08:49.0844006Z [command]/usr/local/lib/android/sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed
+2026-11-03T04:08:49.1074443Z 
+2026-11-03T04:08:51.1130446Z [command]/usr/local/lib/android/sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed
+2026-11-03T04:08:51.1369713Z 
+2026-11-03T04:08:53.1427844Z [command]/usr/local/lib/android/sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed
+2026-11-03T04:08:53.2373078Z 
+2026-11-03T04:08:55.2454599Z [command]/usr/local/lib/android/sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed
+2026-11-03T04:08:55.2894309Z 
+2026-11-03T04:08:56.2375673Z INFO         | Boot completed in 39547 ms
+2026-11-03T04:08:56.2377032Z INFO         | Increasing screen off timeout, logcat buffer size to 2M.
+2026-11-03T04:08:57.3108484Z [command]/usr/local/lib/android/sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed
+2026-11-03T04:08:57.3323116Z 1
+2026-11-03T04:08:57.3355294Z Emulator booted.
+2026-11-03T04:08:57.3396504Z [command]/usr/local/lib/android/sdk/platform-tools/adb -s emulator-5554 shell input keyevent 82
+2026-11-03T04:09:05.2634828Z Disabling animations.
+2026-11-03T04:09:05.2720523Z [command]/usr/local/lib/android/sdk/platform-tools/adb -s emulator-5554 shell settings put global window_animation_scale 0.0
+2026-11-03T04:09:05.9425699Z [command]/usr/local/lib/android/sdk/platform-tools/adb -s emulator-5554 shell settings put global transition_animation_scale 0.0
+2026-11-03T04:09:06.3445867Z [command]/usr/local/lib/android/sdk/platform-tools/adb -s emulator-5554 shell settings put global animator_duration_scale 0.0
+2026-11-03T04:09:07.0213567Z ##[endgroup]
+2026-11-03T04:09:07.0264608Z [command]/usr/bin/sh -c adb wait-for-device
+2026-11-03T04:09:07.0375030Z [command]/usr/bin/sh -c adb shell 'while [ "$(getprop sys.boot_completed)" != "1" ]; do sleep 1; done'
+2026-11-03T04:09:07.1253450Z [command]/usr/bin/sh -c sleep 10
+2026-11-03T04:09:17.1351574Z [command]/usr/bin/sh -c adb shell settings put secure enabled_accessibility_services com.google.android.marvin.talkback/com.google.android.marvin.talkback.TalkBackService
+2026-11-03T04:09:17.3827183Z [command]/usr/bin/sh -c adb shell settings put secure accessibility_enabled 1
+2026-11-03T04:09:17.9721008Z [command]/usr/bin/sh -c sleep 15
+2026-11-03T04:09:32.9774946Z [command]/usr/bin/sh -c cd android-tests && export APK_PATH=$GITHUB_WORKSPACE/android-tests/apk/app-debug.apk && export APPIUM_SERVER_URL=http://127.0.0.1:4723 && export BACKEND_BASE_URL=http://127.0.0.1:8000 && pytest -p no:cacheprovider tests/test_input_validation.py tests/test_error_handling.py tests/test_accessibility.py tests/test_responsive_orientation.py
+2026-11-03T04:09:34.3897384Z ============================= test session starts ==============================
+2026-11-03T04:09:34.3935186Z platform linux -- Python 3.12.15, pytest-9.1.1, pluggy-1.7.0 -- /opt/hostedtoolcache/Python/3.12.15/x64/bin/python
+2026-11-03T04:09:34.3937049Z rootdir: /home/runner/work/vulnara-ai/vulnara-ai/android-tests
+2026-11-03T04:09:34.3964504Z configfile: pytest.ini
+2026-11-03T04:09:34.3994576Z plugins: xdist-3.8.0, anyio-4.16.0
+2026-11-03T04:09:34.5172734Z collecting ... collected 136 items
+2026-11-03T04:09:34.5173255Z 
+2026-11-03T04:12:06.8505561Z tests/test_input_validation.py::test_target_field_boundary_inputs_do_not_crash_app[empty] 
+2026-11-03T04:12:06.8534071Z 
+2026-11-03T04:12:06.8564622Z =============================== warnings summary ===============================
+2026-11-03T04:12:06.8565420Z pages/base_page.py:93
+2026-11-03T04:12:06.8566631Z   /home/runner/work/vulnara-ai/vulnara-ai/android-tests/pages/base_page.py:93: SyntaxWarning: invalid escape sequence '\&'
+2026-11-03T04:12:06.8646127Z     escaped_value = value.replace(" ", "%s").replace("&", "\&").replace("<", "\<").replace(">", "\>").replace("?", "\?").replace(":", "\:").replace(";", "\;").replace("*", "\*").replace("|", "\|").replace("~", "\~").replace("'", "\\'").replace('"', '\\"').replace("(", "\(").replace(")", "\)")
+2026-11-03T04:12:06.8653199Z 
+2026-11-03T04:12:06.8684321Z pages/base_page.py:93
+2026-11-03T04:12:06.8701916Z   /home/runner/work/vulnara-ai/vulnara-ai/android-tests/pages/base_page.py:93: SyntaxWarning: invalid escape sequence '\<'
+2026-11-03T04:12:06.8715523Z     escaped_value = value.replace(" ", "%s").replace("&", "\&").replace("<", "\<").replace(">", "\>").replace("?", "\?").replace(":", "\:").replace(";", "\;").replace("*", "\*").replace("|", "\|").replace("~", "\~").replace("'", "\\'").replace('"', '\\"').replace("(", "\(").replace(")", "\)")
+2026-11-03T04:12:06.8743921Z 
+2026-11-03T04:12:06.8764534Z pages/base_page.py:93
+2026-11-03T04:12:06.8765739Z   /home/runner/work/vulnara-ai/vulnara-ai/android-tests/pages/base_page.py:93: SyntaxWarning: invalid escape sequence '\>'
+2026-11-03T04:12:06.8768158Z     escaped_value = value.replace(" ", "%s").replace("&", "\&").replace("<", "\<").replace(">", "\>").replace("?", "\?").replace(":", "\:").replace(";", "\;").replace("*", "\*").replace("|", "\|").replace("~", "\~").replace("'", "\\'").replace('"', '\\"').replace("(", "\(").replace(")", "\)")
+2026-11-03T04:12:06.8769949Z 
+2026-11-03T04:12:06.8770315Z pages/base_page.py:93
+2026-11-03T04:12:06.8771443Z   /home/runner/work/vulnara-ai/vulnara-ai/android-tests/pages/base_page.py:93: SyntaxWarning: invalid escape sequence '\?'
+2026-11-03T04:12:06.8773828Z     escaped_value = value.replace(" ", "%s").replace("&", "\&").replace("<", "\<").replace(">", "\>").replace("?", "\?").replace(":", "\:").replace(";", "\;").replace("*", "\*").replace("|", "\|").replace("~", "\~").replace("'", "\\'").replace('"', '\\"').replace("(", "\(").replace(")", "\)")
+2026-11-03T04:12:06.8775232Z 
+2026-11-03T04:12:06.8775585Z pages/base_page.py:93
+2026-11-03T04:12:06.8776714Z   /home/runner/work/vulnara-ai/vulnara-ai/android-tests/pages/base_page.py:93: SyntaxWarning: invalid escape sequence '\:'
+2026-11-03T04:12:06.8778888Z     escaped_value = value.replace(" ", "%s").replace("&", "\&").replace("<", "\<").replace(">", "\>").replace("?", "\?").replace(":", "\:").replace(";", "\;").replace("*", "\*").replace("|", "\|").replace("~", "\~").replace("'", "\\'").replace('"', '\\"').replace("(", "\(").replace(")", "\)")
+2026-11-03T04:12:06.8780259Z 
+2026-11-03T04:12:06.8780600Z pages/base_page.py:93
+2026-11-03T04:12:06.8782201Z   /home/runner/work/vulnara-ai/vulnara-ai/android-tests/pages/base_page.py:93: SyntaxWarning: invalid escape sequence '\;'
+2026-11-03T04:12:06.8784646Z     escaped_value = value.replace(" ", "%s").replace("&", "\&").replace("<", "\<").replace(">", "\>").replace("?", "\?").replace(":", "\:").replace(";", "\;").replace("*", "\*").replace("|", "\|").replace("~", "\~").replace("'", "\\'").replace('"', '\\"').replace("(", "\(").replace(")", "\)")
+2026-11-03T04:12:06.8786069Z 
+2026-11-03T04:12:06.8786403Z pages/base_page.py:93
+2026-11-03T04:12:06.8787518Z   /home/runner/work/vulnara-ai/vulnara-ai/android-tests/pages/base_page.py:93: SyntaxWarning: invalid escape sequence '\*'
+2026-11-03T04:12:06.8789792Z     escaped_value = value.replace(" ", "%s").replace("&", "\&").replace("<", "\<").replace(">", "\>").replace("?", "\?").replace(":", "\:").replace(";", "\;").replace("*", "\*").replace("|", "\|").replace("~", "\~").replace("'", "\\'").replace('"', '\\"').replace("(", "\(").replace(")", "\)")
+2026-11-03T04:12:06.8791210Z 
+2026-11-03T04:12:06.8791554Z pages/base_page.py:93
+2026-11-03T04:12:06.8792917Z   /home/runner/work/vulnara-ai/vulnara-ai/android-tests/pages/base_page.py:93: SyntaxWarning: invalid escape sequence '\|'
+2026-11-03T04:12:06.8795357Z     escaped_value = value.replace(" ", "%s").replace("&", "\&").replace("<", "\<").replace(">", "\>").replace("?", "\?").replace(":", "\:").replace(";", "\;").replace("*", "\*").replace("|", "\|").replace("~", "\~").replace("'", "\\'").replace('"', '\\"').replace("(", "\(").replace(")", "\)")
+2026-11-03T04:12:06.8796748Z 
+2026-11-03T04:12:06.8797087Z pages/base_page.py:93
+2026-11-03T04:12:06.8798184Z   /home/runner/work/vulnara-ai/vulnara-ai/android-tests/pages/base_page.py:93: SyntaxWarning: invalid escape sequence '\~'
+2026-11-03T04:12:06.8800416Z     escaped_value = value.replace(" ", "%s").replace("&", "\&").replace("<", "\<").replace(">", "\>").replace("?", "\?").replace(":", "\:").replace(";", "\;").replace("*", "\*").replace("|", "\|").replace("~", "\~").replace("'", "\\'").replace('"', '\\"').replace("(", "\(").replace(")", "\)")
+2026-11-03T04:12:06.8802439Z 
+2026-11-03T04:12:06.8802802Z pages/base_page.py:93
+2026-11-03T04:12:06.8804177Z   /home/runner/work/vulnara-ai/vulnara-ai/android-tests/pages/base_page.py:93: SyntaxWarning: invalid escape sequence '\('
+2026-11-03T04:12:06.8806289Z     escaped_value = value.replace(" ", "%s").replace("&", "\&").replace("<", "\<").replace(">", "\>").replace("?", "\?").replace(":", "\:").replace(";", "\;").replace("*", "\*").replace("|", "\|").replace("~", "\~").replace("'", "\\'").replace('"', '\\"').replace("(", "\(").replace(")", "\)")
+2026-11-03T04:12:06.8807569Z 
+2026-11-03T04:12:06.8807876Z pages/base_page.py:93
+2026-11-03T04:12:06.8808869Z   /home/runner/work/vulnara-ai/vulnara-ai/android-tests/pages/base_page.py:93: SyntaxWarning: invalid escape sequence '\)'
+2026-11-03T04:12:06.8810876Z     escaped_value = value.replace(" ", "%s").replace("&", "\&").replace("<", "\<").replace(">", "\>").replace("?", "\?").replace(":", "\:").replace(";", "\;").replace("*", "\*").replace("|", "\|").replace("~", "\~").replace("'", "\\'").replace('"', '\\"').replace("(", "\(").replace(")", "\)")
+2026-11-03T04:12:06.8812149Z 
+2026-11-03T04:12:06.8812898Z tests/test_input_validation.py::test_target_field_boundary_inputs_do_not_crash_app[empty]
+2026-11-03T04:12:06.8814494Z tests/test_input_validation.py::test_target_field_boundary_inputs_do_not_crash_app[empty]
+2026-11-03T04:12:06.8815859Z tests/test_input_validation.py::test_target_field_boundary_inputs_do_not_crash_app[empty]
+2026-11-03T04:12:06.8817791Z   /home/runner/work/vulnara-ai/vulnara-ai/android-tests/utils/driver_factory.py:71: DeprecationWarning: setting remote_server_addr in RemoteConnection() is deprecated, set in client_config instead
+2026-11-03T04:12:06.8819534Z     connection = AppiumConnection(config.APPIUM_SERVER_URL)
+2026-11-03T04:12:06.8820135Z 
+2026-11-03T04:12:06.8820787Z -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+2026-11-03T04:12:06.8822151Z ======================= 14 warnings in 152.40s (0:02:32) =======================
+2026-11-03T04:12:06.8826258Z ! _pytest.outcomes.Exit: Smoke check failed: the app's login screen never rendered within 60s of a cold start. This means the environment itself is broken (no real hardware acceleration on this runner, or the app is crash-looping) -- not that the tests below are. See the '/dev/kvm' check earlier in this job's log before re-running; three fresh Appium sessions failed: attempt 1: login semantics absent; attempt 2: login semantics absent; attempt 3: login semantics absent !
+2026-11-03T04:12:06.9498264Z ##[error]The process '/usr/bin/sh' failed with exit code 4
+2026-11-03T04:12:06.9511082Z ##[group]Terminate Emulator
+2026-11-03T04:12:06.9568225Z [command]/usr/local/lib/android/sdk/platform-tools/adb -s emulator-5554 emu kill
+2026-11-03T04:12:06.9606012Z OK: killing emulator, bye bye
+2026-11-03T04:12:06.9634626Z OK
+2026-11-03T04:12:06.9636969Z INFO         | Wait for emulator (pid 2890) 20 seconds to shutdown gracefully before kill;you can set environment variable ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL(in seconds) to change the default value (20 seconds)
+2026-11-03T04:12:06.9644400Z 
+2026-11-03T04:12:06.9645266Z ##[endgroup]
+2026-11-03T04:12:10.4447058Z INFO         | Saving with gfxstream=1
+2026-11-03T04:12:10.5275205Z INFO         | Saving snapshot 'default_boot' took 3520 ms
+2026-11-03T04:12:10.6101025Z ERROR        | stop: Not implemented
+2026-11-03T04:12:10.6102468Z WARNING      | Emulator client has not yet been configured.. Call configure me first!
+2026-11-03T04:12:10.6348814Z INFO         | removeAll
+2026-11-03T04:12:10.6817545Z WARNING      | Netsim Wifi dns:///localhost:35943 is gone due to Stream removed (CANCELLED)
+2026-11-03T04:12:11.3399679Z ##[group]Run actions/upload-artifact@v4
+2026-11-03T04:12:11.3400021Z with:
+2026-11-03T04:12:11.3400255Z   name: shard-results-4
+2026-11-03T04:12:11.3400891Z   path: android-tests/reports/execution-results*.json
+android-tests/reports/screenshots
+android-tests/reports/logs
+backend/backend.log
+appium.log
+
+2026-11-03T04:12:11.3401588Z   retention-days: 14
+2026-11-03T04:12:11.3401844Z   if-no-files-found: warn
+2026-11-03T04:12:11.3402105Z   compression-level: 6
+2026-11-03T04:12:11.3402357Z   overwrite: false
+2026-11-03T04:12:11.3402602Z   include-hidden-files: false
+2026-11-03T04:12:11.3402867Z env:
+2026-11-03T04:12:11.3403087Z   GATE_THRESHOLD: 70
+2026-11-03T04:12:11.3403399Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:12:11.3404225Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib/pkgconfig
+2026-11-03T04:12:11.3404694Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:12:11.3405134Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:12:11.3405549Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+2026-11-03T04:12:11.3405968Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib
+2026-11-03T04:12:11.3406350Z   ANDROID_AVD_HOME: /home/runner/.android/avd
+2026-11-03T04:12:11.3406663Z ##[endgroup]
+2026-11-03T04:12:11.5200619Z (node:3929) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-03T04:12:11.5201775Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-03T04:12:11.5301520Z Multiple search paths detected. Calculating the least common ancestor of all paths
+2026-11-03T04:12:11.5304247Z The least common ancestor is /home/runner/work/vulnara-ai/vulnara-ai. This will be the root directory of the artifact
+2026-11-03T04:12:11.5305540Z With the provided path, there will be 3 files uploaded
+2026-11-03T04:12:11.5306518Z Artifact name is valid!
+2026-11-03T04:12:11.5307091Z Root directory input is valid!
+2026-11-03T04:12:11.7277271Z Beginning upload of artifact content to blob storage
+2026-11-03T04:12:11.7561370Z (node:3929) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-11-03T04:12:11.8042541Z Uploaded bytes 24244
+2026-11-03T04:12:11.8232256Z Finished uploading artifact content to blob storage!
+2026-11-03T04:12:11.8234313Z SHA256 digest of uploaded artifact zip is 34ccce00c8acd57c529e7d2c2637cfabbc0287089c203f92d5276454d2ef3b02
+2026-11-03T04:12:11.8235334Z Finalizing artifact upload
+2026-11-03T04:12:12.2574216Z Artifact shard-results-4.zip successfully finalized. Artifact ID 13203748228
+2026-11-03T04:12:12.2575212Z Artifact shard-results-4 has been successfully uploaded! Final size is 24244 bytes. Artifact ID is 13203748228
+2026-11-03T04:12:12.2582289Z Artifact download URL: https://github.com/gveerendra8356/vulnara-ai/actions/runs/41575715243/artifacts/13203748228
+2026-11-03T04:12:12.2778712Z Post job cleanup.
+2026-11-03T04:12:12.4082443Z (node:3941) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-03T04:12:12.4083512Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-03T04:12:12.4296641Z Post job cleanup.
+2026-11-03T04:12:12.5628921Z Cache hit occurred on the primary key setup-python-Linux-x64-24.04-Ubuntu-python-3.12.15-pip-001c6f1301c99f10d14f388ad35f8bac4eccaf0e8aaa990ac893743fe90cc662, not saving cache.
+2026-11-03T04:12:12.5631743Z (node:3949) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-03T04:12:12.5633170Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-03T04:12:12.5796913Z Post job cleanup.
+2026-11-03T04:12:12.6774756Z [command]/usr/bin/git version
+2026-11-03T04:12:12.6828928Z git version 2.56.0
+2026-11-03T04:12:12.6872503Z Temporarily overriding HOME='/home/runner/work/_temp/9c682c63-f293-4675-a7eb-080d8b85dc17' before making global git config changes
+2026-11-03T04:12:12.6874281Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-03T04:12:12.6880204Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/vulnara-ai/vulnara-ai
+2026-11-03T04:12:12.6927407Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-03T04:12:12.6977732Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-03T04:12:12.7265794Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-03T04:12:12.7304625Z http.https://github.com/.extraheader
+2026-11-03T04:12:12.7320298Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-11-03T04:12:12.7357532Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-03T04:12:12.7657366Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-03T04:12:12.7717411Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-03T04:12:12.8167859Z Cleaning up orphan processes
+2026-11-03T04:12:12.8475297Z Terminate orphan process: pid (2442) (python3)
+2026-11-03T04:12:12.8499962Z Terminate orphan process: pid (2560) (node)
+2026-11-03T04:12:12.8589666Z Terminate orphan process: pid (3054) (adb)
+2026-11-03T04:12:12.8672148Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/download-artifact@v4, actions/setup-node@v4, actions/setup-python@v5, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
