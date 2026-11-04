@@ -23,9 +23,40 @@ import socket
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from typing import Callable, Awaitable, Optional
+from urllib.parse import urlparse
 import logging
 
 logger = logging.getLogger("vulnara.scanner.nmap")
+
+
+def parse_target(target: str) -> tuple[str, Optional[int], Optional[str]]:
+    """
+    Normalizes whatever the user typed into (host, explicit_port, scheme).
+
+    Accepts a bare host ("example.com"), host:port ("example.com:4280"), or a
+    full URL ("https://example.com:4280/path"). Without this, a URL target was
+    being passed straight to socket.connect()/DNS as a hostname, which always
+    failed -> 0 hosts discovered -> "0 threats". We also surface the explicit
+    port so the scanner actually probes the service the user pointed at, even
+    when it's on a non-standard port the common-ports list doesn't include.
+    """
+    target = (target or "").strip()
+    if "://" in target:
+        parsed = urlparse(target)
+        host = parsed.hostname or ""
+        scheme = parsed.scheme or None
+        port = parsed.port
+        if port is None and scheme in ("http", "https"):
+            port = 443 if scheme == "https" else 80
+        return host, port, scheme
+    # "host:port" (ignore IPv6-in-brackets edge case for this thesis scope)
+    if target.count(":") == 1 and "[" not in target:
+        host, _, port_str = target.partition(":")
+        try:
+            return host, int(port_str), None
+        except ValueError:
+            return target, None, None
+    return target, None, None
 
 
 class NmapNotFoundError(RuntimeError):
@@ -116,11 +147,12 @@ async def _grab_banner(host: str, port: int, timeout: float = 3.0) -> Optional[s
         return None
 
 
-async def _http_banner(host: str, port: int) -> Optional[str]:
+async def _http_banner(host: str, port: int, scheme: Optional[str] = None) -> Optional[str]:
     """Fetches HTTP Server header and page title for web ports."""
     try:
         import httpx
-        scheme = "https" if port in (443, 8443) else "http"
+        if scheme not in ("http", "https"):
+            scheme = "https" if port in (443, 8443) else "http"
         url = f"{scheme}://{host}:{port}/"
         async with httpx.AsyncClient(verify=False, timeout=5.0, follow_redirects=True) as client:
             resp = await client.get(url)
@@ -132,40 +164,72 @@ async def _http_banner(host: str, port: int) -> Optional[str]:
         return None
 
 
-async def _fallback_discover(target: str) -> HostResult:
+async def _fallback_discover(target: str, explicit_port: Optional[int] = None) -> HostResult:
     """
     Checks if the target responds on any common port to determine liveness.
-    Returns a HostResult with status 'up' or 'down'.
+    Returns a HostResult with status 'up' or 'down'. The user-specified port
+    (if any) is probed first, so a host that only exposes a non-standard port
+    (e.g. 4280) is still correctly detected as "up".
     """
-    # Try a quick connection on port 80 or 443 first, then a few others
-    probe_ports = [80, 443, 22, 8080, 3306]
+    # Probe the explicit port first, then a few well-known ones.
+    probe_ports = ([explicit_port] if explicit_port else []) + [80, 443, 22, 8080, 3306]
     for port in probe_ports:
-        if await _tcp_connect(target, port, timeout=2.0):
+        if await _tcp_connect(target, port, timeout=3.0):
             return HostResult(ip=target, status="up")
 
-    # Check via DNS resolution at least
+    # Check via DNS resolution at least. Keep the hostname (not the resolved
+    # IP) so later HTTPS/vhost-based probing and active testing still work.
     try:
-        resolved = socket.gethostbyname(target)
-        # If DNS resolves, assume host is up but firewall blocks us
-        return HostResult(ip=resolved, status="up")
+        socket.gethostbyname(target)
+        return HostResult(ip=target, status="up")
     except socket.gaierror:
         return HostResult(ip=target, status="down")
 
 
-async def _fallback_scan_host(host: str) -> HostResult:
+async def _fallback_scan_host(
+    host: str,
+    explicit_port: Optional[int] = None,
+    scheme: Optional[str] = None,
+) -> HostResult:
     """
-    Probes COMMON_PORTS concurrently and grabs banners for open ones.
+    Probes COMMON_PORTS concurrently and grabs banners for open ones. The
+    user-specified port is always included (even if non-standard), and when
+    it looks like a web service it is labelled 'http'/'ssl/http' so the triage
+    and active-testing stages recognise it as a web target.
     """
     result = HostResult(ip=host, status="up")
+
+    ports_to_probe: dict[int, str] = dict(COMMON_PORTS)
+    if explicit_port and explicit_port not in ports_to_probe:
+        if scheme == "https":
+            ports_to_probe[explicit_port] = "ssl/http"
+        elif scheme == "http":
+            ports_to_probe[explicit_port] = "http"
+        else:
+            ports_to_probe[explicit_port] = "unknown"
+
+    # Ports we always treat as HTTP(S) for banner grabbing.
+    WEB_PORTS = {80, 443, 8080, 8443, 8888}
 
     async def probe_port(port: int, service_name: str):
         if not await _tcp_connect(host, port):
             return
 
-        # Get banner: HTTP-aware for web ports, raw TCP for others
-        if port in (80, 443, 8080, 8443, 8888):
-            banner = await _http_banner(host, port)
+        is_web = (
+            port in WEB_PORTS
+            or "http" in (service_name or "")
+            or port == explicit_port
+        )
+        if is_web:
+            port_scheme = scheme if port == explicit_port else None
+            banner = await _http_banner(host, port, scheme=port_scheme)
             svc_version = banner
+            # If we got a real HTTP response but the service wasn't labelled
+            # web, fix the label so web-detection downstream picks it up.
+            if banner and "http" not in (service_name or ""):
+                service_name = (
+                    "ssl/http" if (port_scheme == "https" or port in (443, 8443)) else "http"
+                )
         else:
             banner = await _grab_banner(host, port)
             svc_version = None
@@ -178,7 +242,7 @@ async def _fallback_scan_host(host: str) -> HostResult:
             banner=banner,
         ))
 
-    await asyncio.gather(*[probe_port(p, s) for p, s in COMMON_PORTS.items()])
+    await asyncio.gather(*[probe_port(p, s) for p, s in ports_to_probe.items()])
     # Sort by port number for consistent output
     result.ports.sort(key=lambda p: p.port)
     return result
@@ -263,9 +327,9 @@ class NmapScanner:
     # ------------------------------------------------------------------
     # Phase 1: Host discovery
     # ------------------------------------------------------------------
-    async def discover_hosts(self, target: str) -> list[HostResult]:
+    async def discover_hosts(self, target: str, explicit_port: Optional[int] = None) -> list[HostResult]:
         if self._use_fallback:
-            host = await _fallback_discover(target)
+            host = await _fallback_discover(target, explicit_port=explicit_port)
             return [host]
 
         root = await self._run_nmap_xml(["-sn", "-Pn", "-T4", target])
@@ -283,16 +347,29 @@ class NmapScanner:
     # ------------------------------------------------------------------
     # Phase 2 + 3: Port enumeration + service/version + banner grab
     # ------------------------------------------------------------------
-    async def scan_host(self, ip: str, port_range: str = "--top-ports 1000") -> HostResult:
+    async def scan_host(
+        self,
+        ip: str,
+        port_range: str = "--top-ports 1000",
+        explicit_port: Optional[int] = None,
+        scheme: Optional[str] = None,
+    ) -> HostResult:
         if self._use_fallback:
-            return await _fallback_scan_host(ip)
+            return await _fallback_scan_host(ip, explicit_port=explicit_port, scheme=scheme)
+
+        # With nmap: scan the top ports, and make sure the user-specified
+        # port is included even if it's outside that set.
+        if explicit_port:
+            port_selector = ["-p", f"{explicit_port},1-1024"]
+        else:
+            port_selector = port_range.split()
 
         args = [
             "-sV",
             "--script=banner",
             "-Pn",
             "-T4",
-            *port_range.split(),
+            *port_selector,
             ip,
         ]
         root = await self._run_nmap_xml(args)
@@ -347,10 +424,16 @@ class NmapScanner:
         port_range: str = "--top-ports 1000",
         on_progress: Optional[ProgressCallback] = None,
     ) -> list[HostResult]:
+        # Normalize whatever the user typed (URL / host:port / bare host) into
+        # a connectable host plus the specific port/scheme they pointed at.
+        host, explicit_port, scheme = parse_target(target)
+        if not host:
+            host = target
+
         if on_progress:
             await on_progress("host_discovery", {"percent_complete": 0})
 
-        live_hosts = await self.discover_hosts(target)
+        live_hosts = await self.discover_hosts(host, explicit_port=explicit_port)
         up_hosts = [h for h in live_hosts if h.status == "up"]
 
         if on_progress:
@@ -369,7 +452,10 @@ class NmapScanner:
                     {"percent_complete": int((i - 1) / total * 100), "current_host": host.ip},
                 )
 
-            scanned = await self.scan_host(host.ip, port_range=port_range)
+            scanned = await self.scan_host(
+                host.ip, port_range=port_range,
+                explicit_port=explicit_port, scheme=scheme,
+            )
             results.append(scanned)
 
             if on_progress:
