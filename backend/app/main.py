@@ -44,8 +44,30 @@ app = FastAPI(title="Vulnara API")
 
 @app.on_event("startup")
 async def ensure_config_table():
+    from sqlalchemy import inspect as sa_inspect
+
     async with engine.begin() as conn:
         await conn.run_sync(SystemConfig.__table__.create, checkfirst=True)
+
+        # Idempotent schema catch-up: make sure columns added by later
+        # migrations exist even if the deployed database (e.g. Render/Neon)
+        # was never migrated. ADD COLUMN on an existing column would error,
+        # so we check the live columns first. Safe to run on every startup.
+        def _columns(sync_conn, table):
+            try:
+                return {c["name"] for c in sa_inspect(sync_conn).get_columns(table)}
+            except Exception:
+                return set()
+
+        scan_cols = await conn.run_sync(_columns, "scans")
+        if scan_cols and "failure_reason" not in scan_cols:
+            await conn.execute(text("ALTER TABLE scans ADD COLUMN failure_reason VARCHAR(255)"))
+            logging.info("startup migration: added scans.failure_reason")
+
+        vuln_cols = await conn.run_sync(_columns, "vulnerabilities")
+        if vuln_cols and "banner" not in vuln_cols:
+            await conn.execute(text("ALTER TABLE vulnerabilities ADD COLUMN banner TEXT"))
+            logging.info("startup migration: added vulnerabilities.banner")
 
 # Comma-separated list, e.g. "https://vulnara.vercel.app,http://localhost:5173"
 _origins_env = os.environ.get("CORS_ORIGINS", "http://localhost:5173")
