@@ -11,8 +11,10 @@ import 'providers/auth_provider.dart';
 import 'screens/admin_users_screen.dart';
 import 'screens/audit_log_screen.dart';
 import 'screens/dashboard_screen.dart';
+import 'screens/departments_screen.dart';
 import 'screens/forgot_password_screen.dart';
 import 'screens/login_screen.dart';
+import 'screens/network_activity_screen.dart';
 import 'screens/new_scan_screen.dart';
 import 'screens/notifications_screen.dart';
 import 'screens/profile_screen.dart';
@@ -53,6 +55,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/forgot-password', builder: (context, state) => const ForgotPasswordScreen()),
       GoRoute(path: '/dashboard', builder: (context, state) => const DashboardScreen()),
       GoRoute(path: '/scans', builder: (context, state) => const ScanListScreen()),
+      GoRoute(path: '/overview', builder: (context, state) => const NetworkActivityScreen()),
+      GoRoute(path: '/admin/departments', builder: (context, state) => const DepartmentsScreen()),
       GoRoute(path: '/scans/new', builder: (context, state) => const NewScanScreen()),
       GoRoute(path: '/notifications', builder: (context, state) => const NotificationsScreen()),
       GoRoute(path: '/profile', builder: (context, state) => const ProfileScreen()),

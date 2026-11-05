@@ -338,7 +338,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             ),
           ),
         ]),
-        // Admin: User Management shortcut
+        // Network Activity -- available to everyone (department-scoped for
+        // analysts, org-wide for admins).
+        const SizedBox(height: 12),
+        _SettingsGroup(children: [
+          _SettingsRow(
+            icon: Icons.lan_outlined,
+            title: 'Network Activity',
+            subtitle: 'Assets, findings & scan activity',
+            onTap: () => context.push('/overview'),
+          ),
+        ]),
+        // Admin: User & department management
         if (ref.read(authProvider) is AuthLoggedIn &&
             (ref.read(authProvider) as AuthLoggedIn).user.role == 'admin') ...[
           const SizedBox(height: 12),
@@ -348,6 +359,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               title: 'User Management',
               subtitle: 'Manage analyst accounts',
               onTap: () => context.push('/admin/users'),
+            ),
+            _SettingsRow(
+              icon: Icons.groups_outlined,
+              title: 'Departments',
+              subtitle: 'Create departments & assign analysts',
+              onTap: () => context.push('/admin/departments'),
             ),
           ]),
         ],

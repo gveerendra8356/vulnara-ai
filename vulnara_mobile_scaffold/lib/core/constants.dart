@@ -7,13 +7,15 @@
 class ApiConfig {
   ApiConfig._();
 
-  /// Production Render backend.
-  /// For local dev against an emulator, change to: http://10.0.2.2:8000
+  /// Production Render backend -- the SAME backend (and Neon database) the
+  /// deployed web app uses, so the mobile app and the web app always show the
+  /// same data (users, departments, scans, findings).
+  /// For local dev against an Android emulator, change to: http://10.0.2.2:8000
   /// For local dev against iOS simulator / web: http://localhost:8000
-  static const String baseUrl = 'http://10.0.2.2:8000';
+  static const String baseUrl = 'https://vulnara-backend.onrender.com';
 
   /// Same host, wss:// for the live scan status WebSocket.
-  static const String wsBaseUrl = 'ws://10.0.2.2:8000';
+  static const String wsBaseUrl = 'wss://vulnara-backend.onrender.com';
 
   static const Duration connectTimeout = Duration(seconds: 60); // longer for Render cold-start
   static const Duration receiveTimeout = Duration(seconds: 60);

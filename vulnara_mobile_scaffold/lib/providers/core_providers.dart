@@ -11,6 +11,7 @@ import '../core/secure_storage.dart';
 import '../repositories/auth_repository.dart';
 import '../repositories/device_repository.dart';
 import '../repositories/notification_repository.dart';
+import '../repositories/organization_repository.dart';
 import '../repositories/remediation_repository.dart';
 import '../repositories/scan_repository.dart';
 
@@ -49,4 +50,8 @@ final pushNotificationServiceProvider = Provider<PushNotificationService>((ref) 
 
 final adminRepositoryProvider = Provider<AdminRepository>((ref) {
   return AdminRepository(ref.watch(apiClientProvider));
+});
+
+final organizationRepositoryProvider = Provider<OrganizationRepository>((ref) {
+  return OrganizationRepository(ref.watch(apiClientProvider));
 });
