@@ -31,6 +31,7 @@ from app.api.routes.devices import router as devices_router
 from app.api.routes.auth import router as auth_router
 from app.api.routes.vulnerabilities import router as vulnerabilities_router
 from app.api.routes.admin import router as admin_router
+from app.api.routes.departments import router as departments_router
 from app.core.db import AsyncSessionLocal
 from app.models.system_config import SystemConfig
 from app.core.db import engine
@@ -45,9 +46,19 @@ app = FastAPI(title="Vulnara API")
 @app.on_event("startup")
 async def ensure_config_table():
     from sqlalchemy import inspect as sa_inspect
+    from app.models.scan import Base
+    # Import every model so Base.metadata is complete before create_all,
+    # otherwise ForeignKeys to not-yet-imported tables (e.g. departments)
+    # break table creation on a fresh database.
+    from app.models import (  # noqa: F401
+        user, scan, department, triage_models, threat_log,
+        token_denylist, device_token, system_config,
+    )
 
     async with engine.begin() as conn:
-        await conn.run_sync(SystemConfig.__table__.create, checkfirst=True)
+        # Create any tables that don't exist yet (fresh DB); existing tables
+        # are left untouched. Column additions are handled by the ALTERs below.
+        await conn.run_sync(Base.metadata.create_all)
 
         # Idempotent schema catch-up: make sure columns added by later
         # migrations exist even if the deployed database (e.g. Render/Neon)
@@ -69,6 +80,18 @@ async def ensure_config_table():
             await conn.execute(text("ALTER TABLE vulnerabilities ADD COLUMN banner TEXT"))
             logging.info("startup migration: added vulnerabilities.banner")
 
+        # Departments feature: departments table is created by create_all
+        # above; attach department_id to the pre-existing users/scans tables.
+        # UUID column type differs by dialect.
+        uuid_sql_type = "UUID" if conn.dialect.name == "postgresql" else "CHAR(32)"
+        for _table in ("users", "scans"):
+            _cols = await conn.run_sync(_columns, _table)
+            if _cols and "department_id" not in _cols:
+                await conn.execute(
+                    text(f"ALTER TABLE {_table} ADD COLUMN department_id {uuid_sql_type}")
+                )
+                logging.info("startup migration: added %s.department_id", _table)
+
 # Comma-separated list, e.g. "https://vulnara.vercel.app,http://localhost:5173"
 _origins_env = os.environ.get("CORS_ORIGINS", "http://localhost:5173")
 origins = [o.strip() for o in _origins_env.split(",") if o.strip()]
@@ -87,6 +110,7 @@ app.include_router(vulnerabilities_router, tags=["vulnerabilities"])
 app.include_router(remediations_router, tags=["remediations"])
 app.include_router(devices_router, tags=["devices"])
 app.include_router(admin_router)
+app.include_router(departments_router, tags=["departments"])
 
 
 @app.get("/health")

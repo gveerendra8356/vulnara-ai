@@ -72,6 +72,7 @@ async def create_scan(
 
     scan = Scan(
         user_id=current_user.user_id,
+        department_id=current_user.department_id,
         target=payload.target,
         authorization_confirmed=True,
         authorization_justification=payload.authorization_justification,
@@ -107,11 +108,11 @@ async def list_scans(
 ):
     """
     RBAC:
-      admin   -> every scan, by every user (admin + analyst), with attribution
-      analyst -> only the scans they themselves initiated
+      admin   -> every scan, by every user, in every department (attribution)
+      analyst -> every scan in their assigned department; if they have no
+                 department yet, only the scans they themselves initiated
 
-    The response shape is identical for both roles (attribution included); the
-    analyst's list is simply filtered to their own user_id.
+    The response shape is identical for both roles (attribution included).
     """
     from app.models.user import User as UserModel
 
@@ -120,9 +121,13 @@ async def list_scans(
         .join(UserModel, Scan.user_id == UserModel.user_id)
         .order_by(Scan.created_at.desc())
     )
-    # Admins see all scans; everyone else (analysts) sees only their own.
+    # Admins see everything. Analysts are scoped to their department; an analyst
+    # with no department assigned falls back to just their own scans.
     if current_user.role != "admin":
-        stmt = stmt.where(Scan.user_id == current_user.user_id)
+        if current_user.department_id is not None:
+            stmt = stmt.where(Scan.department_id == current_user.department_id)
+        else:
+            stmt = stmt.where(Scan.user_id == current_user.user_id)
 
     result = await session.execute(stmt)
     rows = result.all()
@@ -156,9 +161,15 @@ async def get_scan(
     if scan is None:
         raise HTTPException(status_code=404, detail="Scan not found")
 
-    # Admins can open any scan; analysts can only open their own.
-    if scan.user_id != current_user.user_id and current_user.role != "admin":
-        raise HTTPException(status_code=403, detail="Not authorized to view this scan")
+    # Admins can open any scan. Analysts can open scans in their department
+    # (or, if unassigned, only their own).
+    if current_user.role != "admin":
+        if current_user.department_id is not None:
+            allowed = scan.department_id == current_user.department_id
+        else:
+            allowed = scan.user_id == current_user.user_id
+        if not allowed:
+            raise HTTPException(status_code=403, detail="Not authorized to view this scan")
 
     from sqlalchemy import func
     counts_result = await session.execute(

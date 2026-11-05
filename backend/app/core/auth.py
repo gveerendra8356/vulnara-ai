@@ -30,6 +30,7 @@ class CurrentUser:
     user_id: uuid.UUID
     email: str
     role: str
+    department_id: uuid.UUID | None = None
 
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
@@ -59,4 +60,9 @@ async def get_current_user(
     if user is None or not user.is_active:
         raise HTTPException(status_code=401, detail="User is not active")
         
-    return CurrentUser(user_id=user.user_id, email=user.email, role=user.role)
+    return CurrentUser(
+        user_id=user.user_id,
+        email=user.email,
+        role=user.role,
+        department_id=user.department_id,
+    )

@@ -32,6 +32,13 @@ class Scan(Base):
     user_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False
     )
+    # Department this scan belongs to (copied from the initiating user at
+    # creation). Drives department-scoped visibility for analysts.
+    department_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("departments.department_id", ondelete="SET NULL"),
+        nullable=True,
+    )
     target: Mapped[str] = mapped_column(String(255), nullable=False)
 
     authorization_confirmed: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)

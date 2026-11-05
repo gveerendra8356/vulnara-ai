@@ -9,6 +9,7 @@ from app.models.scan import Scan
 from app.models.triage_models import CVEDefinition, Vulnerability, Remediation
 from app.models.threat_log import ThreatLog
 from app.models.user import User
+from app.models.department import Department  # noqa: F401 (registers FK target)
 from app.core.security import get_password_hash
 
 async def seed_db():

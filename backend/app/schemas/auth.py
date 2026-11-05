@@ -60,6 +60,7 @@ class UserResponse(BaseModel):
     email: EmailStr
     full_name: str
     role: str
+    department_id: uuid.UUID | None = None
     created_at: datetime
     last_login_at: datetime | None = None
 
