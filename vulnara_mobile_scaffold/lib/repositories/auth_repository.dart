@@ -50,6 +50,17 @@ class AuthRepository {
     }
   }
 
+  /// Starts the password-reset flow. The backend always responds generically
+  /// (it never reveals whether the email is registered) and, when configured,
+  /// emails a one-time reset link that opens the web reset page.
+  Future<void> forgotPassword(String email) async {
+    try {
+      await _client.dio.post('/auth/forgot-password', data: {'email': email});
+    } on DioException catch (e) {
+      throw ApiClient.toApiException(e);
+    }
+  }
+
   Future<void> logout(String refreshToken) async {
     try {
       await _client.dio.post('/auth/logout', data: {'refresh_token': refreshToken});

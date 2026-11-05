@@ -63,7 +63,7 @@ class ScanListScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        isAdmin ? 'All Scans' : 'Active Scans',
+                        isAdmin ? 'All Scans' : 'My Scans',
                         style: VulnaraFonts.headlineMd(),
                       ),
                       const SizedBox(height: 8),

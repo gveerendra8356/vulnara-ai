@@ -11,6 +11,7 @@ import 'providers/auth_provider.dart';
 import 'screens/admin_users_screen.dart';
 import 'screens/audit_log_screen.dart';
 import 'screens/dashboard_screen.dart';
+import 'screens/forgot_password_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/new_scan_screen.dart';
 import 'screens/notifications_screen.dart';
@@ -28,12 +29,13 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final authState = ref.read(authProvider);
       final loggedIn = authState is AuthLoggedIn;
-      final onLoginPage = state.matchedLocation == '/login';
       final loc = state.matchedLocation;
+      // Pages reachable without a session (login + password recovery).
+      final onPublicPage = loc == '/login' || loc == '/forgot-password';
 
       if (authState is AuthUnknown) return '/login';
-      if (!loggedIn && !onLoginPage) return '/login';
-      if (loggedIn && onLoginPage) return '/scans';
+      if (!loggedIn && !onPublicPage) return '/login';
+      if (loggedIn && onPublicPage) return '/scans';
 
       if (authState case AuthLoggedIn loggedInState) {
         final role = loggedInState.user.role;
@@ -48,6 +50,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     },
     routes: [
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+      GoRoute(path: '/forgot-password', builder: (context, state) => const ForgotPasswordScreen()),
       GoRoute(path: '/dashboard', builder: (context, state) => const DashboardScreen()),
       GoRoute(path: '/scans', builder: (context, state) => const ScanListScreen()),
       GoRoute(path: '/scans/new', builder: (context, state) => const NewScanScreen()),

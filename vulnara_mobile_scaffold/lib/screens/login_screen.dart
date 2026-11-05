@@ -8,6 +8,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../providers/auth_provider.dart';
 import '../theme/vulnara_theme.dart';
@@ -167,7 +168,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 ),
                               ],
                             ),
-
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: TextButton(
+                                onPressed: () => context.push('/forgot-password'),
+                                style: TextButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 4),
+                                  minimumSize: Size.zero,
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                child: Text(
+                                  'Forgot password?',
+                                  style: VulnaraFonts.codeSm(
+                                      color: VulnaraColors.onSurfaceVariant.withValues(alpha: 0.8)),
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),
