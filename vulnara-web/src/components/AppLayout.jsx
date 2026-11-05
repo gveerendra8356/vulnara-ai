@@ -5,12 +5,14 @@ import { USE_MOCK } from "../lib/api";
 
 const navItems = [
   { to: "/", label: "Dashboard", icon: "dashboard", end: true },
+  { to: "/overview", label: "Network Activity", icon: "lan" },
   { to: "/scans", label: "Scans", icon: "biotech" },
   { to: "/remediations", label: "Remediation Queue", icon: "assignment_turned_in" },
 ];
 
 const adminItems = [
   { to: "/admin/users", label: "User Management", icon: "group" },
+  { to: "/admin/departments", label: "Departments", icon: "groups" },
   { to: "/admin/config", label: "Admin Config", icon: "settings" },
   { to: "/admin/cve", label: "CVE Database", icon: "database" },
 ];

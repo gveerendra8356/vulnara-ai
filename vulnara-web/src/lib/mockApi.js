@@ -83,6 +83,39 @@ async function forgotPassword(_email) {
   return { message: "If an account exists for that email, a password reset link has been sent." };
 }
 
+async function getOverview() {
+  await delay();
+  return {
+    scope: "organization",
+    metrics: { total_scans: 0, completed_scans: 0, total_assets: 0, open_findings: 0, findings_by_severity: {} },
+    assets: [],
+    activity: [],
+    departments: [],
+  };
+}
+
+async function listDepartments() {
+  await delay();
+  return state.departments ?? [];
+}
+
+async function createDepartment(payload) {
+  await delay();
+  const dept = { department_id: nextId("dep"), name: payload.name, description: payload.description ?? null, member_count: 0, created_at: new Date().toISOString() };
+  (state.departments ??= []).push(dept);
+  return dept;
+}
+
+async function deleteDepartment(departmentId) {
+  await delay();
+  state.departments = (state.departments ?? []).filter((d) => d.department_id !== departmentId);
+}
+
+async function assignUserDepartment(userId, departmentId) {
+  await delay();
+  return { user_id: userId, department_id: departmentId };
+}
+
 async function resetPassword(_token, _new_password) {
   await delay();
   return { message: "Your password has been reset. You can now log in with your new password." };
@@ -545,6 +578,11 @@ export const mockApi = {
   me,
   forgotPassword,
   resetPassword,
+  getOverview,
+  listDepartments,
+  createDepartment,
+  deleteDepartment,
+  assignUserDepartment,
   logout,
   updateProfile,
   listScans,

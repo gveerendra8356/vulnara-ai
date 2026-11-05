@@ -18,6 +18,8 @@ import { RemediationReviewPage } from "./pages/RemediationReviewPage";
 import { AdminConfigPage } from "./pages/AdminConfigPage";
 import { AdminCvePage } from "./pages/AdminCvePage";
 import { AdminUsersPage } from "./pages/AdminUsersPage";
+import { DepartmentsPage } from "./pages/DepartmentsPage";
+import { OrgOverviewPage } from "./pages/OrgOverviewPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 
@@ -49,6 +51,7 @@ export default function App() {
               }
             >
               <Route path="/" element={<DashboardPage />} />
+              <Route path="/overview" element={<OrgOverviewPage />} />
               <Route path="/scans" element={<ScansListPage />} />
               <Route path="/scans/new" element={<NewScanPage />} />
               <Route path="/scans/:scanId" element={<ScanDetailPage />} />
@@ -61,6 +64,14 @@ export default function App() {
                 element={
                   <ProtectedRoute requireAdmin>
                     <AdminUsersPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/departments"
+                element={
+                  <ProtectedRoute requireAdmin>
+                    <DepartmentsPage />
                   </ProtectedRoute>
                 }
               />

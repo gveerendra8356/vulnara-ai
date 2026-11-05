@@ -20,6 +20,30 @@ async function me() {
   return data;
 }
 
+async function getOverview() {
+  const { data } = await http.get("/overview");
+  return data;
+}
+
+async function listDepartments() {
+  const { data } = await http.get("/departments");
+  return data;
+}
+
+async function createDepartment(payload) {
+  const { data } = await http.post("/admin/departments", payload);
+  return data;
+}
+
+async function deleteDepartment(departmentId) {
+  await http.delete(`/admin/departments/${departmentId}`);
+}
+
+async function assignUserDepartment(userId, departmentId) {
+  const { data } = await http.patch(`/admin/users/${userId}/department`, { department_id: departmentId });
+  return data;
+}
+
 async function forgotPassword(email) {
   const { data } = await http.post("/auth/forgot-password", { email });
   return data;
@@ -193,6 +217,11 @@ export const realApi = {
   me,
   forgotPassword,
   resetPassword,
+  getOverview,
+  listDepartments,
+  createDepartment,
+  deleteDepartment,
+  assignUserDepartment,
   logout,
   updateProfile,
   listScans,
