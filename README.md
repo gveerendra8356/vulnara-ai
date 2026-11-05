@@ -1,6 +1,6 @@
 # Vulnara
 
-**Vulnara** is a next-generation, AI-powered vulnerability scanner and remediation platform. It provides a complete end-to-end security workflow—from discovering vulnerabilities using active payloads to generating intelligent, actionable fix scripts utilizing Groq. The ecosystem consists of a highly concurrent FastAPI backend, a rich React web dashboard, and a cross-platform Flutter mobile companion app for real-time, on-the-go security management.
+**Vulnara** is a next-generation, AI-powered vulnerability scanner and remediation platform for organizations. It provides a complete end-to-end security workflow—from discovering vulnerabilities using active payloads to generating intelligent, actionable fix scripts utilizing Groq—with an organization-wide **Network Activity** overview and **multi-department, role-based access control** so each analyst sees only their department while admins oversee everything. The ecosystem consists of a highly concurrent FastAPI backend, a rich React web dashboard, and a cross-platform Flutter mobile companion app (sharing the same backend and database) for real-time, on-the-go security management.
 
 ---
 
@@ -30,15 +30,37 @@ Vulnara is built to provide an unparalleled security auditing and remediation ex
 - **Recent Activity Feeds:** Quick links that allow users to immediately jump into recent scans or the remediation queue straight from the landing page.
 - **Vulnerability Status Management:** Analysts and Admins can update the state of individual vulnerabilities (e.g., marking an `OPEN` issue as a `FALSE_POSITIVE`).
 
-### 5. Role-Based Access Control (RBAC)
-Vulnara uses two roles to separate duties between stakeholders:
-- **System Administrator:** Can view all scans, manage overarching system configurations, approve/reject any remediation, mark remediations executed, and access all administrative features (including user management).
-- **Security Analyst:** Responsible for triaging. Can view all scans, run new scans, review complex threat logs, change vulnerability statuses, approve/reject AI-generated scripts, and mark approved remediations as **Executed** to close the loop.
+### 5. Organization Network Activity (Security Overview)
+A dedicated **Network Activity** view (web and mobile) gives a single, organization-wide picture of security posture, built from scan data:
+- **Headline metrics:** total scans, assets discovered, open findings, and critical-severity counts.
+- **Discovered-asset inventory:** every host → port → service found across scans, with finding counts and the highest CVSS score per asset.
+- **Recent activity feed:** who scanned what, status, and finding counts — click through to any scan.
+- **Findings-by-severity** breakdown and a **per-department** scan breakdown (admins).
+- **Scoping:** admins see the whole organization; analysts see only their own department's activity.
+
+### 6. Multi-Department Access Control (RBAC)
+Vulnara is built for organizations, using **departments** as the unit of scoping and two roles.
+
+**Roles**
+- **System Administrator:** sees every scan and all network activity across **every** department; manages users, departments, and system configuration; and can approve/reject/execute any remediation.
+- **Security Analyst:** scoped to a **single department** — sees only that department's scans, assets, and activity. Runs scans, triages findings, reviews threat logs, approves/rejects AI fix scripts, and marks remediations **Executed**.
+
+**Departments** — Admins create departments (e.g. Finance, IT, HR) from a dedicated **Departments** screen and assign each analyst to one. New scans are automatically tagged to the creator's department, so analysts only ever see their own department's data while admins retain full visibility.
 
 > Self-registration creates **Analyst** accounts only; **Admin** accounts are provisioned by an existing admin.
 
-### 6. The Mobile Companion Experience
+### 7. Account Recovery (Forgot / Reset Password)
+A self-service password-reset flow on both web and mobile:
+- Request a reset link from the **Forgot password?** page by entering your registered email.
+- Receive a **secure, single-use link that expires in 30 minutes** and set a new password.
+- Log back in with the new password.
+
+Responses are intentionally generic (they never reveal whether an email is registered), preventing account enumeration. Delivery uses SMTP when configured (see [Environment Variables](#-environment-variables)); otherwise the link is logged server-side for local testing.
+
+### 8. The Mobile Companion Experience
 - **Cross-Platform:** Available on iOS and Android.
+- **Full Feature Parity:** Network Activity overview, department-scoped scans, admin Departments management, and the forgot-password flow — all mirrored from the web.
+- **Shared Database:** The app talks to the **same backend and database as the web app**, so both always show identical data in real time.
 - **Live State Management:** Uses Riverpod and WebSockets to mirror the live state of the web application instantly.
 - **On-the-Go Approvals:** Analysts and Admins receive push alerts and can review, approve, or mark remediation scripts executed directly from their phone.
 
@@ -84,8 +106,25 @@ The database comes pre-seeded with test accounts so you can immediately explore 
 
 | Role | Email | Password | Capabilities |
 |------|-------|----------|--------------|
-| **Admin** | `admin@vulnara.com` | `Admin123!` | Full system access, configurations, global approvals, user management. |
-| **Analyst**| `analyst@vulnara.com` | `Analyst123!` | Run scans, view all scans & threat logs, approve/reject AI fixes, mark executed, mark false positives. |
+| **Admin** | `admin@vulnara.com` | `Admin123!` | Full system access across **all departments**; manage users & departments; global approvals and configuration. |
+| **Analyst**| `analyst@vulnara.com` | `Analyst123!` | Run scans, triage, approve/reject AI fixes, mark executed — **scoped to their assigned department**. |
+
+> Log in as the admin and open **Departments** to create departments and assign the analyst to one. The analyst will then see only that department's scans and network activity.
+
+---
+
+## 🔐 Environment Variables
+
+Set these in `backend/.env` for local development, or in the Render dashboard for production:
+
+| Variable | Purpose |
+|---|---|
+| `DATABASE_URL` | Postgres connection string (Neon). Defaults to local SQLite if unset. |
+| `VULNARA_SECRET_KEY` | JWT signing secret (also signs password-reset tokens). |
+| `GROQ_API_KEY` | Groq API key — required for AI triage and remediation. |
+| `CORS_ORIGINS` | Comma-separated allowed origins (e.g. the GitHub Pages URL). |
+| `APP_BASE_URL` | Public web app URL — used to build password-reset links. |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASSWORD` | SMTP server for vulnerability-alert and password-reset emails (e.g. Gmail + App Password). When unset, those emails are skipped/logged instead. |
 
 ---
 
@@ -122,7 +161,7 @@ flutter pub get
 # Run the application
 flutter run
 ```
-*Note: The mobile app defaults to `10.0.2.2` for Android emulators. To test on a physical device, update the IP in `lib/core/constants.dart`.*
+*Note: The mobile app points at the **deployed Render backend** by default (the same database the web app uses), so it works out of the box on emulators and physical devices. To run it against a local backend instead, set `baseUrl`/`wsBaseUrl` in `lib/core/constants.dart` to `http://10.0.2.2:8000` (Android emulator) or your machine's LAN IP (physical device).*
 
 ---
 
