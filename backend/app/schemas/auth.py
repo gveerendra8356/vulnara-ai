@@ -35,6 +35,17 @@ class RefreshTokenRequest(BaseModel):
     refresh_token: str
 
 
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str = Field(min_length=8)
+
+    _password_bytes = field_validator("new_password")(validate_password_bytes)
+
+
 class AdminCreateUserRequest(BaseModel):
     email: EmailStr
     full_name: str

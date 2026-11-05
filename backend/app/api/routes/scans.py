@@ -107,50 +107,41 @@ async def list_scans(
 ):
     """
     RBAC:
-      admin   -> all scans with user attribution (email, name, role)
-      analyst -> all scans with user attribution (triage duty spans every
-                 user's targets, per the product spec -- analysts are not
-                 limited to scans they personally kicked off)
+      admin   -> every scan, by every user (admin + analyst), with attribution
+      analyst -> only the scans they themselves initiated
 
-    Admin and analyst are the only roles in the system, and both see every
-    scan. The fallback branch below is kept only as a defensive default for
-    any unexpected role value.
+    The response shape is identical for both roles (attribution included); the
+    analyst's list is simply filtered to their own user_id.
     """
     from app.models.user import User as UserModel
 
-    if current_user.role in ("admin", "analyst"):
-        stmt = (
-            select(Scan, UserModel.email, UserModel.full_name, UserModel.role)
-            .join(UserModel, Scan.user_id == UserModel.user_id)
-            .order_by(Scan.created_at.desc())
-        )
-        result = await session.execute(stmt)
-        rows = result.all()
-        return [
-            {
-                "scan_id": str(row.Scan.scan_id),
-                "target": row.Scan.target,
-                "status": row.Scan.status,
-                "active_testing_enabled": row.Scan.active_testing_enabled,
-                "started_at": row.Scan.started_at,
-                "completed_at": row.Scan.completed_at,
-                "created_at": row.Scan.created_at,
-                "user_id": str(row.Scan.user_id),
-                "user_email": row.email,
-                "user_full_name": row.full_name,
-                "user_role": row.role,
-            }
-            for row in rows
-        ]
-    else:
-        # Defensive fallback for any unexpected role: own scans only.
-        stmt = (
-            select(Scan)
-            .where(Scan.user_id == current_user.user_id)
-            .order_by(Scan.created_at.desc())
-        )
-        result = await session.execute(stmt)
-        return result.scalars().all()
+    stmt = (
+        select(Scan, UserModel.email, UserModel.full_name, UserModel.role)
+        .join(UserModel, Scan.user_id == UserModel.user_id)
+        .order_by(Scan.created_at.desc())
+    )
+    # Admins see all scans; everyone else (analysts) sees only their own.
+    if current_user.role != "admin":
+        stmt = stmt.where(Scan.user_id == current_user.user_id)
+
+    result = await session.execute(stmt)
+    rows = result.all()
+    return [
+        {
+            "scan_id": str(row.Scan.scan_id),
+            "target": row.Scan.target,
+            "status": row.Scan.status,
+            "active_testing_enabled": row.Scan.active_testing_enabled,
+            "started_at": row.Scan.started_at,
+            "completed_at": row.Scan.completed_at,
+            "created_at": row.Scan.created_at,
+            "user_id": str(row.Scan.user_id),
+            "user_email": row.email,
+            "user_full_name": row.full_name,
+            "user_role": row.role,
+        }
+        for row in rows
+    ]
 
 
 @router.get("/scans/{scan_id}")
@@ -165,7 +156,8 @@ async def get_scan(
     if scan is None:
         raise HTTPException(status_code=404, detail="Scan not found")
 
-    if scan.user_id != current_user.user_id and current_user.role not in ("admin", "analyst"):
+    # Admins can open any scan; analysts can only open their own.
+    if scan.user_id != current_user.user_id and current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Not authorized to view this scan")
 
     from sqlalchemy import func

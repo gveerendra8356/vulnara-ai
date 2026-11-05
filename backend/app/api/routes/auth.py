@@ -6,6 +6,7 @@ Implements Task 2 API Contract Section 1: Auth
 
 from __future__ import annotations
 
+import os
 import uuid
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -15,7 +16,12 @@ from jose import jwt, JWTError
 
 from app.core.auth import CurrentUser, get_current_user, oauth2_scheme
 from app.core.db import get_session
-from app.core.security import get_password_hash, verify_password, create_access_token, create_refresh_token, SECRET_KEY, ALGORITHM
+from app.core.security import (
+    get_password_hash, verify_password, create_access_token, create_refresh_token,
+    SECRET_KEY, ALGORITHM,
+    create_password_reset_token, verify_password_reset_token, password_fingerprint,
+)
+from app.core.email_alert import send_password_reset_email
 from app.models.user import User
 from app.models.token_denylist import TokenDenylist
 from app.schemas.auth import (
@@ -24,11 +30,66 @@ from app.schemas.auth import (
     RefreshTokenRequest,
     AdminCreateUserRequest,
     UpdateProfileRequest,
+    ForgotPasswordRequest,
+    ResetPasswordRequest,
     TokenResponse,
     UserResponse
 )
 
 router = APIRouter()
+
+# Base URL of the web app, used to build the password-reset link in the email.
+FRONTEND_BASE_URL = os.environ.get("APP_BASE_URL", "https://gveerendra8356.github.io/vulnara-ai")
+
+
+@router.post("/auth/forgot-password")
+async def forgot_password(payload: ForgotPasswordRequest, session: AsyncSession = Depends(get_session)):
+    """
+    Starts the password-reset flow. Always returns the same generic message so
+    the endpoint can't be used to discover which emails have accounts. If the
+    email belongs to an active user, a one-time reset link is emailed (or, when
+    SMTP isn't configured, logged server-side so the flow is still testable).
+    """
+    result = await session.execute(select(User).where(User.email == payload.email))
+    user = result.scalar_one_or_none()
+    if user is not None and user.is_active:
+        token = create_password_reset_token(user.user_id, user.password_hash)
+        reset_link = f"{FRONTEND_BASE_URL}/reset-password?token={token}"
+        send_password_reset_email(
+            recipient_email=user.email,
+            recipient_name=user.full_name or "User",
+            reset_link=reset_link,
+        )
+    return {"message": "If an account exists for that email, a password reset link has been sent."}
+
+
+@router.post("/auth/reset-password")
+async def reset_password(payload: ResetPasswordRequest, session: AsyncSession = Depends(get_session)):
+    """
+    Completes the reset: validates the one-time token (purpose, expiry, and a
+    fingerprint of the current password hash so a used link can't be replayed),
+    then sets the new password.
+    """
+    data = verify_password_reset_token(payload.token)
+    if not data:
+        raise HTTPException(status_code=400, detail="This password reset link is invalid or has expired.")
+
+    try:
+        user_id = uuid.UUID(data["sub"])
+    except (ValueError, KeyError, TypeError):
+        raise HTTPException(status_code=400, detail="This password reset link is invalid or has expired.")
+
+    result = await session.execute(select(User).where(User.user_id == user_id))
+    user = result.scalar_one_or_none()
+    # A mismatched fingerprint means the password already changed since the
+    # link was issued -> the link was used (or is stale). Reject it.
+    if user is None or not user.is_active or password_fingerprint(user.password_hash) != data.get("pwf"):
+        raise HTTPException(status_code=400, detail="This password reset link is invalid or has expired.")
+
+    user.password_hash = get_password_hash(payload.new_password)
+    session.add(user)
+    await session.commit()
+    return {"message": "Your password has been reset. You can now log in with your new password."}
 
 
 @router.post("/auth/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)

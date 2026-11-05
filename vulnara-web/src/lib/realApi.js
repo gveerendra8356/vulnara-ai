@@ -20,6 +20,16 @@ async function me() {
   return data;
 }
 
+async function forgotPassword(email) {
+  const { data } = await http.post("/auth/forgot-password", { email });
+  return data;
+}
+
+async function resetPassword(token, new_password) {
+  const { data } = await http.post("/auth/reset-password", { token, new_password });
+  return data;
+}
+
 async function logout() {
   const refresh_token = localStorage.getItem("vulnara_refresh_token");
   try {
@@ -181,6 +191,8 @@ export const realApi = {
   login,
   register,
   me,
+  forgotPassword,
+  resetPassword,
   logout,
   updateProfile,
   listScans,

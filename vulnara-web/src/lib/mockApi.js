@@ -78,6 +78,16 @@ async function me() {
   return requireAuth();
 }
 
+async function forgotPassword(_email) {
+  await delay();
+  return { message: "If an account exists for that email, a password reset link has been sent." };
+}
+
+async function resetPassword(_token, _new_password) {
+  await delay();
+  return { message: "Your password has been reset. You can now log in with your new password." };
+}
+
 async function logout() {
   await delay(80);
   state.currentUser = null;
@@ -533,6 +543,8 @@ export const mockApi = {
   login,
   register,
   me,
+  forgotPassword,
+  resetPassword,
   logout,
   updateProfile,
   listScans,

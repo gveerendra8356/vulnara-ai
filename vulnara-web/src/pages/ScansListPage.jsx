@@ -16,10 +16,10 @@ export function ScansListPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
-  // Analysts see every scan across all users too (triage duty isn't limited
-  // to scans they personally kicked off) -- the backend returns the same
-  // user-attributed shape for both roles, see GET /scans in scans.py.
-  const seesAllScans = user?.role === "admin" || user?.role === "analyst";
+  // Only admins see every user's scans (with attribution). Analysts see only
+  // the scans they themselves initiated -- the backend filters GET /scans by
+  // user_id for non-admins, so this just drives the heading + attribution UI.
+  const seesAllScans = isAdmin;
   const [status, setStatus] = useState("ALL");
   const [search, setSearch] = useState("");
 

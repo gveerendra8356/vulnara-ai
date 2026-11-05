@@ -103,6 +103,13 @@ export function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••••••"
               />
+              <button
+                type="button"
+                onClick={() => navigate("/forgot-password")}
+                className="self-end text-xs text-on-surface-variant hover:text-primary transition-colors mt-1"
+              >
+                Forgot password?
+              </button>
             </div>
 
             {error && (

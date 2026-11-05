@@ -43,6 +43,10 @@ SMTP_FROM_EMAIL = os.environ.get("SMTP_FROM_EMAIL", SMTP_USER)
 # The public URL of the web app (for the "View Scan" button link)
 APP_BASE_URL = os.environ.get("APP_BASE_URL", "https://gveerendra8356.github.io/vulnara-ai")
 
+# Human-readable lifetime shown in the password-reset email (kept in sync with
+# security.PASSWORD_RESET_EXPIRE_MINUTES = 30).
+PASSWORD_RESET_EXPIRE_MINUTES_TEXT = "30 minutes"
+
 SEVERITY_COLORS = {
     "CRITICAL": "#dc2626",
     "HIGH": "#ea580c",
@@ -136,6 +140,73 @@ def _build_html(
   </div>
 </body>
 </html>"""
+
+
+def _build_reset_html(recipient_name: str, reset_link: str) -> str:
+    return f"""<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;margin:0;padding:0">
+  <div style="max-width:600px;margin:32px auto;background:#161b22;border-radius:12px;overflow:hidden;border:1px solid #30363d">
+    <div style="background:linear-gradient(135deg,#0d1117 0%,#1a2332 100%);padding:32px;border-bottom:1px solid #30363d">
+      <h1 style="margin:0;font-size:22px;color:#e6edf3">Reset your password</h1>
+      <p style="margin:6px 0 0;color:#8b949e;font-size:13px">Vulnara Vulnerability Intelligence Platform</p>
+    </div>
+    <div style="padding:28px 32px">
+      <p style="color:#c9d1d9;margin-top:0">Hi {recipient_name},</p>
+      <p style="color:#8b949e;font-size:14px;line-height:1.6">
+        We received a request to reset your Vulnara password. Click the button below to choose a new one.
+        This link expires in {PASSWORD_RESET_EXPIRE_MINUTES_TEXT} and can be used once. If you didn't request
+        this, you can safely ignore this email &mdash; your password won't change.
+      </p>
+      <div style="text-align:center;padding:24px 0">
+        <a href="{reset_link}" style="display:inline-block;background:#2563eb;color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:700;font-size:14px">Reset Password &rarr;</a>
+      </div>
+      <p style="color:#6e7681;font-size:12px;word-break:break-all">
+        Or paste this link into your browser:<br>{reset_link}
+      </p>
+    </div>
+    <div style="text-align:center;padding:16px;border-top:1px solid #21262d;color:#8b949e;font-size:11px">
+      Vulnara &bull; This is an automated message
+    </div>
+  </div>
+</body>
+</html>"""
+
+
+def send_password_reset_email(
+    *, recipient_email: str, recipient_name: str, reset_link: str
+) -> bool:
+    """
+    Emails a password-reset link. Returns True if actually sent over SMTP,
+    False if SMTP isn't configured (in which case the link is logged so the
+    flow is still testable in local/dev without a mail server). Best-effort:
+    SMTP errors are logged and swallowed, never raised.
+    """
+    if not SMTP_HOST or not SMTP_USER or not SMTP_PASSWORD:
+        logger.warning(
+            "SMTP not configured -- password reset link for %s (valid %s): %s",
+            recipient_email, PASSWORD_RESET_EXPIRE_MINUTES_TEXT, reset_link,
+        )
+        return False
+
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = "[Vulnara] Reset your password"
+    msg["From"] = SMTP_FROM_EMAIL
+    msg["To"] = recipient_email
+    msg.attach(MIMEText(_build_reset_html(recipient_name, reset_link), "html"))
+
+    try:
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as server:
+            server.ehlo()
+            server.starttls()
+            server.login(SMTP_USER, SMTP_PASSWORD)
+            server.sendmail(SMTP_FROM_EMAIL, [recipient_email], msg.as_string())
+        logger.info("Password reset email sent to %s", recipient_email)
+        return True
+    except Exception:
+        logger.exception("Failed to send password reset email to %s", recipient_email)
+        return False
 
 
 def send_vulnerability_alert(
