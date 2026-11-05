@@ -104,12 +104,24 @@ The native mobile application ensuring security teams are always connected.
 
 The database comes pre-seeded with test accounts so you can immediately explore the different RBAC workflows. 
 
-| Role | Email | Password | Capabilities |
-|------|-------|----------|--------------|
-| **Admin** | `admin@vulnara.com` | `Admin123!` | Full system access across **all departments**; manage users & departments; global approvals and configuration. |
-| **Analyst**| `analyst@vulnara.com` | `Analyst123!` | Run scans, triage, approve/reject AI fixes, mark executed — **scoped to their assigned department**. |
+**Administrator**
 
-> Log in as the admin and open **Departments** to create departments and assign the analyst to one. The analyst will then see only that department's scans and network activity.
+| Email | Password | Scope |
+|-------|----------|-------|
+| `admin@vulnara.com` | `Admin123!` | Full access across **all departments**; manages users, departments & configuration. |
+
+**Department Analysts** — each sees only their own department's scans and network activity (all use password `Analyst123!`):
+
+| Email | Password | Department |
+|-------|----------|------------|
+| `it.analyst@vulnara.com` | `Analyst123!` | IT Security |
+| `finance.analyst@vulnara.com` | `Analyst123!` | Finance |
+| `hr.analyst@vulnara.com` | `Analyst123!` | Human Resources |
+| `eng.analyst@vulnara.com` | `Analyst123!` | Engineering |
+| `ops.analyst@vulnara.com` | `Analyst123!` | Operations |
+| `analyst@vulnara.com` | `Analyst123!` | *(unassigned — sees only its own scans)* |
+
+> Log in as **different department analysts** to see the scoping in action: each only sees their department's data, while the admin sees every department. Create more departments or reassign analysts from the admin **Departments** screen.
 
 ---
 

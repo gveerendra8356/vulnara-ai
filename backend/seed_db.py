@@ -4,7 +4,7 @@ from datetime import datetime, timezone, timedelta
 from app.core.db import engine
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import text
+from sqlalchemy import text, select
 from app.models.scan import Scan
 from app.models.triage_models import CVEDefinition, Vulnerability, Remediation
 from app.models.threat_log import ThreatLog
@@ -61,6 +61,52 @@ async def seed_db():
 
         # The demo scans and their findings are owned by the analyst.
         demo_owner_id = analyst_id
+
+        # ── 1b. Departments + a scoped analyst for each ──────────────────────
+        # Typical organizational departments. Each has its own analyst who can
+        # only see that department's scans and network activity.
+        dept_seed = [
+            ("IT Security",     "Infrastructure, endpoints and perimeter defense"),
+            ("Finance",         "Payment systems, ERP and financial applications"),
+            ("Human Resources", "HR portals and employee data systems"),
+            ("Engineering",     "Source code, CI/CD and internal dev tooling"),
+            ("Operations",      "Production services, networking and uptime"),
+        ]
+        dept_ids = {}
+        for name, desc in dept_seed:
+            dept = (await session.execute(
+                select(Department).where(Department.name == name)
+            )).scalar_one_or_none()
+            if dept is None:
+                dept = Department(department_id=uuid.uuid4(), name=name, description=desc)
+                session.add(dept)
+            dept_ids[name] = dept.department_id
+        await session.commit()
+
+        analyst_seed = [
+            ("it.analyst@vulnara.com",      "Ira — IT Security Analyst",  "IT Security"),
+            ("finance.analyst@vulnara.com", "Fiona — Finance Analyst",    "Finance"),
+            ("hr.analyst@vulnara.com",      "Hari — HR Analyst",          "Human Resources"),
+            ("eng.analyst@vulnara.com",     "Evan — Engineering Analyst", "Engineering"),
+            ("ops.analyst@vulnara.com",     "Omar — Operations Analyst",  "Operations"),
+        ]
+        for email, full_name, dept_name in analyst_seed:
+            existing = (await session.execute(
+                select(User).where(User.email == email)
+            )).scalar_one_or_none()
+            if existing is None:
+                session.add(User(
+                    user_id=uuid.uuid4(),
+                    email=email,
+                    password_hash=get_password_hash("Analyst123!"),
+                    full_name=full_name,
+                    role="analyst",
+                    department_id=dept_ids[dept_name],
+                ))
+            else:
+                existing.department_id = dept_ids[dept_name]
+        await session.commit()
+        print("✓ Created departments and department analysts.")
 
         # ── 2. CVE Definitions (required before vulns that reference them) ────
         cve_rows = [
