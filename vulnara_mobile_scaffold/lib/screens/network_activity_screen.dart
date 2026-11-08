@@ -67,7 +67,8 @@ class NetworkActivityScreen extends ConsumerWidget {
 
     return RefreshIndicator(
       onRefresh: () async {
-        await ref.refresh(overviewProvider.future);
+        ref.invalidate(overviewProvider);
+        await ref.read(overviewProvider.future);
       },
       child: ListView(
         padding: const EdgeInsets.fromLTRB(

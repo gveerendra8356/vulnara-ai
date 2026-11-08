@@ -1,0 +1,29 @@
+name: Keep backend awake
+
+# Render's free tier spins the backend down after ~15 minutes of inactivity,
+# which makes the first request (and the web app) slow or fail. This workflow
+# pings the backend's /health endpoint every ~10 minutes so it stays warm and
+# the web app works instantly whenever it's opened.
+
+on:
+  schedule:
+    - cron: "*/10 * * * *" # every 10 minutes (GitHub may delay under load)
+  workflow_dispatch: {} # allow manual runs from the Actions tab
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping backend /health
+        run: |
+          URL="https://vulnara-backend.onrender.com/health"
+          for i in 1 2 3 4 5; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 90 "$URL" || echo "000")
+            echo "attempt $i -> HTTP $code"
+            if [ "$code" = "200" ]; then
+              echo "backend is awake"
+              exit 0
+            fi
+            sleep 25
+          done
+          echo "::warning::backend did not return 200 after retries (it may still be waking)"
