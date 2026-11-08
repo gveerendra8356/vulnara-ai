@@ -1,0 +1,369 @@
+{
+  "generated_at": "2026-11-06T09:23:12.877499",
+  "backend": "https://vulnara-backend.onrender.com",
+  "results": [
+    {
+      "email": "admin@vulnara.com",
+      "target": "scanme.nmap.org",
+      "active_testing": false,
+      "role": "admin",
+      "department_id": null,
+      "scan_id": "aee4df1f-d7d8-4b10-b99f-2c69d53a25af",
+      "status": "COMPLETED",
+      "finding_count": 2,
+      "severity_counts": {
+        "MEDIUM": 2
+      },
+      "findings": [
+        {
+          "severity": "MEDIUM",
+          "cve": null,
+          "host": "scanme.nmap.org",
+          "port": 80,
+          "service": "http",
+          "cvss": null,
+          "reasoning": "Apache 2.4.7 (released in 2013) is out of support and contains multiple publicly disclosed vulnerabilities. Even without a specific CVE match, the version itself is a security concern and should be upgraded to a supporte"
+        },
+        {
+          "severity": "MEDIUM",
+          "cve": null,
+          "host": "scanme.nmap.org",
+          "port": 22,
+          "service": "ssh",
+          "cvss": null,
+          "reasoning": "OpenSSH 6.6.1 is several years old and has known vulnerabilities (e.g., CVE-2016-0777, CVE-2016-0778). While no specific CVE was supplied, the outdated version represents a moderate security risk and should be upgraded."
+        }
+      ]
+    },
+    {
+      "email": "it.analyst@vulnara.com",
+      "target": "https://pentest-ground.com:4280",
+      "active_testing": true,
+      "role": "analyst",
+      "department_id": "956dff78-0bdb-4692-8173-75b6a9d0b6de",
+      "scan_id": "eae73e6a-4a12-40e7-b3bf-771e63f252e9",
+      "status": "COMPLETED",
+      "finding_count": 5,
+      "severity_counts": {
+        "HIGH": 3,
+        "CRITICAL": 1,
+        "LOW": 1
+      },
+      "findings": [
+        {
+          "severity": "HIGH",
+          "cve": null,
+          "host": "pentest-ground.com",
+          "port": 6379,
+          "service": "redis",
+          "cvss": null,
+          "reasoning": "Redis instances are often unauthenticated by default. The scan shows an open Redis port with no authentication banner, indicating that an attacker could connect and issue commands without credentials, which is a high\u2011ris"
+        },
+        {
+          "severity": "CRITICAL",
+          "cve": "CVE-2016-8339",
+          "host": "pentest-ground.com",
+          "port": 6379,
+          "service": "redis",
+          "cvss": 9.8,
+          "reasoning": "This critical buffer overflow affects Redis 3.2.x prior to 3.2.4. The scan did not disclose the Redis version, so we cannot verify if the instance falls in that range, but the potential impact is severe, warranting a low"
+        },
+        {
+          "severity": "LOW",
+          "cve": "CVE-2013-7458",
+          "host": "pentest-ground.com",
+          "port": 6379,
+          "service": "redis",
+          "cvss": 3.3,
+          "reasoning": "This issue affects Redis versions prior to 3.2.3. Since the exact version is unknown, we cannot be certain, but the vulnerability may be present, so we flag it with low confidence."
+        },
+        {
+          "severity": "HIGH",
+          "cve": "CVE-2015-8080",
+          "host": "pentest-ground.com",
+          "port": 6379,
+          "service": "redis",
+          "cvss": 7.5,
+          "reasoning": "This CVE targets Redis 2.8.x before 2.8.24 and 3.0.x before 3.0.6. Without version information we cannot know if the server is vulnerable, but the risk cannot be ruled out, so we note it with low confidence."
+        },
+        {
+          "severity": "HIGH",
+          "cve": "CVE-2015-4335",
+          "host": "pentest-ground.com",
+          "port": 6379,
+          "service": "redis",
+          "cvss": 10.0,
+          "reasoning": "This CVE affects Redis versions before 2.8.21 and 3.x before 3.0.2. Because the scan did not reveal the Redis version, we cannot confirm whether the running instance is within the vulnerable range, but the possibility ex"
+        }
+      ]
+    },
+    {
+      "email": "finance.analyst@vulnara.com",
+      "target": "pentest-ground.com:6379",
+      "active_testing": false,
+      "role": "analyst",
+      "department_id": "d7e4ff40-90bc-4ec2-8739-e941aa557bf6",
+      "scan_id": "08ac9d49-8915-431e-9c54-4f3ec3c9dca5",
+      "status": "COMPLETED",
+      "finding_count": 7,
+      "severity_counts": {
+        "INFO": 2,
+        "HIGH": 3,
+        "CRITICAL": 1,
+        "LOW": 1
+      },
+      "findings": [
+        {
+          "severity": "INFO",
+          "cve": null,
+          "host": "pentest-ground.com",
+          "port": 443,
+          "service": "https",
+          "cvss": null,
+          "reasoning": "The HTTPS service also runs nginx/1.31.8. No CVE matches were found for this exact version, and the banner does not reveal any misconfiguration, so the finding is informational."
+        },
+        {
+          "severity": "INFO",
+          "cve": null,
+          "host": "pentest-ground.com",
+          "port": 80,
+          "service": "http",
+          "cvss": null,
+          "reasoning": "The web server reports nginx version 1.31.8. No specific CVE was matched, but the version is relatively recent and no known critical vulnerabilities are publicly disclosed for this exact release. No immediate risk is ide"
+        },
+        {
+          "severity": "HIGH",
+          "cve": null,
+          "host": "pentest-ground.com",
+          "port": 6379,
+          "service": "redis",
+          "cvss": null,
+          "reasoning": "The Redis service is reachable without authentication (no password was required to connect). Unauthenticated access to a Redis server allows an attacker to read, modify, or delete data and to execute arbitrary commands, "
+        },
+        {
+          "severity": "CRITICAL",
+          "cve": "CVE-2016-8339",
+          "host": "pentest-ground.com",
+          "port": 6379,
+          "service": "redis",
+          "cvss": 9.8,
+          "reasoning": "CVE-2016-8339 targets Redis 3.2.x prior to 3.2.4 and describes a buffer overflow that can lead to remote code execution. Since the Redis version was not disclosed, we cannot confirm if the instance is patched, so we flag"
+        },
+        {
+          "severity": "LOW",
+          "cve": "CVE-2013-7458",
+          "host": "pentest-ground.com",
+          "port": 6379,
+          "service": "redis",
+          "cvss": 3.3,
+          "reasoning": "CVE-2013-7458 applies to Redis versions before 3.2.3 where the .rediscli_history file is world\u2011readable. Because the exact version is unknown, we cannot rule the issue out, but the impact is limited to local users, so we"
+        },
+        {
+          "severity": "HIGH",
+          "cve": "CVE-2015-8080",
+          "host": "pentest-ground.com",
+          "port": 6379,
+          "service": "redis",
+          "cvss": 7.5,
+          "reasoning": "CVE-2015-8080 impacts Redis 2.8.x before 2.8.24 and 3.0.x before 3.0.6, causing an integer overflow in Lua handling. Without a version banner we cannot tell if the server is vulnerable, so we flag it as a potential issue"
+        },
+        {
+          "severity": "HIGH",
+          "cve": "CVE-2015-4335",
+          "host": "pentest-ground.com",
+          "port": 6379,
+          "service": "redis",
+          "cvss": 10.0,
+          "reasoning": "CVE-2015-4335 affects Redis versions prior to 2.8.21 and 3.0.2, allowing execution of arbitrary Lua bytecode. Because the scan did not reveal the Redis version, we cannot confirm whether the running instance is within th"
+        }
+      ]
+    },
+    {
+      "email": "hr.analyst@vulnara.com",
+      "target": "https://pentest-ground.com:5013",
+      "active_testing": true,
+      "role": "analyst",
+      "department_id": "3c56a887-e0f6-4d38-ad62-29391b6f3f9d",
+      "scan_id": "79fbf1a3-e129-4897-a017-5a22f0715ec8",
+      "status": "COMPLETED",
+      "finding_count": 5,
+      "severity_counts": {
+        "HIGH": 3,
+        "CRITICAL": 1,
+        "LOW": 1
+      },
+      "findings": [
+        {
+          "severity": "HIGH",
+          "cve": null,
+          "host": "pentest-ground.com",
+          "port": 6379,
+          "service": "redis",
+          "cvss": null,
+          "reasoning": "Redis is reachable on its default port without any authentication required. An unauthenticated Redis instance can allow attackers to read or modify data, execute Lua scripts, or, if the server runs a vulnerable version, "
+        },
+        {
+          "severity": "CRITICAL",
+          "cve": "CVE-2016-8339",
+          "host": "pentest-ground.com",
+          "port": 6379,
+          "service": "redis",
+          "cvss": 9.8,
+          "reasoning": "This critical buffer overflow affects Redis 3.2.x prior to 3.2.4 via a crafted CONFIG SET command. Since the Redis version was not revealed, we cannot confirm vulnerability, but the potential impact is severe, so we flag"
+        },
+        {
+          "severity": "LOW",
+          "cve": "CVE-2013-7458",
+          "host": "pentest-ground.com",
+          "port": 6379,
+          "service": "redis",
+          "cvss": 3.3,
+          "reasoning": "The CVE describes world\u2011readable .rediscli_history files in Redis versions before 3.2.3. Because the version is unknown, we cannot know if this applies, so we note it as a low\u2011severity possibility."
+        },
+        {
+          "severity": "HIGH",
+          "cve": "CVE-2015-8080",
+          "host": "pentest-ground.com",
+          "port": 6379,
+          "service": "redis",
+          "cvss": 7.5,
+          "reasoning": "This vulnerability impacts Redis 2.8.x before 2.8.24 and 3.0.x before 3.0.6 via an integer overflow in Lua handling. Without version information we cannot tell if the instance falls in that range, so we flag it as a poss"
+        },
+        {
+          "severity": "HIGH",
+          "cve": "CVE-2015-4335",
+          "host": "pentest-ground.com",
+          "port": 6379,
+          "service": "redis",
+          "cvss": 10.0,
+          "reasoning": "This CVE affects Redis versions prior to 2.8.21 and 3.0.2, allowing execution of arbitrary Lua bytecode. Because the exact Redis version is not disclosed, we cannot confirm whether the running instance is vulnerable, so "
+        }
+      ]
+    },
+    {
+      "email": "eng.analyst@vulnara.com",
+      "target": "https://pentest-ground.com:9000",
+      "active_testing": true,
+      "role": "analyst",
+      "department_id": "ef4babe4-5720-4333-b0e6-2c4c3fad99b1",
+      "scan_id": "c994a0c8-f6ef-4db7-a926-24763fe641a4",
+      "status": "COMPLETED",
+      "finding_count": 5,
+      "severity_counts": {
+        "MEDIUM": 1,
+        "CRITICAL": 1,
+        "LOW": 1,
+        "HIGH": 2
+      },
+      "findings": [
+        {
+          "severity": "MEDIUM",
+          "cve": null,
+          "host": "pentest-ground.com",
+          "port": 6379,
+          "service": "redis",
+          "cvss": null,
+          "reasoning": "Redis is reachable on the network without authentication. An unauthenticated Redis instance can allow attackers to read, modify, or delete data and, in some configurations, execute arbitrary commands. This exposure is a "
+        },
+        {
+          "severity": "CRITICAL",
+          "cve": "CVE-2016-8339",
+          "host": "pentest-ground.com",
+          "port": 6379,
+          "service": "redis",
+          "cvss": 9.8,
+          "reasoning": "This critical buffer\u2011overflow vulnerability affects Redis 3.2.x prior to 3.2.4. Because the exact version is not known, we cannot confirm exposure, but the risk is serious enough to flag with low confidence."
+        },
+        {
+          "severity": "LOW",
+          "cve": "CVE-2013-7458",
+          "host": "pentest-ground.com",
+          "port": 6379,
+          "service": "redis",
+          "cvss": 3.3,
+          "reasoning": "This CVE concerns world\u2011readable .rediscli_history files in Redis versions before 3.2.3. The version is unknown, so we cannot say definitively whether it applies, but we note the risk with low confidence."
+        },
+        {
+          "severity": "HIGH",
+          "cve": "CVE-2015-8080",
+          "host": "pentest-ground.com",
+          "port": 6379,
+          "service": "redis",
+          "cvss": 7.5,
+          "reasoning": "This vulnerability impacts Redis 2.8.x before 2.8.24 and 3.0.x before 3.0.6. Without a disclosed version we cannot know if the instance falls in that range, so we mark it as a potential issue with low confidence."
+        },
+        {
+          "severity": "HIGH",
+          "cve": "CVE-2015-4335",
+          "host": "pentest-ground.com",
+          "port": 6379,
+          "service": "redis",
+          "cvss": 10.0,
+          "reasoning": "This CVE affects Redis versions before 2.8.21 and 3.x before 3.0.2. Because the exact Redis version is not disclosed, we cannot confirm whether the running instance is vulnerable, but the possibility exists, so we flag i"
+        }
+      ]
+    },
+    {
+      "email": "ops.analyst@vulnara.com",
+      "target": "https://pentest-ground.com:81",
+      "active_testing": true,
+      "role": "analyst",
+      "department_id": "745c416d-8d2a-44d4-8a95-d9ebcc9071bc",
+      "scan_id": "0fa0df3b-09e7-47af-95ad-b57d9fe9a4c0",
+      "status": "COMPLETED",
+      "finding_count": 5,
+      "severity_counts": {
+        "HIGH": 3,
+        "CRITICAL": 1,
+        "LOW": 1
+      },
+      "findings": [
+        {
+          "severity": "HIGH",
+          "cve": null,
+          "host": "pentest-ground.com",
+          "port": 6379,
+          "service": "redis",
+          "cvss": null,
+          "reasoning": "Redis is exposed on its default port without authentication. Unauthenticated access allows an attacker to read, modify, or delete data and potentially use the server for malicious purposes. This configuration is a known "
+        },
+        {
+          "severity": "CRITICAL",
+          "cve": "CVE-2016-8339",
+          "host": "pentest-ground.com",
+          "port": 6379,
+          "service": "redis",
+          "cvss": 9.8,
+          "reasoning": "A buffer overflow in Redis 3.2.x prior to 3.2.4 can lead to arbitrary code execution via a crafted CONFIG SET command. The exact Redis version is unknown, so we cannot definitively say the server is vulnerable, but the r"
+        },
+        {
+          "severity": "LOW",
+          "cve": "CVE-2013-7458",
+          "host": "pentest-ground.com",
+          "port": 6379,
+          "service": "redis",
+          "cvss": 3.3,
+          "reasoning": "This CVE describes world\u2011readable permissions on a Redis history file in versions before 3.2.3. If the server runs an older version, local users could read the file, but we lack version data to confirm."
+        },
+        {
+          "severity": "HIGH",
+          "cve": "CVE-2015-8080",
+          "host": "pentest-ground.com",
+          "port": 6379,
+          "service": "redis",
+          "cvss": 7.5,
+          "reasoning": "This vulnerability impacts Redis 2.8.x before 2.8.24 and 3.0.x before 3.0.6, causing a possible denial\u2011of\u2011service or sandbox bypass via a crafted Lua number. Without version information we cannot be certain, but the issu"
+        },
+        {
+          "severity": "HIGH",
+          "cve": "CVE-2015-4335",
+          "host": "pentest-ground.com",
+          "port": 6379,
+          "service": "redis",
+          "cvss": 10.0,
+          "reasoning": "This CVE affects Redis versions before 2.8.21 and 3.x before 3.0.2, allowing remote code execution via Lua bytecode. Because the exact Redis version is unknown, we cannot confirm if the server is vulnerable, but the risk"
+        }
+      ]
+    }
+  ]
+}
