@@ -33,6 +33,7 @@ from app.api.routes.vulnerabilities import router as vulnerabilities_router
 from app.api.routes.admin import router as admin_router
 from app.api.routes.departments import router as departments_router
 from app.api.routes.overview import router as overview_router
+from app.api.routes.ml import router as ml_router
 from app.core.db import AsyncSessionLocal
 from app.models.system_config import SystemConfig
 from app.core.db import engine
@@ -113,6 +114,7 @@ app.include_router(devices_router, tags=["devices"])
 app.include_router(admin_router)
 app.include_router(departments_router, tags=["departments"])
 app.include_router(overview_router, tags=["overview"])
+app.include_router(ml_router, tags=["ml"])
 
 
 @app.get("/health")

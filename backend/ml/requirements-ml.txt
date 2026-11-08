@@ -1,0 +1,7 @@
+# Training-only dependencies for the ML priority predictor (backend/ml/).
+# NOT needed at runtime: the backend runs inference with the standard library
+# from app/ml/model_params.json. Install these only to retrain the model:
+#   pip install -r ml/requirements-ml.txt
+#   python ml/generate_dataset.py && python ml/train.py
+scikit-learn>=1.3
+numpy>=1.24
