@@ -3,7 +3,7 @@ from sqlalchemy import inspect, text
 from app.core.db import engine
 from app.models.scan import Base
 # Import all models to ensure they are registered with Base.metadata
-from app.models import scan, user, department, token_denylist, device_token, threat_log, triage_models, system_config
+from app.models import scan, user, department, scan_schedule, token_denylist, device_token, threat_log, triage_models, system_config
 
 async def run_migration():
     print("Connecting to the configured database to create/update tables...")
