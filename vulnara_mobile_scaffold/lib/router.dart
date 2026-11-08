@@ -17,6 +17,7 @@ import 'screens/login_screen.dart';
 import 'screens/network_activity_screen.dart';
 import 'screens/new_scan_screen.dart';
 import 'screens/notifications_screen.dart';
+import 'screens/scheduled_scans_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/remediation_approval_screen.dart';
 import 'screens/remediation_list_screen.dart';
@@ -58,6 +59,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/overview', builder: (context, state) => const NetworkActivityScreen()),
       GoRoute(path: '/admin/departments', builder: (context, state) => const DepartmentsScreen()),
       GoRoute(path: '/scans/new', builder: (context, state) => const NewScanScreen()),
+      GoRoute(path: '/schedules', builder: (context, state) => const ScheduledScansScreen()),
       GoRoute(path: '/notifications', builder: (context, state) => const NotificationsScreen()),
       GoRoute(path: '/profile', builder: (context, state) => const ProfileScreen()),
       GoRoute(path: '/audit-log', builder: (context, state) => const AuditLogScreen()),

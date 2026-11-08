@@ -84,8 +84,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
     setState(() {
       _saving = false;
-      if (err == null) _success = 'Profile updated successfully!';
-      else _error = err;
+      if (err == null) {
+        _success = 'Profile updated successfully!';
+      } else {
+        _error = err;
+      }
     });
   }
 
@@ -290,11 +293,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
       children: [
-        _FieldLabel('FULL NAME'),
+        const _FieldLabel('FULL NAME'),
         const SizedBox(height: 6),
         _VulnaraTextField(controller: _nameCtrl, hint: 'Your full name'),
         const SizedBox(height: 16),
-        _FieldLabel('EMAIL ADDRESS'),
+        const _FieldLabel('EMAIL ADDRESS'),
         const SizedBox(height: 6),
         _VulnaraTextField(controller: _emailCtrl, hint: 'your@email.com', keyboardType: TextInputType.emailAddress),
         const SizedBox(height: 28),
@@ -348,6 +351,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             subtitle: 'Assets, findings & scan activity',
             onTap: () => context.push('/overview'),
           ),
+          _SettingsRow(
+            icon: Icons.schedule_outlined,
+            title: 'Scheduled Scans',
+            subtitle: 'Recurring, automated scans',
+            onTap: () => context.push('/schedules'),
+          ),
         ]),
         // Admin: User & department management
         if (ref.read(authProvider) is AuthLoggedIn &&
@@ -392,7 +401,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
       children: [
-        _FieldLabel('CURRENT PASSWORD'),
+        const _FieldLabel('CURRENT PASSWORD'),
         const SizedBox(height: 6),
         _VulnaraTextField(
           controller: _currentPwCtrl,
@@ -407,7 +416,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           ),
         ),
         const SizedBox(height: 16),
-        _FieldLabel('NEW PASSWORD'),
+        const _FieldLabel('NEW PASSWORD'),
         const SizedBox(height: 6),
         _VulnaraTextField(
           controller: _newPwCtrl,
@@ -422,7 +431,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           ),
         ),
         const SizedBox(height: 16),
-        _FieldLabel('CONFIRM NEW PASSWORD'),
+        const _FieldLabel('CONFIRM NEW PASSWORD'),
         const SizedBox(height: 6),
         _VulnaraTextField(
           controller: _confirmPwCtrl,

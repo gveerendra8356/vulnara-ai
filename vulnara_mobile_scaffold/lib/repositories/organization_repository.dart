@@ -59,4 +59,59 @@ class OrganizationRepository {
       throw ApiClient.toApiException(e);
     }
   }
+
+  /// ML priority predictor: exploit-likelihood score for a finding.
+  Future<Map<String, dynamic>> scoreRisk(Map<String, dynamic> features) async {
+    try {
+      final r = await _client.dio.post('/ml/risk-score', data: features);
+      return r.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      throw ApiClient.toApiException(e);
+    }
+  }
+
+  // ---- Scheduled (recurring) scans -------------------------------------
+  Future<List<Map<String, dynamic>>> listSchedules() async {
+    try {
+      final r = await _client.dio.get('/schedules');
+      return (r.data as List).cast<Map<String, dynamic>>();
+    } on DioException catch (e) {
+      throw ApiClient.toApiException(e);
+    }
+  }
+
+  Future<void> createSchedule({
+    required String target,
+    required String justification,
+    required int intervalMinutes,
+    bool activeTesting = false,
+  }) async {
+    try {
+      await _client.dio.post('/schedules', data: {
+        'target': target,
+        'authorization_confirmed': true,
+        'authorization_justification': justification,
+        'active_testing_enabled': activeTesting,
+        'interval_minutes': intervalMinutes,
+      });
+    } on DioException catch (e) {
+      throw ApiClient.toApiException(e);
+    }
+  }
+
+  Future<void> toggleSchedule(String scheduleId, bool enabled) async {
+    try {
+      await _client.dio.patch('/schedules/$scheduleId', data: {'enabled': enabled});
+    } on DioException catch (e) {
+      throw ApiClient.toApiException(e);
+    }
+  }
+
+  Future<void> deleteSchedule(String scheduleId) async {
+    try {
+      await _client.dio.delete('/schedules/$scheduleId');
+    } on DioException catch (e) {
+      throw ApiClient.toApiException(e);
+    }
+  }
 }
