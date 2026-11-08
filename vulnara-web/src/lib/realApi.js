@@ -25,6 +25,11 @@ async function getOverview() {
   return data;
 }
 
+async function scoreRisk(features) {
+  const { data } = await http.post("/ml/risk-score", features);
+  return data;
+}
+
 async function listDepartments() {
   const { data } = await http.get("/departments");
   return data;
@@ -218,6 +223,7 @@ export const realApi = {
   forgotPassword,
   resetPassword,
   getOverview,
+  scoreRisk,
   listDepartments,
   createDepartment,
   deleteDepartment,

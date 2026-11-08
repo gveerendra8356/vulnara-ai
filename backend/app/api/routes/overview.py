@@ -139,6 +139,25 @@ async def organization_overview(
         for r in activity_rows
     ]
 
+    # ---- time series for charts -----------------------------------------
+    scans_by_day = (await session.execute(
+        select(func.date(Scan.created_at).label("d"), func.count())
+        .where(Scan.scan_id.in_(select(visible.c.scan_id)))
+        .group_by(func.date(Scan.created_at))
+        .order_by(func.date(Scan.created_at))
+    )).all()
+    findings_by_day = (await session.execute(
+        select(func.date(Vulnerability.discovered_at).label("d"), func.count())
+        .where(vuln_scope)
+        .group_by(func.date(Vulnerability.discovered_at))
+        .order_by(func.date(Vulnerability.discovered_at))
+    )).all()
+    status_dist = (await session.execute(
+        select(Scan.status, func.count())
+        .where(Scan.scan_id.in_(select(visible.c.scan_id)))
+        .group_by(Scan.status)
+    )).all()
+
     payload = {
         "scope": "organization" if current_user.role == "admin" else "department",
         "metrics": {
@@ -150,6 +169,11 @@ async def organization_overview(
         },
         "assets": assets,
         "activity": activity,
+        "time_series": {
+            "scans_by_day": [{"date": str(d), "count": int(n)} for d, n in scans_by_day],
+            "findings_by_day": [{"date": str(d), "count": int(n)} for d, n in findings_by_day],
+        },
+        "scan_status_distribution": {str(s): int(n) for s, n in status_dist if s},
     }
 
     # ---- per-department breakdown (admin only) ---------------------------

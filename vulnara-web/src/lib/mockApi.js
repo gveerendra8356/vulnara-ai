@@ -91,7 +91,15 @@ async function getOverview() {
     assets: [],
     activity: [],
     departments: [],
+    time_series: { scans_by_day: [], findings_by_day: [] },
+    scan_status_distribution: {},
   };
+}
+
+async function scoreRisk(features) {
+  await delay();
+  const score = Math.min(100, Math.round((features?.cvss_score ?? 0) * 10));
+  return { priority_score: score, priority_label: score >= 50 ? "HIGH" : "LOW", probability: score / 100 };
 }
 
 async function listDepartments() {
@@ -579,6 +587,7 @@ export const mockApi = {
   forgotPassword,
   resetPassword,
   getOverview,
+  scoreRisk,
   listDepartments,
   createDepartment,
   deleteDepartment,

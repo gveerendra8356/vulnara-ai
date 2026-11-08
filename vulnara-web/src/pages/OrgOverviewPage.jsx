@@ -1,8 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
+import {
+  ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+  Cell, PieChart, Pie, Legend, AreaChart, Area,
+} from "recharts";
 import { api } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import { LoadingRow, EmptyState } from "../components/Primitives";
+
+const SEV_HEX = { CRITICAL: "#f87171", HIGH: "#fb923c", MEDIUM: "#facc15", LOW: "#60a5fa", INFO: "#94a3b8" };
+const STATUS_HEX = { COMPLETED: "#4ade80", IN_PROGRESS: "#60a5fa", PENDING: "#facc15", FAILED: "#f87171", CANCELLED: "#94a3b8" };
+const TOOLTIP_STYLE = { background: "#161b22", border: "1px solid #30363d", borderRadius: 8, color: "#e6edf3", fontSize: 12 };
+const AXIS_TICK = { fill: "#9ca3af", fontSize: 11 };
 
 const SEV_COLOR = {
   CRITICAL: "text-red-400 bg-red-500/10 border-red-500/30",
@@ -50,6 +59,17 @@ export function OrgOverviewPage() {
   const departments = data?.departments ?? [];
   const isOrg = data?.scope === "organization";
 
+  // chart data
+  const severityData = ["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"].map((s) => ({ name: s, value: sev[s] ?? 0 }));
+  const statusData = Object.entries(data?.scan_status_distribution ?? {}).map(([name, value]) => ({ name, value }));
+  const ts = data?.time_series ?? {};
+  const byDate = {};
+  (ts.scans_by_day ?? []).forEach((d) => { (byDate[d.date] ??= { date: d.date }).scans = d.count; });
+  (ts.findings_by_day ?? []).forEach((d) => { (byDate[d.date] ??= { date: d.date }).findings = d.count; });
+  const trendData = Object.values(byDate)
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .map((d) => ({ date: d.date.slice(5), scans: d.scans ?? 0, findings: d.findings ?? 0 }));
+
   return (
     <div className="p-container-padding max-w-7xl mx-auto flex flex-col gap-6">
       <div>
@@ -83,6 +103,71 @@ export function OrgOverviewPage() {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Analytics charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="glass-panel rounded-xl p-5">
+          <h3 className="text-sm font-bold text-on-surface uppercase tracking-wider mb-4">Findings by severity</h3>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={severityData} margin={{ top: 4, right: 8, left: -18, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#ffffff14" vertical={false} />
+              <XAxis dataKey="name" tick={AXIS_TICK} axisLine={false} tickLine={false} />
+              <YAxis allowDecimals={false} tick={AXIS_TICK} axisLine={false} tickLine={false} />
+              <Tooltip cursor={{ fill: "#ffffff0a" }} contentStyle={TOOLTIP_STYLE} />
+              <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                {severityData.map((e) => <Cell key={e.name} fill={SEV_HEX[e.name]} />)}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="glass-panel rounded-xl p-5">
+          <h3 className="text-sm font-bold text-on-surface uppercase tracking-wider mb-4">Scans by status</h3>
+          {statusData.length === 0 ? (
+            <div className="h-[220px] flex items-center justify-center text-on-surface-variant text-sm">No scans yet</div>
+          ) : (
+            <ResponsiveContainer width="100%" height={220}>
+              <PieChart>
+                <Pie data={statusData} dataKey="value" nameKey="name" innerRadius={50} outerRadius={85} paddingAngle={2}>
+                  {statusData.map((e) => <Cell key={e.name} fill={STATUS_HEX[e.name] || "#94a3b8"} />)}
+                </Pie>
+                <Tooltip contentStyle={TOOLTIP_STYLE} />
+                <Legend wrapperStyle={{ fontSize: 11, color: "#9ca3af" }} />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+      </div>
+
+      {/* Activity over time */}
+      <div className="glass-panel rounded-xl p-5">
+        <h3 className="text-sm font-bold text-on-surface uppercase tracking-wider mb-4">Activity over time</h3>
+        {trendData.length === 0 ? (
+          <div className="h-[240px] flex items-center justify-center text-on-surface-variant text-sm">Run scans to see trends over time</div>
+        ) : (
+          <ResponsiveContainer width="100%" height={240}>
+            <AreaChart data={trendData} margin={{ top: 4, right: 8, left: -18, bottom: 0 }}>
+              <defs>
+                <linearGradient id="gFind" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#fb923c" stopOpacity={0.4} />
+                  <stop offset="95%" stopColor="#fb923c" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="gScan" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#60a5fa" stopOpacity={0.4} />
+                  <stop offset="95%" stopColor="#60a5fa" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#ffffff14" vertical={false} />
+              <XAxis dataKey="date" tick={AXIS_TICK} axisLine={false} tickLine={false} />
+              <YAxis allowDecimals={false} tick={AXIS_TICK} axisLine={false} tickLine={false} />
+              <Tooltip contentStyle={TOOLTIP_STYLE} />
+              <Legend wrapperStyle={{ fontSize: 11, color: "#9ca3af" }} />
+              <Area type="monotone" dataKey="findings" stroke="#fb923c" fill="url(#gFind)" strokeWidth={2} />
+              <Area type="monotone" dataKey="scans" stroke="#60a5fa" fill="url(#gScan)" strokeWidth={2} />
+            </AreaChart>
+          </ResponsiveContainer>
+        )}
       </div>
 
       {/* Per-department breakdown (admin only) */}
