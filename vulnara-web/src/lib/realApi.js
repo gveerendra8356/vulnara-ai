@@ -30,6 +30,30 @@ async function scoreRisk(features) {
   return data;
 }
 
+async function getScanDiff(scanId) {
+  const { data } = await http.get(`/scans/${scanId}/diff`);
+  return data;
+}
+
+async function listSchedules() {
+  const { data } = await http.get("/schedules");
+  return data;
+}
+
+async function createSchedule(payload) {
+  const { data } = await http.post("/schedules", payload);
+  return data;
+}
+
+async function toggleSchedule(scheduleId, enabled) {
+  const { data } = await http.patch(`/schedules/${scheduleId}`, { enabled });
+  return data;
+}
+
+async function deleteSchedule(scheduleId) {
+  await http.delete(`/schedules/${scheduleId}`);
+}
+
 async function listDepartments() {
   const { data } = await http.get("/departments");
   return data;
@@ -224,6 +248,11 @@ export const realApi = {
   resetPassword,
   getOverview,
   scoreRisk,
+  getScanDiff,
+  listSchedules,
+  createSchedule,
+  toggleSchedule,
+  deleteSchedule,
   listDepartments,
   createDepartment,
   deleteDepartment,

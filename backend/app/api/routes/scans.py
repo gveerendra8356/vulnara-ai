@@ -37,6 +37,88 @@ from app.websocket.manager import scan_connection_manager
 router = APIRouter()
 
 
+def _scan_scope_condition(current_user: CurrentUser):
+    """SQLAlchemy filter restricting scans to what this user may see.
+    None means no restriction (admin)."""
+    if current_user.role == "admin":
+        return None
+    if current_user.department_id is not None:
+        return Scan.department_id == current_user.department_id
+    return Scan.user_id == current_user.user_id
+
+
+def _vuln_key(v: Vulnerability) -> str:
+    """Stable identity of a finding across scans of the same target."""
+    ident = v.cve_id or v.service_name or v.severity or "?"
+    return f"{v.host}:{v.port}:{ident}"
+
+
+@router.get("/scans/{scan_id}/diff")
+async def scan_diff(
+    scan_id: uuid.UUID,
+    current_user: CurrentUser = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
+):
+    """Compares a scan against the previous COMPLETED scan of the SAME target
+    (visible to this user), reporting NEW, FIXED, and PERSISTING findings."""
+    scan = (await session.execute(select(Scan).where(Scan.scan_id == scan_id))).scalar_one_or_none()
+    if scan is None:
+        raise HTTPException(status_code=404, detail="Scan not found")
+
+    cond = _scan_scope_condition(current_user)
+    if cond is not None:
+        visible = (await session.execute(
+            select(Scan.scan_id).where(Scan.scan_id == scan_id, cond)
+        )).scalar_one_or_none()
+        if visible is None:
+            raise HTTPException(status_code=403, detail="Not authorized to view this scan")
+
+    prev_q = (
+        select(Scan)
+        .where(
+            Scan.target == scan.target,
+            Scan.status == "COMPLETED",
+            Scan.scan_id != scan.scan_id,
+            Scan.created_at < scan.created_at,
+        )
+        .order_by(Scan.created_at.desc())
+    )
+    if cond is not None:
+        prev_q = prev_q.where(cond)
+    prev = (await session.execute(prev_q.limit(1))).scalar_one_or_none()
+
+    if prev is None:
+        return {"has_baseline": False, "scan_id": str(scan_id), "target": scan.target}
+
+    curr_vulns = (await session.execute(
+        select(Vulnerability).where(Vulnerability.scan_id == scan_id))).scalars().all()
+    base_vulns = (await session.execute(
+        select(Vulnerability).where(Vulnerability.scan_id == prev.scan_id))).scalars().all()
+    base = {_vuln_key(v): v for v in base_vulns}
+    curr = {_vuln_key(v): v for v in curr_vulns}
+
+    def ser(v: Vulnerability) -> dict:
+        return {
+            "severity": v.severity, "cve_id": v.cve_id, "host": v.host, "port": v.port,
+            "service_name": v.service_name,
+            "cvss_score": float(v.cvss_score) if v.cvss_score is not None else None,
+        }
+
+    new = [ser(v) for k, v in curr.items() if k not in base]
+    fixed = [ser(v) for k, v in base.items() if k not in curr]
+    persisting = [ser(v) for k, v in curr.items() if k in base]
+    return {
+        "has_baseline": True,
+        "scan_id": str(scan_id),
+        "baseline_scan_id": str(prev.scan_id),
+        "baseline_created_at": prev.created_at,
+        "current_created_at": scan.created_at,
+        "target": scan.target,
+        "summary": {"new": len(new), "fixed": len(fixed), "persisting": len(persisting)},
+        "new": new, "fixed": fixed, "persisting": persisting,
+    }
+
+
 @router.post("/scans", response_model=ScanCreateResponse, status_code=status.HTTP_201_CREATED)
 async def create_scan(
     payload: ScanCreateRequest,

@@ -7,6 +7,7 @@ const navItems = [
   { to: "/", label: "Dashboard", icon: "dashboard", end: true },
   { to: "/overview", label: "Network Activity", icon: "lan" },
   { to: "/scans", label: "Scans", icon: "biotech" },
+  { to: "/schedules", label: "Scheduled Scans", icon: "schedule" },
   { to: "/remediations", label: "Remediation Queue", icon: "assignment_turned_in" },
 ];
 

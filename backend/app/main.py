@@ -34,6 +34,7 @@ from app.api.routes.admin import router as admin_router
 from app.api.routes.departments import router as departments_router
 from app.api.routes.overview import router as overview_router
 from app.api.routes.ml import router as ml_router
+from app.api.routes.schedules import router as schedules_router
 from app.core.db import AsyncSessionLocal
 from app.models.system_config import SystemConfig
 from app.core.db import engine
@@ -53,7 +54,7 @@ async def ensure_config_table():
     # otherwise ForeignKeys to not-yet-imported tables (e.g. departments)
     # break table creation on a fresh database.
     from app.models import (  # noqa: F401
-        user, scan, department, triage_models, threat_log,
+        user, scan, department, scan_schedule, triage_models, threat_log,
         token_denylist, device_token, system_config,
     )
 
@@ -94,6 +95,14 @@ async def ensure_config_table():
                 )
                 logging.info("startup migration: added %s.department_id", _table)
 
+
+@app.on_event("startup")
+async def start_scheduler():
+    """Launch the recurring-scan scheduler as a background task."""
+    from app.scanner.scheduler import scheduler_loop
+    asyncio.create_task(scheduler_loop())
+
+
 # Comma-separated list, e.g. "https://vulnara.vercel.app,http://localhost:5173"
 _origins_env = os.environ.get("CORS_ORIGINS", "http://localhost:5173")
 origins = [o.strip() for o in _origins_env.split(",") if o.strip()]
@@ -115,6 +124,7 @@ app.include_router(admin_router)
 app.include_router(departments_router, tags=["departments"])
 app.include_router(overview_router, tags=["overview"])
 app.include_router(ml_router, tags=["ml"])
+app.include_router(schedules_router, tags=["schedules"])
 
 
 @app.get("/health")

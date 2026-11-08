@@ -20,6 +20,7 @@ import { AdminCvePage } from "./pages/AdminCvePage";
 import { AdminUsersPage } from "./pages/AdminUsersPage";
 import { DepartmentsPage } from "./pages/DepartmentsPage";
 import { OrgOverviewPage } from "./pages/OrgOverviewPage";
+import { SchedulesPage } from "./pages/SchedulesPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 
@@ -54,6 +55,7 @@ export default function App() {
               <Route path="/overview" element={<OrgOverviewPage />} />
               <Route path="/scans" element={<ScansListPage />} />
               <Route path="/scans/new" element={<NewScanPage />} />
+              <Route path="/schedules" element={<SchedulesPage />} />
               <Route path="/scans/:scanId" element={<ScanDetailPage />} />
               <Route path="/vulnerabilities/:vulnId" element={<VulnerabilityDetailPage />} />
               <Route path="/remediations" element={<RemediationQueuePage />} />

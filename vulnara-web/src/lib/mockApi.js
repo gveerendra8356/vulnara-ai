@@ -102,6 +102,41 @@ async function scoreRisk(features) {
   return { priority_score: score, priority_label: score >= 50 ? "HIGH" : "LOW", probability: score / 100 };
 }
 
+async function getScanDiff(_scanId) {
+  await delay();
+  return { has_baseline: false };
+}
+
+async function listSchedules() {
+  await delay();
+  return state.schedules ?? [];
+}
+
+async function createSchedule(payload) {
+  await delay();
+  const s = {
+    schedule_id: nextId("sch"), target: payload.target,
+    active_testing_enabled: payload.active_testing_enabled ?? false,
+    interval_minutes: payload.interval_minutes, enabled: true,
+    next_run_at: new Date().toISOString(), last_run_at: null,
+    created_at: new Date().toISOString(),
+  };
+  (state.schedules ??= []).push(s);
+  return s;
+}
+
+async function toggleSchedule(scheduleId, enabled) {
+  await delay();
+  const s = (state.schedules ?? []).find((x) => x.schedule_id === scheduleId);
+  if (s) s.enabled = enabled;
+  return s;
+}
+
+async function deleteSchedule(scheduleId) {
+  await delay();
+  state.schedules = (state.schedules ?? []).filter((x) => x.schedule_id !== scheduleId);
+}
+
 async function listDepartments() {
   await delay();
   return state.departments ?? [];
@@ -588,6 +623,11 @@ export const mockApi = {
   resetPassword,
   getOverview,
   scoreRisk,
+  getScanDiff,
+  listSchedules,
+  createSchedule,
+  toggleSchedule,
+  deleteSchedule,
   listDepartments,
   createDepartment,
   deleteDepartment,
