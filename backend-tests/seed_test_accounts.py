@@ -7,10 +7,13 @@ data for local dev. Run once per test session, before the server starts,
 against DATABASE_URL from the environment.
 
 admin can't be created through the public API (POST /auth/register only
-allows self-registration as 'client' or 'analyst' by design -- see
-api/routes/auth.py), so the very first admin account always has to come
-from a trusted, out-of-band path like this one, exactly as it would in a
-real deployment.
+allows self-registration as 'analyst' by design -- see api/routes/auth.py),
+so the very first admin account always has to come from a trusted,
+out-of-band path like this one, exactly as it would in a real deployment.
+
+NOTE: Vulnara now has exactly two roles (admin, analyst); the historical
+'client' role was removed. The two "client" QA accounts below are kept (same
+emails, so existing fixtures resolve) but seeded as analysts.
 """
 import asyncio
 import sys
@@ -19,6 +22,7 @@ from app.core.db import engine
 from app.core.security import get_password_hash
 from app.models.scan import Base
 from app.models.user import User
+from app.models.department import Department  # noqa: F401 (registers FK target)
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import select
@@ -27,8 +31,8 @@ from sqlalchemy import select
 ACCOUNTS = [
     ("admin.qa@vulnara-qa-suite.com", "AdminQA123!", "QA Admin", "admin"),
     ("analyst.qa@vulnara-qa-suite.com", "AnalystQA123!", "QA Analyst", "analyst"),
-    ("client1.qa@vulnara-qa-suite.com", "Client1QA123!", "QA Client One", "client"),
-    ("client2.qa@vulnara-qa-suite.com", "Client2QA123!", "QA Client Two", "client"),
+    ("client1.qa@vulnara-qa-suite.com", "Client1QA123!", "QA Client One", "analyst"),
+    ("client2.qa@vulnara-qa-suite.com", "Client2QA123!", "QA Client Two", "analyst"),
 ]
 
 
