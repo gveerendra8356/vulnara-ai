@@ -55,12 +55,33 @@ from app.models.scan import Scan
 from app.models.triage_models import Remediation, Vulnerability
 from app.schemas.triage import RemediationResponse, RemediationRejectRequest
 
-# Admins and analysts are the only roles in the system, and both triage the
-# full remediation queue across every scan by design. This scoping hook is
-# kept as a single extension point should per-owner scoping ever be needed
-# again, but today it applies no additional restriction.
+# Department / ownership scoping for remediations, mirroring the scan scope
+# in api/routes/scans.py (_scan_scope_condition):
+#
+#   • admin                      -> sees every remediation (no restriction)
+#   • analyst with a department  -> only remediations whose underlying scan
+#                                   belongs to that department
+#   • analyst without department -> only remediations on their own scans
+#
+# A remediation is linked to a scan transitively: Remediation.vuln_id ->
+# Vulnerability.scan_id -> Scan. We restrict to the set of vulnerabilities
+# that belong to in-scope scans via an IN-subquery, which works equally for
+# the list query and single-row lookups (get / approve / reject / execute).
 def _scope_to_own_scans(stmt, current_user: CurrentUser):
-    return stmt
+    if current_user.role == "admin":
+        return stmt
+
+    if current_user.department_id is not None:
+        scan_cond = Scan.department_id == current_user.department_id
+    else:
+        scan_cond = Scan.user_id == current_user.user_id
+
+    visible_vuln_ids = (
+        select(Vulnerability.vuln_id)
+        .join(Scan, Vulnerability.scan_id == Scan.scan_id)
+        .where(scan_cond)
+    )
+    return stmt.where(Remediation.vuln_id.in_(visible_vuln_ids))
 
 
 @router.get("/remediations", response_model=list[RemediationResponse])
@@ -99,8 +120,13 @@ async def approve_remediation(
 ):
     if current_user.role not in ["analyst", "admin"]:
         raise HTTPException(status_code=403, detail="Not authorized")
-        
-    result = await session.execute(select(Remediation).where(Remediation.remediation_id == rem_id))
+
+    result = await session.execute(
+        _scope_to_own_scans(
+            select(Remediation).where(Remediation.remediation_id == rem_id),
+            current_user,
+        )
+    )
     rem = result.scalar_one_or_none()
     if not rem:
         raise HTTPException(status_code=404, detail="Remediation not found")
@@ -123,8 +149,13 @@ async def reject_remediation(
 ):
     if current_user.role not in ["analyst", "admin"]:
         raise HTTPException(status_code=403, detail="Not authorized")
-        
-    result = await session.execute(select(Remediation).where(Remediation.remediation_id == rem_id))
+
+    result = await session.execute(
+        _scope_to_own_scans(
+            select(Remediation).where(Remediation.remediation_id == rem_id),
+            current_user,
+        )
+    )
     rem = result.scalar_one_or_none()
     if not rem:
         raise HTTPException(status_code=404, detail="Remediation not found")
