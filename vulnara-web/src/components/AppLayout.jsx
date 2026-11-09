@@ -2,6 +2,7 @@ import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { USE_MOCK } from "../lib/api";
+import { NotificationsBell } from "./NotificationsBell";
 
 const navItems = [
   { to: "/", label: "Dashboard", icon: "dashboard", end: true },
@@ -135,10 +136,7 @@ export function AppLayout() {
                 Mock Mode
               </span>
             )}
-            <button className="text-on-surface-variant hover:text-primary transition-all p-2 rounded-full hover:bg-surface-variant/50 relative">
-              <span className="material-symbols-outlined">notifications</span>
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-error" />
-            </button>
+            <NotificationsBell />
             {user && (
               <div className="w-8 h-8 rounded-full border border-outline-variant bg-surface-variant flex items-center justify-center text-xs font-bold text-primary ml-2">
                 {user.full_name?.slice(0, 1)?.toUpperCase() || "U"}
