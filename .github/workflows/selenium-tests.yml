@@ -6,9 +6,9 @@ name: Selenium Web Test Suite (vulnara-web)
 # Pages" for the reasoning.
 
 on:
-  push:
-  pull_request:
-    branches: [main]
+  # Reusable: called by the unified deploy.yml pipeline as the Selenium Web
+  # Tests job. Kept workflow_dispatch so it can still be run on its own.
+  workflow_call: {}
   workflow_dispatch:
     inputs:
       gate_threshold:

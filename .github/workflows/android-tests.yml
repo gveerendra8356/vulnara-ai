@@ -6,9 +6,9 @@ name: Android Test Suite (vulnara-mobile)
 # the workflow as it's edited.
 
 on:
-  push:
-  pull_request:
-    branches: [main]
+  # Reusable: called by the unified deploy.yml pipeline as the Appium Mobile
+  # Tests job. Kept workflow_dispatch so it can still be run on its own.
+  workflow_call: {}
   workflow_dispatch:
     inputs:
       gate_threshold:

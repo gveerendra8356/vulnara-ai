@@ -1,0 +1,7 @@
+# Generated run artifacts (regenerated every CI run)
+reports/zap_report.json
+reports/dast_report.*
+reports/summary.md
+report_*.json
+report_*.html
+report_*.md

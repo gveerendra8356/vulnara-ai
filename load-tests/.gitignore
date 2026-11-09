@@ -1,0 +1,6 @@
+# Generated run artifacts (regenerated every CI run)
+reports/load_stats*.csv
+reports/load_report.*
+reports/summary.md
+backend.log
+*.db

@@ -1,12 +1,9 @@
 name: Deploy Frontend to GitHub Pages
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "vulnara-web/**"
-      - ".github/workflows/deploy-frontend.yml"
+  # The gated deploy now lives in deploy.yml (it deploys ONLY after all four
+  # test suites + Bundle Reports pass). This standalone deploy is kept for
+  # manual use only, so the two never race for the gh-pages branch.
   workflow_dispatch: # Allow manual trigger from GitHub UI
 
 permissions:
