@@ -70,6 +70,17 @@ class OrganizationRepository {
     }
   }
 
+  /// Combined trained-model verdict for one finding: exploit priority +
+  /// genuine-vulnerability detection + recommended patch technique.
+  Future<Map<String, dynamic>> analyzeVuln(Map<String, dynamic> features) async {
+    try {
+      final r = await _client.dio.post('/ml/analyze', data: features);
+      return r.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      throw ApiClient.toApiException(e);
+    }
+  }
+
   // ---- Scheduled (recurring) scans -------------------------------------
   Future<List<Map<String, dynamic>>> listSchedules() async {
     try {

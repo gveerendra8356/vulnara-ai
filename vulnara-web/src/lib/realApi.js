@@ -30,6 +30,13 @@ async function scoreRisk(features) {
   return data;
 }
 
+// Combined trained-model verdict for one finding: exploit priority +
+// genuine-vulnerability detection + recommended patch technique.
+async function analyzeVuln(features) {
+  const { data } = await http.post("/ml/analyze", features);
+  return data;
+}
+
 async function getScanDiff(scanId) {
   const { data } = await http.get(`/scans/${scanId}/diff`);
   return data;
@@ -248,6 +255,7 @@ export const realApi = {
   resetPassword,
   getOverview,
   scoreRisk,
+  analyzeVuln,
   getScanDiff,
   listSchedules,
   createSchedule,

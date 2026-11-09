@@ -1,0 +1,57 @@
+{
+  "detection": [
+    {
+      "model": "LogisticRegression",
+      "accuracy": 0.8813,
+      "precision": 0.8913,
+      "recall": 0.9018,
+      "f1": 0.8965,
+      "cv_f1_mean": 0.8799,
+      "roc_auc": 0.9231
+    },
+    {
+      "model": "DecisionTree",
+      "accuracy": 0.8353,
+      "precision": 0.84,
+      "recall": 0.8784,
+      "f1": 0.8588,
+      "cv_f1_mean": 0.8379,
+      "roc_auc": 0.8647
+    },
+    {
+      "model": "RandomForest",
+      "accuracy": 0.868,
+      "precision": 0.8729,
+      "recall": 0.8994,
+      "f1": 0.8859,
+      "cv_f1_mean": 0.8681,
+      "roc_auc": 0.9169
+    }
+  ],
+  "patch": [
+    {
+      "model": "LogisticRegression",
+      "accuracy": 0.824,
+      "precision": 0.6141,
+      "recall": 0.6208,
+      "f1": 0.6052,
+      "cv_f1_mean": 0.6224
+    },
+    {
+      "model": "DecisionTree",
+      "accuracy": 0.9213,
+      "precision": 0.8994,
+      "recall": 0.8412,
+      "f1": 0.8663,
+      "cv_f1_mean": 0.878
+    },
+    {
+      "model": "RandomForest",
+      "accuracy": 0.9247,
+      "precision": 0.911,
+      "recall": 0.8496,
+      "f1": 0.8759,
+      "cv_f1_mean": 0.8939
+    }
+  ]
+}

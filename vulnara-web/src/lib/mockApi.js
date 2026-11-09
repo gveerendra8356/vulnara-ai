@@ -102,6 +102,36 @@ async function scoreRisk(features) {
   return { priority_score: score, priority_label: score >= 50 ? "HIGH" : "LOW", probability: score / 100 };
 }
 
+async function analyzeVuln(features) {
+  await delay();
+  const cvss = features?.cvss_score ?? 0;
+  const hasCve = !!features?.cve_id;
+  const score = Math.min(100, Math.round(cvss * 10));
+  const detScore = Math.min(100, Math.round((cvss * 8) + (hasCve ? 20 : 0)));
+  const svc = (features?.service_name || "").toLowerCase();
+  let technique = "CONFIG_HARDENING";
+  if (hasCve) technique = "VERSION_UPGRADE";
+  else if (["redis", "mongodb", "mysql", "telnet", "ftp"].includes(svc)) technique = "CREDENTIAL_ROTATION";
+  else if (["rdp", "vnc", "smb"].includes(svc)) technique = "DISABLE_SERVICE";
+  const PATCH_DESC = {
+    VERSION_UPGRADE: "Upgrade the affected software to the vendor-patched version.",
+    CREDENTIAL_ROTATION: "Rotate credentials, remove default/weak accounts and enforce strong authentication.",
+    DISABLE_SERVICE: "Disable or remove the unnecessary / legacy service.",
+    CONFIG_HARDENING: "Harden the service configuration to secure defaults.",
+  };
+  return {
+    priority: { priority_score: score, priority_label: score >= 50 ? "HIGH" : "LOW", probability: score / 100 },
+    detection: { is_vulnerable: detScore >= 50, detection_score: detScore, probability: detScore / 100 },
+    patch_recommendation: {
+      technique,
+      technique_label: technique.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+      description: PATCH_DESC[technique],
+      confidence: 0.8,
+    },
+    models: { priority: "logistic_regression", detection: "logistic_regression", patch: "decision_tree" },
+  };
+}
+
 async function getScanDiff(_scanId) {
   await delay();
   return { has_baseline: false };
@@ -623,6 +653,7 @@ export const mockApi = {
   resetPassword,
   getOverview,
   scoreRisk,
+  analyzeVuln,
   getScanDiff,
   listSchedules,
   createSchedule,
