@@ -66,6 +66,41 @@ Responses are intentionally generic (they never reveal whether an email is regis
 
 ---
 
+## 🧠 How the AI Works
+
+Vulnara's intelligence is **two complementary layers**, not a single black box. A large **pretrained LLM** does open-ended reasoning, and **three small models we trained ourselves** add fast, interpretable, independent verdicts that cross-check it. The raw *detection* of what's on a host (open ports, service versions, CVE matches) is done by the deterministic scanner + NVD lookup — the models reason **about** those findings.
+
+### Layer 1 — Pretrained LLM (used as-is, in a RAG pipeline)
+- **Model:** `openai/gpt-oss-120b` (OpenAI's open-weight 120B model) served via the **Groq API**. It is **not fine-tuned** — it's steered with system instructions + strict JSON schemas (with validation and self-correction retries), not training.
+- **Retrieval-Augmented Generation (triage):** for each host, Vulnara scans ports + grabs service banners → **retrieves** candidate CVEs from the **NVD** database → feeds both to the LLM, which decides which are real vulnerabilities, assigns severity/CVSS/confidence, filters false positives, and explains its reasoning.
+- **Remediation:** generates an executive summary + technical fix script, always saved as `PENDING` — *"AI proposes, human disposes."* No code path can execute a generated script.
+- **Active-test verification:** confirms whether a probe's differential response genuinely indicates a vulnerability.
+
+### Layer 2 — Trained ML models (classic supervised ML, our own)
+Three scikit-learn models, trained offline and exported to **pure-numpy JSON** so production needs **no scikit-learn at runtime**. Each was chosen by comparing Logistic Regression, Decision Tree and Random Forest with 5-fold cross-validation and deploying the best per task.
+
+| Model | Task | Type | Deployed | Test-set performance |
+|---|---|---|---|---|
+| **Priority predictor** | How urgently to act (exploit-likelihood) | Binary | Logistic Regression | Accuracy 0.85 · F1 0.81 · ROC-AUC 0.91 |
+| **Vulnerability detection** | Genuine vulnerability vs likely false positive | Binary | Logistic Regression | Accuracy 0.88 · F1 0.90 · ROC-AUC 0.92 |
+| **Patch-technique recommender** | Which of 8 remediation classes fits | Multi-class | Decision Tree | Accuracy 0.92 · F1 0.87 |
+
+- **Patch classes:** `VERSION_UPGRADE`, `PATCH_AND_RESTART`, `CREDENTIAL_ROTATION`, `ACCESS_CONTROL`, `DISABLE_SERVICE`, `NETWORK_SEGMENTATION`, `WAF_RULE`, `CONFIG_HARDENING`. (The patch target is a rule cascade, so a Decision Tree beats a linear model — F1 0.87 vs 0.61 — and stays interpretable as an explicit decision path.)
+- **Why synthetic data?** Labelled real-world exploitation/fix outcomes are proprietary and scarce, so — as the public EPSS project motivates — each model learns a **transparent, documented domain labelling function** with realistic features and added label noise. The whole process is reproducible (fixed random seed).
+
+### How the layers combine
+On the **vulnerability detail** screen (web + mobile), the LLM's reasoning sits next to three ML cards — **ML Priority**, **AI Detection**, and **Recommended Patch** — so you can see the models **agree or disagree** with the LLM, giving a defensible second opinion rather than trusting one model alone. The combined verdict is served by `POST /ml/analyze`.
+
+### Reproduce the models
+```bash
+cd backend/ml
+python generate_dataset.py          && python train.py                   # priority model
+python generate_security_datasets.py && python train_security_models.py  # detection + patch models
+```
+Evaluation reports and metrics for the write-up: `backend/ml/EVALUATION.md`, `backend/ml/EVALUATION_SECURITY.md`, `backend/ml/metrics.json`, `backend/ml/security_metrics.json`.
+
+---
+
 ## 🏗️ Architecture & Technology Stack
 
 Vulnara leverages a modern, decoupled architecture designed for speed, concurrency, and real-time responsiveness.
@@ -75,7 +110,7 @@ The high-performance core engine that orchestrates scanning, handles AI integrat
 - **Framework:** FastAPI (Python 3.x) running on Uvicorn
 - **Database:** PostgreSQL utilizing `asyncpg` for non-blocking asynchronous queries
 - **ORM:** SQLAlchemy (AsyncIO)
-- **AI Integration:** Groq SDK (for analyzing logs and generating remediations)
+- **AI Integration:** Groq SDK (LLM triage & remediation) **+ trained scikit-learn models** (priority, vulnerability-detection & patch-technique) exported to pure-numpy for runtime — see [How the AI Works](#-how-the-ai-works)
 - **Real-Time Communication:** WebSockets
 - **Authentication & Security:** JWT (JSON Web Tokens) with passlib & bcrypt
 - **Push Notifications:** Firebase Admin SDK (FCM)
