@@ -1,0 +1,68 @@
+name: Build Android APK
+
+# Builds the Vulnara mobile release APK on a clean Linux runner. This avoids the
+# local Windows issues (WSL/Hyper-V reserved-port conflicts that break Gradle's
+# loopback connection, and the space in the local user path that breaks native
+# build hooks). The finished APK is published two ways:
+#   1. As a workflow artifact on every run (Actions tab -> run -> Artifacts).
+#   2. As a file on the "mobile-latest" GitHub Release, for a stable download link.
+
+on:
+  workflow_dispatch: {} # manual "Run workflow" button in the Actions tab
+  push:
+    branches: [main]
+    paths:
+      - "vulnara_mobile_scaffold/**"
+      - ".github/workflows/build-apk.yml"
+
+permissions:
+  contents: write # needed to create/update the release and attach the APK
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: vulnara_mobile_scaffold
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Flutter 3.47.9
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.9"
+          channel: stable
+          cache: true
+
+      - name: Flutter version
+        run: flutter --version
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build release APK
+        run: flutter build apk --release
+
+      - name: Upload APK as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vulnara-release-apk
+          path: vulnara_mobile_scaffold/build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+
+      - name: Publish APK to "mobile-latest" release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: mobile-latest
+          name: Vulnara mobile (latest build)
+          body: |
+            Latest Vulnara Android APK, built automatically from `main`.
+            Commit: ${{ github.sha }}
+          files: vulnara_mobile_scaffold/build/app/outputs/flutter-apk/app-release.apk
