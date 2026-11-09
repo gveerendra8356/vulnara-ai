@@ -51,7 +51,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       final user = await _ref.read(authRepositoryProvider).me();
       state = AuthLoggedIn(user);
-      await _ref.read(pushNotificationServiceProvider).registerDevice();
+      await _initPush();
     } catch (_) {
       await storage.clearTokens();
       state = const AuthLoggedOut();
@@ -67,9 +67,23 @@ class AuthNotifier extends StateNotifier<AuthState> {
             refreshToken: result.refreshToken,
           );
       state = AuthLoggedIn(result.user);
-      await _ref.read(pushNotificationServiceProvider).registerDevice();
+      await _initPush();
     } on ApiException catch (e) {
       state = AuthLoggedOut(error: e.message);
+    }
+  }
+
+  /// Wires push-notification handling (idempotent) and registers this
+  /// device's FCM token. Failures here must never break login, so the
+  /// whole thing is best-effort.
+  Future<void> _initPush() async {
+    try {
+      final push = _ref.read(pushNotificationServiceProvider);
+      await push.initialize();
+      await push.registerDevice();
+    } catch (_) {
+      // Firebase/FCM unavailable (e.g. no Google Play services) -- the
+      // rest of the app works fine without push.
     }
   }
 

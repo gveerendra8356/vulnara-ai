@@ -14,6 +14,7 @@ import '../providers/auth_provider.dart';
 import '../theme/vulnara_theme.dart';
 import '../widgets/vulnara_app_bar.dart';
 import '../widgets/vulnara_bottom_nav.dart';
+import '../widgets/vulnara_drawer.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -148,7 +149,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       backgroundColor: VulnaraColors.pageBackground,
       extendBodyBehindAppBar: true,
       extendBody: true,
-      appBar: const VulnaraAppBar(),
+      drawer: const VulnaraDrawer(current: '/profile'),
+      appBar: const VulnaraAppBar(showMenuButton: true),
       bottomNavigationBar: const VulnaraBottomNav(current: VulnaraTab.profile),
       body: SafeArea(
         bottom: false,
@@ -558,14 +560,6 @@ class _SectionDivider extends StatelessWidget {
         ),
         const Expanded(child: Divider()),
       ]);
-}
-
-class _SectionLabel extends StatelessWidget {
-  const _SectionLabel(this.label);
-  final String label;
-  @override
-  Widget build(BuildContext context) =>
-      Text(label, style: VulnaraFonts.labelCaps());
 }
 
 class _SettingsGroup extends StatelessWidget {

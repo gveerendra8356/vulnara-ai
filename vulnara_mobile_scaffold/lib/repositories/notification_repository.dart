@@ -50,6 +50,7 @@ class NotificationRepository {
             body: '${counts.critical} critical finding${counts.critical > 1 ? 's' : ''} '
                 'on target ${scan.target}. Immediate review recommended.',
             timestamp: scan.createdAt,
+            route: '/scans/${scan.scanId}',
           ));
         }
 
@@ -60,6 +61,7 @@ class NotificationRepository {
           body: 'Scan of ${scan.target} finished successfully'
               '${counts != null ? ' with ${counts.total} finding${counts.total != 1 ? 's' : ''}' : ''}.',
           timestamp: scan.createdAt,
+          route: '/scans/${scan.scanId}',
         ));
       } else if (scan.status == ScanStatus.failed) {
         notifications.add(AppNotification(
@@ -68,6 +70,7 @@ class NotificationRepository {
           title: 'Scan Failed',
           body: 'The scan of ${scan.target} encountered an error and did not complete.',
           timestamp: scan.createdAt,
+          route: '/scans/${scan.scanId}',
         ));
       }
     }
@@ -84,6 +87,7 @@ class NotificationRepository {
                 ? '${rem.executiveSummary.substring(0, 120)}…'
                 : rem.executiveSummary,
             timestamp: rem.createdAt,
+            route: '/remediations/${rem.remediationId}',
           ));
         case RemediationStatus.approved:
           notifications.add(AppNotification(
@@ -94,6 +98,7 @@ class NotificationRepository {
                 ? '${rem.executiveSummary.substring(0, 120)}…'
                 : rem.executiveSummary,
             timestamp: rem.createdAt,
+            route: '/remediations/${rem.remediationId}',
           ));
         case RemediationStatus.executed:
           notifications.add(AppNotification(
@@ -104,6 +109,7 @@ class NotificationRepository {
                 ? '${rem.executiveSummary.substring(0, 120)}…'
                 : rem.executiveSummary,
             timestamp: rem.createdAt,
+            route: '/remediations/${rem.remediationId}',
           ));
         case RemediationStatus.rejected:
           // Rejected remediations are not surfaced as notifications.

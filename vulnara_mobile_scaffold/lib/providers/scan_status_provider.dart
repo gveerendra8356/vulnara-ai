@@ -73,9 +73,30 @@ class ScanStatusNotifier extends StateNotifier<ScanStatusState> {
   Future<void> _init() async {
     // Seed with the current server state first (contract 2.2) so the
     // screen isn't blank while the socket handshake is in flight.
+    //
+    // The scan status is applied *before* and independently of the
+    // vulnerabilities fetch: if the findings call fails or is slow, a
+    // COMPLETED scan must still render as complete rather than being
+    // stuck on the initial PENDING state (which was the old bug -- a
+    // single `try` meant a vulns-fetch error skipped the status update
+    // entirely, then the socket never re-sent `scan.completed` for an
+    // already-finished scan).
+    ScanStatus? seededStatus;
     try {
       final scan = await _ref.read(scanRepositoryProvider).getScan(_scanId);
-      
+      seededStatus = scan.status;
+      state = state.copyWith(
+        status: scan.status,
+        severityCounts: scan.severityCounts ?? SeverityCounts.zero,
+        targetUrl: scan.target,
+      );
+    } catch (_) {
+      // Couldn't load the scan detail -- leave the initial state and try
+      // the socket below; a REST hiccup shouldn't block live updates.
+    }
+
+    // Findings are a separate, non-blocking concern.
+    try {
       final vulnsRaw = await _ref.read(scanRepositoryProvider).getVulnerabilities(_scanId);
       final vulns = vulnsRaw.map(VulnerabilitySummary.fromJson).toList();
       vulns.sort((a, b) {
@@ -83,21 +104,15 @@ class ScanStatusNotifier extends StateNotifier<ScanStatusState> {
         final rankB = ScanStatusState._severityRank[b.severity] ?? 5;
         return rankA.compareTo(rankB);
       });
-
-      state = state.copyWith(
-        status: scan.status,
-        severityCounts: scan.severityCounts ?? SeverityCounts.zero,
-        targetUrl: scan.target,
-        topFindings: vulns.take(_maxTopFindings).toList(),
-      );
-      if (scan.status == ScanStatus.completed ||
-          scan.status == ScanStatus.failed ||
-          scan.status == ScanStatus.cancelled) {
-        return; // scan is already done -- no point opening a socket
-      }
+      state = state.copyWith(topFindings: vulns.take(_maxTopFindings).toList());
     } catch (_) {
-      // Fall through and still try the socket -- REST hiccup shouldn't
-      // block live updates if the socket itself works.
+      // No findings yet / transient error -- not fatal to the status view.
+    }
+
+    if (seededStatus == ScanStatus.completed ||
+        seededStatus == ScanStatus.failed ||
+        seededStatus == ScanStatus.cancelled) {
+      return; // scan is already done -- no point opening a socket
     }
 
     final token = await _ref.read(secureStorageProvider).accessToken;

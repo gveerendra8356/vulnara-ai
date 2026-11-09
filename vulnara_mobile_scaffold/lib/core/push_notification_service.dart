@@ -18,9 +18,12 @@
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
+import 'package:flutter/widgets.dart' show WidgetsBinding;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:go_router/go_router.dart';
 
 import '../repositories/device_repository.dart';
+import '../router.dart';
 
 /// Must be a top-level function (not a class method) -- this is FCM's
 /// requirement for the background message handler, since it can run in
@@ -40,6 +43,10 @@ class PushNotificationService {
   final DeviceRepository _deviceRepository;
   final _localNotifications = FlutterLocalNotificationsPlugin();
 
+  /// initialize() is called on every login / session-restore; guard it so
+  /// the listeners and channel are only ever wired once per process.
+  bool _initialized = false;
+
   static const _channel = AndroidNotificationChannel(
     'vulnara_critical_alerts',
     'Critical vulnerability alerts',
@@ -48,6 +55,9 @@ class PushNotificationService {
   );
 
   Future<void> initialize() async {
+    if (_initialized) return;
+    _initialized = true;
+
     await FirebaseMessaging.instance.requestPermission(alert: true, badge: true, sound: true);
 
     await _localNotifications
@@ -59,6 +69,10 @@ class PushNotificationService {
         android: AndroidInitializationSettings('@mipmap/ic_launcher'),
         iOS: DarwinInitializationSettings(),
       ),
+      // Tapping a notification the app itself displayed (foreground case):
+      // the scan id travels in the payload so we can deep-link to it.
+      onDidReceiveNotificationResponse: (response) =>
+          _navigateToScan(response.payload),
     );
 
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
@@ -76,7 +90,35 @@ class PushNotificationService {
           android: AndroidNotificationDetails(_channel.id, _channel.name, channelDescription: _channel.description),
           iOS: const DarwinNotificationDetails(),
         ),
+        // Carry the scan id so a tap on this notification deep-links.
+        payload: message.data['scan_id'] as String?,
       );
+    });
+
+    // Background (app alive, not foregrounded): OS shows the tray entry and
+    // delivers the message here when the user taps it.
+    FirebaseMessaging.onMessageOpenedApp.listen(_openFromRemoteMessage);
+
+    // Terminated: the tap that cold-started the app is retrieved once.
+    final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+    if (initialMessage != null) _openFromRemoteMessage(initialMessage);
+  }
+
+  void _openFromRemoteMessage(RemoteMessage message) {
+    _navigateToScan(message.data['scan_id'] as String?);
+  }
+
+  /// Navigates to a scan's detail screen (or the Alerts Hub as a fallback)
+  /// using the global navigator key, since this runs with no BuildContext.
+  /// Deferred to after the current frame so navigation is safe even when
+  /// the router is still mounting on a cold start.
+  void _navigateToScan(String? scanId) {
+    final route = (scanId != null && scanId.isNotEmpty)
+        ? '/scans/$scanId'
+        : '/notifications';
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final context = rootNavigatorKey.currentContext;
+      if (context != null) context.push(route);
     });
   }
 

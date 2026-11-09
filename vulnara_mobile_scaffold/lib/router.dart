@@ -25,8 +25,14 @@ import 'screens/scan_list_screen.dart';
 import 'screens/scan_status_screen.dart';
 import 'screens/vulnerability_detail_screen.dart';
 
+/// Global navigator key so code without a BuildContext (e.g. the FCM
+/// push handler in core/push_notification_service.dart) can still drive
+/// navigation -- deep-linking a notification tap straight to its scan.
+final rootNavigatorKey = GlobalKey<NavigatorState>();
+
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
+    navigatorKey: rootNavigatorKey,
     initialLocation: '/scans',
     refreshListenable: _AuthListenable(ref),
     redirect: (context, state) {

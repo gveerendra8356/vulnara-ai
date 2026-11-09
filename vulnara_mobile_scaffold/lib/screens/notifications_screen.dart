@@ -18,6 +18,7 @@ import '../providers/notification_providers.dart';
 import '../theme/vulnara_theme.dart';
 import '../widgets/vulnara_app_bar.dart';
 import '../widgets/vulnara_bottom_nav.dart';
+import '../widgets/vulnara_drawer.dart';
 
 // ── Icon / colour metadata ────────────────────────────────────────────────────
 
@@ -68,7 +69,9 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       backgroundColor: VulnaraColors.pageBackground,
       extendBodyBehindAppBar: true,
       extendBody: true,
+      drawer: const VulnaraDrawer(current: '/notifications'),
       appBar: VulnaraAppBar(
+        showMenuButton: true,
         actions: [VulnaraAvatar(onTap: () => context.go('/profile'))],
       ),
       bottomNavigationBar: const VulnaraBottomNav(current: VulnaraTab.alerts),
@@ -195,7 +198,7 @@ class _AlertRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final n = notification;
-    return Container(
+    final row = Container(
       padding: const EdgeInsets.all(VulnaraSpacing.containerPadding),
       decoration: n.isCritical
           ? BoxDecoration(
@@ -239,7 +242,23 @@ class _AlertRow extends StatelessWidget {
               ],
             ),
           ),
+          if (n.route != null)
+            const Padding(
+              padding: EdgeInsets.only(left: 6),
+              child: Icon(Icons.chevron_right,
+                  size: 18, color: VulnaraColors.onSurfaceVariant),
+            ),
         ],
+      ),
+    );
+
+    // Tapping an alert deep-links to the scan or remediation it refers to.
+    if (n.route == null) return row;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => context.push(n.route!),
+        child: row,
       ),
     );
   }

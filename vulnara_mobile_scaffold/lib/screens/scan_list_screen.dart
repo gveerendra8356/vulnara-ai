@@ -17,6 +17,7 @@ import '../theme/vulnara_theme.dart';
 import '../widgets/glass_panel.dart';
 import '../widgets/vulnara_app_bar.dart';
 import '../widgets/vulnara_bottom_nav.dart';
+import '../widgets/vulnara_drawer.dart';
 
 class ScanListScreen extends ConsumerWidget {
   const ScanListScreen({super.key});
@@ -31,7 +32,11 @@ class ScanListScreen extends ConsumerWidget {
       backgroundColor: VulnaraColors.pageBackground,
       extendBodyBehindAppBar: true,
       extendBody: true,
-      appBar: VulnaraAppBar(actions: [VulnaraAvatar(onTap: () => context.go('/profile'))]),
+      drawer: const VulnaraDrawer(current: '/scans'),
+      appBar: VulnaraAppBar(
+        showMenuButton: true,
+        actions: [VulnaraAvatar(onTap: () => context.go('/profile'))],
+      ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: VulnaraColors.primary,
         foregroundColor: VulnaraColors.onPrimary,

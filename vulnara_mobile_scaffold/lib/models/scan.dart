@@ -31,14 +31,42 @@ class SeverityCounts {
 /// Status values per contract 2.2: PENDING|IN_PROGRESS|COMPLETED|FAILED|CANCELLED
 enum ScanStatus { pending, inProgress, completed, failed, cancelled;
 
-  static ScanStatus fromApi(String v) => switch (v) {
-        'PENDING' => ScanStatus.pending,
-        'IN_PROGRESS' => ScanStatus.inProgress,
-        'COMPLETED' => ScanStatus.completed,
-        'FAILED' => ScanStatus.failed,
-        'CANCELLED' => ScanStatus.cancelled,
-        _ => ScanStatus.pending,
-      };
+  /// Parses the backend status string defensively. The match is
+  /// case-insensitive and tolerant of the common spelling variants
+  /// (`RUNNING`, `COMPLETE`, `DONE`, `SUCCESS`, `CANCELED`, …) so a
+  /// completed scan can never silently fall through to PENDING just
+  /// because of a casing/format mismatch between the API and the app.
+  static ScanStatus fromApi(String v) {
+    switch (v.trim().toUpperCase().replaceAll('-', '_').replaceAll(' ', '_')) {
+      case 'PENDING':
+      case 'QUEUED':
+      case 'CREATED':
+        return ScanStatus.pending;
+      case 'IN_PROGRESS':
+      case 'INPROGRESS':
+      case 'RUNNING':
+      case 'SCANNING':
+      case 'STARTED':
+        return ScanStatus.inProgress;
+      case 'COMPLETED':
+      case 'COMPLETE':
+      case 'DONE':
+      case 'SUCCESS':
+      case 'SUCCEEDED':
+      case 'FINISHED':
+        return ScanStatus.completed;
+      case 'FAILED':
+      case 'FAILURE':
+      case 'ERROR':
+        return ScanStatus.failed;
+      case 'CANCELLED':
+      case 'CANCELED':
+      case 'ABORTED':
+        return ScanStatus.cancelled;
+      default:
+        return ScanStatus.pending;
+    }
+  }
 }
 
 class Scan {

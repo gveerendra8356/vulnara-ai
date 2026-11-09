@@ -12,11 +12,17 @@ class VulnaraAppBar extends StatelessWidget implements PreferredSizeWidget {
   const VulnaraAppBar({
     super.key,
     this.showWordmark = true,
+    this.showMenuButton = false,
     this.leading,
     this.actions,
   });
 
   final bool showWordmark;
+
+  /// When true, a hamburger button is shown at the leading edge that opens
+  /// the enclosing Scaffold's [Drawer] (the side navigation). Ignored when
+  /// an explicit [leading] widget is supplied.
+  final bool showMenuButton;
   final Widget? leading;
   final List<Widget>? actions;
 
@@ -50,7 +56,17 @@ class VulnaraAppBar extends StatelessWidget implements PreferredSizeWidget {
             height: _barHeight,
             child: Row(
               children: [
-                if (leading != null) leading!,
+                if (leading != null)
+                  leading!
+                else if (showMenuButton)
+                  Builder(
+                    builder: (context) => IconButton(
+                      icon: const Icon(Icons.menu, color: VulnaraColors.onSurfaceVariant),
+                      tooltip: 'Menu',
+                      onPressed: () => Scaffold.of(context).openDrawer(),
+                    ),
+                  ),
+                if (showMenuButton && leading == null) const SizedBox(width: 4),
                 if (showWordmark)
                   Image.asset('assets/logo.png', height: 32, fit: BoxFit.contain),
                 const Spacer(),

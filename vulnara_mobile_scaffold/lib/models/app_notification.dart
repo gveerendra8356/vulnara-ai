@@ -33,6 +33,7 @@ class AppNotification {
     required this.title,
     required this.body,
     required this.timestamp,
+    this.route,
   });
 
   /// Stable identifier (e.g. scan_id or remediation_id from the source object).
@@ -41,6 +42,10 @@ class AppNotification {
   final String title;
   final String body;
   final DateTime timestamp;
+
+  /// Where tapping this alert should navigate (a go_router path), e.g.
+  /// `/scans/<id>` or `/remediations/<id>`. Null means "not tappable".
+  final String? route;
 
   bool get isCritical => kind == AppNotificationKind.criticalVuln;
 }

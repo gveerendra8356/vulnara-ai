@@ -19,6 +19,7 @@ import '../providers/dashboard_providers.dart';
 import '../theme/vulnara_theme.dart';
 import '../widgets/vulnara_app_bar.dart';
 import '../widgets/vulnara_bottom_nav.dart';
+import '../widgets/vulnara_drawer.dart';
 
 // Returns the accent colour associated with a role string.
 Color _roleColor(String role) => switch (role) {
@@ -40,14 +41,10 @@ class DashboardScreen extends ConsumerWidget {
       backgroundColor: VulnaraColors.pageBackground,
       extendBodyBehindAppBar: true,
       extendBody: true,
+      drawer: const VulnaraDrawer(current: '/dashboard'),
       appBar: VulnaraAppBar(
+        showMenuButton: true,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.search,
-                color: VulnaraColors.onSurfaceVariant),
-            onPressed: () {},
-          ),
-          const SizedBox(width: 4),
           VulnaraAvatar(onTap: () => context.go('/profile')),
         ],
       ),
