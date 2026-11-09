@@ -21,6 +21,12 @@ from app.core.db import engine
 from app.models.scan import Base, Scan
 from app.models.triage_models import Vulnerability, Remediation
 from app.models.user import User
+# Register the Department / ScanSchedule tables on Base.metadata before
+# create_all — Scan.department_id has a foreign key to `departments`, so
+# without these the create_all cannot resolve the FK target and the seed
+# aborts (this is what failed the Appium pipeline's seeding step).
+from app.models.department import Department  # noqa: F401
+from app.models.scan_schedule import ScanSchedule  # noqa: F401
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import select
