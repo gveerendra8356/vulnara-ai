@@ -240,7 +240,7 @@ class TestBruteForceAndEnumeration:
         SEVERITY: Medium
         """
         await client.post("/auth/register", json={
-            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "client",
+            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "analyst",
         })
         for _ in range(20):
             r = await client.post("/auth/login", json={"email": unique_email, "password": "WrongOne!"})
@@ -261,7 +261,7 @@ class TestBruteForceAndEnumeration:
         EXPECTED: Fresh email -> 201; duplicate -> 400; both respond, neither hangs.
         SEVERITY: Low
         """
-        payload = {"email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "client"}
+        payload = {"email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "analyst"}
         r1 = await client.post("/auth/register", json=payload)
         r2 = await client.post("/auth/register", json=payload)
         assert r1.status_code == 201
@@ -315,7 +315,7 @@ class TestSessionInvalidationDast:
         SEVERITY: Low
         """
         await client.post("/auth/register", json={
-            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "client",
+            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "analyst",
         })
         login = (await client.post("/auth/login", json={"email": unique_email, "password": "ValidPass123!"})).json()
         r = await client.get("/auth/me", headers={"Authorization": f"Bearer {login['access_token']}"})
@@ -332,7 +332,7 @@ class TestSessionInvalidationDast:
         SEVERITY: Critical
         """
         await client.post("/auth/register", json={
-            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "client",
+            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "analyst",
         })
         login = (await client.post("/auth/login", json={"email": unique_email, "password": "ValidPass123!"})).json()
         headers = {"Authorization": f"Bearer {login['access_token']}"}

@@ -24,12 +24,12 @@ class TestRegistration:
         """
         r = await client.post("/auth/register", json={
             "email": unique_email, "password": "ValidPass123!",
-            "full_name": "QA Client", "role": "client",
+            "full_name": "QA Client", "role": "analyst",
         })
         assert r.status_code == 201
         body = r.json()
         assert body["email"] == unique_email
-        assert body["role"] == "client"
+        assert body["role"] == "analyst"
         assert "password" not in body and "password_hash" not in body
 
     async def test_register_valid_analyst_succeeds(self, client, unique_email):
@@ -70,7 +70,7 @@ class TestRegistration:
         EXPECTED: First registration 201, second 400.
         SEVERITY: Medium
         """
-        payload = {"email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "client"}
+        payload = {"email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "analyst"}
         r1 = await client.post("/auth/register", json=payload)
         assert r1.status_code == 201
         r2 = await client.post("/auth/register", json=payload)
@@ -85,7 +85,7 @@ class TestRegistration:
         EXPECTED: 422 Unprocessable Entity.
         SEVERITY: Medium
         """
-        payload = {"email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "client"}
+        payload = {"email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "analyst"}
         del payload[missing_field]
         r = await client.post("/auth/register", json=payload)
         assert r.status_code == 422
@@ -118,7 +118,7 @@ class TestRegistration:
         SEVERITY: Medium
         """
         r = await client.post("/auth/register", json={
-            "email": bad_email, "password": "ValidPass123!", "full_name": "QA", "role": "client",
+            "email": bad_email, "password": "ValidPass123!", "full_name": "QA", "role": "analyst",
         })
         assert r.status_code == 422
 
@@ -135,7 +135,7 @@ class TestRegistration:
         """
         email = f"{good_email_local}.{good_email_local}@vulnara-qa-suite.com"
         r = await client.post("/auth/register", json={
-            "email": email, "password": "ValidPass123!", "full_name": "QA", "role": "client",
+            "email": email, "password": "ValidPass123!", "full_name": "QA", "role": "analyst",
         })
         assert r.status_code == 201
 
@@ -149,7 +149,7 @@ class TestRegistration:
         SEVERITY: Medium
         """
         r = await client.post("/auth/register", json={
-            "email": unique_email, "password": short_password, "full_name": "QA", "role": "client",
+            "email": unique_email, "password": short_password, "full_name": "QA", "role": "analyst",
         })
         assert r.status_code == 422
 
@@ -162,7 +162,7 @@ class TestRegistration:
         SEVERITY: Low
         """
         r = await client.post("/auth/register", json={
-            "email": unique_email, "password": "eightchr", "full_name": "QA", "role": "client",
+            "email": unique_email, "password": "eightchr", "full_name": "QA", "role": "analyst",
         })
         assert r.status_code == 201
 
@@ -176,7 +176,7 @@ class TestRegistration:
         """
         long_password = "Aa1!" * 50  # 200 bytes, well past bcrypt's 72-byte cap
         r = await client.post("/auth/register", json={
-            "email": unique_email, "password": long_password, "full_name": "QA", "role": "client",
+            "email": unique_email, "password": long_password, "full_name": "QA", "role": "analyst",
         })
         assert r.status_code == 422
 
@@ -193,7 +193,7 @@ class TestRegistration:
             "email": unique_email, "password": "ValidPass123!", "full_name": "QA",
         })
         assert r.status_code == 201
-        assert r.json()["role"] == "client"
+        assert r.json()["role"] == "analyst"
 
     async def test_register_response_never_leaks_password_hash(self, client, unique_email):
         """
@@ -204,7 +204,7 @@ class TestRegistration:
         SEVERITY: Critical
         """
         r = await client.post("/auth/register", json={
-            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "client",
+            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "analyst",
         })
         assert r.status_code == 201
         assert "password_hash" not in r.text
@@ -224,7 +224,7 @@ class TestLogin:
         SEVERITY: Critical
         """
         await client.post("/auth/register", json={
-            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "client",
+            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "analyst",
         })
         r = await client.post("/auth/login", json={"email": unique_email, "password": "ValidPass123!"})
         assert r.status_code == 200
@@ -243,7 +243,7 @@ class TestLogin:
         SEVERITY: Critical
         """
         await client.post("/auth/register", json={
-            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "client",
+            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "analyst",
         })
         r = await client.post("/auth/login", json={"email": unique_email, "password": "WrongPass999!"})
         assert r.status_code == 401
@@ -268,7 +268,7 @@ class TestLogin:
         SEVERITY: Medium
         """
         await client.post("/auth/register", json={
-            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "client",
+            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "analyst",
         })
         r_wrong_pw = await client.post("/auth/login", json={"email": unique_email, "password": "Nope12345!"})
         r_no_user = await client.post("/auth/login", json={"email": "ghost.qa@vulnara-qa-suite.com", "password": "Nope12345!"})
@@ -284,7 +284,7 @@ class TestLogin:
         SEVERITY: Low
         """
         await client.post("/auth/register", json={
-            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "client",
+            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "analyst",
         })
         login = await client.post("/auth/login", json={"email": unique_email, "password": "ValidPass123!"})
         token = login.json()["access_token"]
@@ -317,7 +317,7 @@ class TestLogin:
         SEVERITY: Low
         """
         await client.post("/auth/register", json={
-            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "client",
+            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "analyst",
         })
         r = await client.post("/auth/login", json={"email": unique_email.upper(), "password": "ValidPass123!"})
         assert r.status_code in (200, 401)
@@ -331,7 +331,7 @@ class TestLogin:
         SEVERITY: Critical
         """
         await client.post("/auth/register", json={
-            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "client",
+            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "analyst",
         })
         r = await client.post("/auth/login", json={"email": unique_email, "password": "ValidPass123!"})
         assert "password_hash" not in r.text
@@ -388,7 +388,7 @@ class TestMeRefreshLogout:
         SEVERITY: High
         """
         await client.post("/auth/register", json={
-            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "client",
+            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "analyst",
         })
         login = (await client.post("/auth/login", json={"email": unique_email, "password": "ValidPass123!"})).json()
         r = await client.post("/auth/refresh", json={"refresh_token": login["refresh_token"]})
@@ -419,7 +419,7 @@ class TestMeRefreshLogout:
         SEVERITY: Medium
         """
         await client.post("/auth/register", json={
-            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "client",
+            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "analyst",
         })
         login = (await client.post("/auth/login", json={"email": unique_email, "password": "ValidPass123!"})).json()
         r = await client.post("/auth/refresh", json={"refresh_token": login["access_token"]})
@@ -445,7 +445,7 @@ class TestMeRefreshLogout:
         SEVERITY: Critical
         """
         await client.post("/auth/register", json={
-            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "client",
+            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "analyst",
         })
         login = (await client.post("/auth/login", json={"email": unique_email, "password": "ValidPass123!"})).json()
         headers = {"Authorization": f"Bearer {login['access_token']}"}

@@ -289,11 +289,11 @@ class TestAccountAndTokenBusinessRules:
         SEVERITY: Low
         """
         r1 = await client.post("/auth/register", json={
-            "email": unique_email, "password": "ValidPass123!", "full_name": "Duplicate Name", "role": "client",
+            "email": unique_email, "password": "ValidPass123!", "full_name": "Duplicate Name", "role": "analyst",
         })
         second_email = f"other.{unique_email}"
         r2 = await client.post("/auth/register", json={
-            "email": second_email, "password": "ValidPass123!", "full_name": "Duplicate Name", "role": "client",
+            "email": second_email, "password": "ValidPass123!", "full_name": "Duplicate Name", "role": "analyst",
         })
         assert r1.status_code == 201
         assert r2.status_code == 201

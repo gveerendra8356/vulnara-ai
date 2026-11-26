@@ -207,7 +207,7 @@ class TestErrorResponseDisclosure:
         """
         long_password = "Aa1!" * 50
         r = await client.post("/auth/register", json={
-            "email": unique_email, "password": long_password, "full_name": "QA", "role": "client",
+            "email": unique_email, "password": long_password, "full_name": "QA", "role": "analyst",
         })
         assert r.status_code == 422
         assert "Traceback" not in r.text
@@ -230,7 +230,7 @@ class TestRateLimiting:
         SEVERITY: High
         """
         await client.post("/auth/register", json={
-            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "client",
+            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "analyst",
         })
         statuses = []
         for _ in range(15):
@@ -256,7 +256,7 @@ class TestRateLimiting:
         for _ in range(10):
             email = f"burst.{_uuid.uuid4().hex[:10]}@vulnara-qa-suite.com"
             r = await client.post("/auth/register", json={
-                "email": email, "password": "ValidPass123!", "full_name": "QA", "role": "client",
+                "email": email, "password": "ValidPass123!", "full_name": "QA", "role": "analyst",
             })
             statuses.append(r.status_code)
         assert 429 not in statuses

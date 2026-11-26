@@ -421,7 +421,7 @@ class TestFullNameFieldValidation:
         SEVERITY: Low
         """
         r = await client.post("/auth/register", json={
-            "email": unique_email, "password": "ValidPass123!", "full_name": "", "role": "client",
+            "email": unique_email, "password": "ValidPass123!", "full_name": "", "role": "analyst",
         })
         assert r.status_code == 201
 
@@ -435,7 +435,7 @@ class TestFullNameFieldValidation:
         SEVERITY: Low
         """
         r = await client.post("/auth/register", json={
-            "email": unique_email, "password": "ValidPass123!", "full_name": "A" * 5000, "role": "client",
+            "email": unique_email, "password": "ValidPass123!", "full_name": "A" * 5000, "role": "analyst",
         })
         assert r.status_code != 500
 
@@ -450,7 +450,7 @@ class TestFullNameFieldValidation:
         """
         name = "José García 李明 🚀"
         r = await client.post("/auth/register", json={
-            "email": unique_email, "password": "ValidPass123!", "full_name": name, "role": "client",
+            "email": unique_email, "password": "ValidPass123!", "full_name": name, "role": "analyst",
         })
         assert r.status_code == 201
         assert r.json()["full_name"] == name
@@ -513,7 +513,7 @@ class TestNullByteAndEncodingEdgeCases:
         SEVERITY: Low
         """
         r = await client.post("/auth/register", json={
-            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "client",
+            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "analyst",
             "nickname": "should be ignored",
         })
         assert r.status_code == 201

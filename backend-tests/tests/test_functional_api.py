@@ -64,7 +64,7 @@ class TestAuthResponseShapes:
         SEVERITY: Medium
         """
         r = await client.post("/auth/register", json={
-            "email": unique_email, "password": "ValidPass123!", "full_name": "Shape QA", "role": "client",
+            "email": unique_email, "password": "ValidPass123!", "full_name": "Shape QA", "role": "analyst",
         })
         body = r.json()
         for field in ("user_id", "email", "full_name", "role", "created_at"):
@@ -79,7 +79,7 @@ class TestAuthResponseShapes:
         SEVERITY: Medium
         """
         await client.post("/auth/register", json={
-            "email": unique_email, "password": "ValidPass123!", "full_name": "Shape QA", "role": "client",
+            "email": unique_email, "password": "ValidPass123!", "full_name": "Shape QA", "role": "analyst",
         })
         r = await client.post("/auth/login", json={"email": unique_email, "password": "ValidPass123!"})
         body = r.json()
@@ -100,7 +100,7 @@ class TestAuthResponseShapes:
         body = r.json()
         for field in ("user_id", "email", "full_name", "role", "created_at", "last_login_at"):
             assert field in body
-        assert body["role"] == "client"
+        assert body["role"] == "analyst"
 
     async def test_me_role_reflects_actual_account_role(self, client, admin_headers, analyst_headers):
         """
@@ -575,7 +575,7 @@ class TestAdminCreateUserCrud:
         SEVERITY: High
         """
         r = await client.post("/auth/users", headers=admin_headers, json={
-            "email": unique_email, "full_name": "No Secret Echo", "role": "client", "temp_password": "TempPass123!",
+            "email": unique_email, "full_name": "No Secret Echo", "role": "analyst", "temp_password": "TempPass123!",
         })
         assert r.status_code == 201
         assert "temp_password" not in r.text
@@ -590,7 +590,7 @@ class TestAdminCreateUserCrud:
         EXPECTED: First call 201, second call with the same email 400.
         SEVERITY: Low
         """
-        payload = {"email": unique_email, "full_name": "Dup Check", "role": "client", "temp_password": "TempPass123!"}
+        payload = {"email": unique_email, "full_name": "Dup Check", "role": "analyst", "temp_password": "TempPass123!"}
         r1 = await client.post("/auth/users", headers=admin_headers, json=payload)
         r2 = await client.post("/auth/users", headers=admin_headers, json=payload)
         assert r1.status_code == 201
@@ -611,7 +611,7 @@ class TestRefreshLogoutCrud:
         SEVERITY: Low
         """
         await client.post("/auth/register", json={
-            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "client",
+            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "analyst",
         })
         login = (await client.post("/auth/login", json={"email": unique_email, "password": "ValidPass123!"})).json()
         r = await client.post("/auth/refresh", json={"refresh_token": login["refresh_token"]})
@@ -627,7 +627,7 @@ class TestRefreshLogoutCrud:
         SEVERITY: Low
         """
         await client.post("/auth/register", json={
-            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "client",
+            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "analyst",
         })
         login = (await client.post("/auth/login", json={"email": unique_email, "password": "ValidPass123!"})).json()
         headers = {"Authorization": f"Bearer {login['access_token']}"}
@@ -713,7 +713,7 @@ class TestFieldLevelContractChecks:
         SEVERITY: Low
         """
         r = await client.post("/auth/register", json={
-            "email": unique_email, "password": "ValidPass123!", "full_name": "Type Check", "role": "client",
+            "email": unique_email, "password": "ValidPass123!", "full_name": "Type Check", "role": "analyst",
         })
         assert isinstance(r.json()[field], expected_type)
 
@@ -792,7 +792,7 @@ class TestExtraFieldTolerance:
         SEVERITY: Low
         """
         await client.post("/auth/register", json={
-            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "client",
+            "email": unique_email, "password": "ValidPass123!", "full_name": "QA", "role": "analyst",
         })
         r = await client.post("/auth/login", json={
             "email": unique_email, "password": "ValidPass123!", "remember_me": True,
