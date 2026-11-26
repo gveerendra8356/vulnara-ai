@@ -1,0 +1,2 @@
+2026-11-26 06:53:49,353 INFO Session started for tests/test_authentication.py::TestEmailFormatHandling::test_html5_email_validation_is_more_permissive_than_it_looks[.leadingdot@example.com] against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:53:50,651 INFO Session ending

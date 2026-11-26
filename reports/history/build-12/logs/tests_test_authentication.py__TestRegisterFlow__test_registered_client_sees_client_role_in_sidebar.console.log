@@ -1,0 +1,6 @@
+2026-11-26 06:54:16,447 INFO Session started for tests/test_authentication.py::TestRegisterFlow::test_registered_client_sees_client_role_in_sidebar against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:54:17,982 INFO Session ending
+2026-11-26 06:54:21,631 INFO Session started for tests/test_authentication.py::TestRegisterFlow::test_registered_client_sees_client_role_in_sidebar against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:54:22,942 INFO Session ending
+2026-11-26 06:54:26,338 INFO Session started for tests/test_authentication.py::TestRegisterFlow::test_registered_client_sees_client_role_in_sidebar against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:54:27,264 INFO Session ending

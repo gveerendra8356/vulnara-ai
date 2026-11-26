@@ -1,0 +1,2 @@
+2026-11-26 06:52:59,828 INFO Session started for tests/test_authentication.py::TestLoginPageStructure::test_login_page_loads against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:53:00,270 INFO Session ending

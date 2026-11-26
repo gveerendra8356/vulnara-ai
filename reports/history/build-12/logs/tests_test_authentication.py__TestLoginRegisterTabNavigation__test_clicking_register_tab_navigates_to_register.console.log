@@ -1,0 +1,2 @@
+2026-11-26 06:53:29,965 INFO Session started for tests/test_authentication.py::TestLoginRegisterTabNavigation::test_clicking_register_tab_navigates_to_register against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:53:30,666 INFO Session ending

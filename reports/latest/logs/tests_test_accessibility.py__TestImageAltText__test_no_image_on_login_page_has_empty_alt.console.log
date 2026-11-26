@@ -1,0 +1,2 @@
+2026-11-26 06:52:39,588 INFO Session started for tests/test_accessibility.py::TestImageAltText::test_no_image_on_login_page_has_empty_alt against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:52:40,077 INFO Session ending

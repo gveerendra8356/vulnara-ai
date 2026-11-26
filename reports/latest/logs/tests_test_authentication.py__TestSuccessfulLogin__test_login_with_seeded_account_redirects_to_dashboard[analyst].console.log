@@ -1,0 +1,2 @@
+2026-11-26 06:53:32,655 INFO Session started for tests/test_authentication.py::TestSuccessfulLogin::test_login_with_seeded_account_redirects_to_dashboard[analyst] against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:53:34,548 INFO Session ending

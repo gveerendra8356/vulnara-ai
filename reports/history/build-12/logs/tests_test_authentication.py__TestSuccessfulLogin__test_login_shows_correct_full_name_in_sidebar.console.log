@@ -1,0 +1,2 @@
+2026-11-26 06:53:39,565 INFO Session started for tests/test_authentication.py::TestSuccessfulLogin::test_login_shows_correct_full_name_in_sidebar against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:53:41,262 INFO Session ending

@@ -1,0 +1,2 @@
+2026-11-26 06:54:23,339 INFO Session started for tests/test_authorization.py::TestAdminRouteGating::test_analyst_cannot_access_admin_routes[admin_cve] against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:54:24,545 INFO Session ending

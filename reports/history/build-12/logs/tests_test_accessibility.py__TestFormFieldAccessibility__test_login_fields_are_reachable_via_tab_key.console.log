@@ -1,0 +1,2 @@
+2026-11-26 06:52:52,637 INFO Session started for tests/test_accessibility.py::TestFormFieldAccessibility::test_login_fields_are_reachable_via_tab_key against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:52:53,564 INFO Session ending

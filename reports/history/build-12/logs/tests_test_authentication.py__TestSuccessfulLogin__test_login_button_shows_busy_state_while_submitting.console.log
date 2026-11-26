@@ -1,0 +1,2 @@
+2026-11-26 06:53:41,848 INFO Session started for tests/test_authentication.py::TestSuccessfulLogin::test_login_button_shows_busy_state_while_submitting against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:53:43,301 INFO Session ending

@@ -1,0 +1,2 @@
+2026-11-26 06:52:52,616 INFO Session started for tests/test_accessibility.py::TestColorAndTextContrastProxy::test_status_pills_carry_text_not_just_color against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:52:54,324 INFO Session ending

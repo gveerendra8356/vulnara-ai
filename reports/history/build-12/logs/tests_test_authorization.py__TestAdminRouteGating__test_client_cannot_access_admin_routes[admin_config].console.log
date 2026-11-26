@@ -1,0 +1,6 @@
+2026-11-26 06:54:24,970 INFO Session started for tests/test_authorization.py::TestAdminRouteGating::test_client_cannot_access_admin_routes[admin_config] against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:54:25,895 INFO Session ending
+2026-11-26 06:54:29,299 INFO Session started for tests/test_authorization.py::TestAdminRouteGating::test_client_cannot_access_admin_routes[admin_config] against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:54:30,202 INFO Session ending
+2026-11-26 06:54:33,614 INFO Session started for tests/test_authorization.py::TestAdminRouteGating::test_client_cannot_access_admin_routes[admin_config] against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:54:34,574 INFO Session ending

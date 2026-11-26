@@ -1,0 +1,6 @@
+2026-11-26 06:54:27,656 INFO Session started for tests/test_authentication.py::TestRegisterFlow::test_register_default_role_is_client against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:54:28,253 INFO Session ending
+2026-11-26 06:54:31,676 INFO Session started for tests/test_authentication.py::TestRegisterFlow::test_register_default_role_is_client against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:54:32,237 INFO Session ending
+2026-11-26 06:54:35,911 INFO Session started for tests/test_authentication.py::TestRegisterFlow::test_register_default_role_is_client against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:54:36,706 INFO Session ending

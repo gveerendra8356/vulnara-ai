@@ -1,0 +1,6 @@
+2026-11-26 06:54:01,467 INFO Session started for tests/test_authentication.py::TestRegisterFlow::test_register_new_account_auto_logs_in_and_redirects[client] against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:54:03,077 INFO Session ending
+2026-11-26 06:54:06,653 INFO Session started for tests/test_authentication.py::TestRegisterFlow::test_register_new_account_auto_logs_in_and_redirects[client] against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:54:08,071 INFO Session ending
+2026-11-26 06:54:11,759 INFO Session started for tests/test_authentication.py::TestRegisterFlow::test_register_new_account_auto_logs_in_and_redirects[client] against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:54:13,210 INFO Session ending

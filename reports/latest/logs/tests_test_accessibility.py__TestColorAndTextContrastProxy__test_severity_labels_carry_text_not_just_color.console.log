@@ -1,0 +1,6 @@
+2026-11-26 06:52:54,851 INFO Session started for tests/test_accessibility.py::TestColorAndTextContrastProxy::test_severity_labels_carry_text_not_just_color against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:52:56,808 INFO Session ending
+2026-11-26 06:53:00,429 INFO Session started for tests/test_accessibility.py::TestColorAndTextContrastProxy::test_severity_labels_carry_text_not_just_color against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:53:02,302 INFO Session ending
+2026-11-26 06:53:05,985 INFO Session started for tests/test_accessibility.py::TestColorAndTextContrastProxy::test_severity_labels_carry_text_not_just_color against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:53:07,858 INFO Session ending

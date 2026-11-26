@@ -1,0 +1,2 @@
+2026-11-26 06:53:25,034 INFO Session started for tests/test_authentication.py::TestRegisterPageStructure::test_register_has_heading against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:53:25,372 INFO Session ending

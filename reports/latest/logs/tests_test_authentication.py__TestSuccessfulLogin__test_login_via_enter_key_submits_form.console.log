@@ -1,0 +1,2 @@
+2026-11-26 06:53:37,360 INFO Session started for tests/test_authentication.py::TestSuccessfulLogin::test_login_via_enter_key_submits_form against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:53:38,985 INFO Session ending

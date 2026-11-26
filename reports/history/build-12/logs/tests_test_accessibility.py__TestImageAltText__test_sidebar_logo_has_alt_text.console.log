@@ -1,0 +1,2 @@
+2026-11-26 06:52:37,211 INFO Session started for tests/test_accessibility.py::TestImageAltText::test_sidebar_logo_has_alt_text against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:52:38,972 INFO Session ending

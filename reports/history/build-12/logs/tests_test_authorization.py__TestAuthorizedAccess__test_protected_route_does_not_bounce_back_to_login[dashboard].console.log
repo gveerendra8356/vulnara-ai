@@ -1,0 +1,4 @@
+2026-11-26 06:54:43,057 INFO Session started for tests/test_authorization.py::TestAuthorizedAccess::test_protected_route_does_not_bounce_back_to_login[dashboard] against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:55:04,244 INFO Session ending
+2026-11-26 06:55:07,899 INFO Session started for tests/test_authorization.py::TestAuthorizedAccess::test_protected_route_does_not_bounce_back_to_login[dashboard] against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:55:13,443 INFO Session ending

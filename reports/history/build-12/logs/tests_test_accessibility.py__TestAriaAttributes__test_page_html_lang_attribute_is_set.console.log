@@ -1,0 +1,2 @@
+2026-11-26 06:52:51,118 INFO Session started for tests/test_accessibility.py::TestAriaAttributes::test_page_html_lang_attribute_is_set against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:52:51,798 INFO Session ending

@@ -1,0 +1,2 @@
+2026-11-26 06:52:51,432 INFO Session started for tests/test_accessibility.py::TestFormFieldAccessibility::test_login_email_field_has_a_placeholder_as_a_labeling_cue against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:52:51,979 INFO Session ending

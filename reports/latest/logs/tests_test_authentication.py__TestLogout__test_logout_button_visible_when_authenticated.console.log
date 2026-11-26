@@ -1,0 +1,2 @@
+2026-11-26 06:54:37,098 INFO Session started for tests/test_authentication.py::TestLogout::test_logout_button_visible_when_authenticated against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:54:38,366 INFO Session ending

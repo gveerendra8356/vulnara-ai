@@ -1,0 +1,2 @@
+2026-11-26 06:54:19,948 INFO Session started for tests/test_authorization.py::TestUnauthenticatedRedirects::test_unauthenticated_root_redirects_to_login against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:54:20,672 INFO Session ending

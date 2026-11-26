@@ -1,0 +1,2 @@
+2026-11-26 06:52:36,086 INFO Session started for tests/test_accessibility.py::TestFormFieldAccessibility::test_submit_buttons_use_native_button_elements against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:52:36,578 INFO Session ending

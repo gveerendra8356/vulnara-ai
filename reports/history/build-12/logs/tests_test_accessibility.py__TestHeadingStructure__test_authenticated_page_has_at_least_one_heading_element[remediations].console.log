@@ -1,0 +1,2 @@
+2026-11-26 06:52:46,723 INFO Session started for tests/test_accessibility.py::TestHeadingStructure::test_authenticated_page_has_at_least_one_heading_element[remediations] against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:52:48,675 INFO Session ending

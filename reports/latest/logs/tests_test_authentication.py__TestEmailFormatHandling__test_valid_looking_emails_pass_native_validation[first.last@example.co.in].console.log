@@ -1,0 +1,2 @@
+2026-11-26 06:53:53,191 INFO Session started for tests/test_authentication.py::TestEmailFormatHandling::test_valid_looking_emails_pass_native_validation[first.last@example.co.in] against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:53:54,348 INFO Session ending

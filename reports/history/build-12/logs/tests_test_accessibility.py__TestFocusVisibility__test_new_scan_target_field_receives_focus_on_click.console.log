@@ -1,0 +1,2 @@
+2026-11-26 06:53:11,142 INFO Session started for tests/test_accessibility.py::TestFocusVisibility::test_new_scan_target_field_receives_focus_on_click against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:53:12,812 INFO Session ending

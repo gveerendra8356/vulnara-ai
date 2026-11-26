@@ -1,0 +1,2 @@
+2026-11-26 06:53:43,768 INFO Session started for tests/test_authentication.py::TestSuccessfulLogin::test_unseeded_email_falls_back_to_default_mock_user against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:53:45,129 INFO Session ending

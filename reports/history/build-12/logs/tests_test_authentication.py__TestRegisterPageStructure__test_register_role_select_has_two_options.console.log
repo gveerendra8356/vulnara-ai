@@ -1,0 +1,6 @@
+2026-11-26 06:53:15,121 INFO Session started for tests/test_authentication.py::TestRegisterPageStructure::test_register_role_select_has_two_options against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:53:16,196 INFO Session ending
+2026-11-26 06:53:19,654 INFO Session started for tests/test_authentication.py::TestRegisterPageStructure::test_register_role_select_has_two_options against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:53:20,233 INFO Session ending
+2026-11-26 06:53:23,750 INFO Session started for tests/test_authentication.py::TestRegisterPageStructure::test_register_role_select_has_two_options against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:53:24,525 INFO Session ending

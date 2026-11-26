@@ -1,0 +1,2 @@
+2026-11-26 06:53:13,435 INFO Session started for tests/test_accessibility.py::TestButtonAndLinkLabeling::test_new_scan_submit_button_has_readable_text_content against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:53:15,159 INFO Session ending

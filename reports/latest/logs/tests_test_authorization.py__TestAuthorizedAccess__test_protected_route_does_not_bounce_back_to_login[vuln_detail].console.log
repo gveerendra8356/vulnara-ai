@@ -1,0 +1,2 @@
+2026-11-26 06:55:00,967 INFO Session started for tests/test_authorization.py::TestAuthorizedAccess::test_protected_route_does_not_bounce_back_to_login[vuln_detail] against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:55:06,438 INFO Session ending

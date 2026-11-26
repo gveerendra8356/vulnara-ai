@@ -1,0 +1,6 @@
+2026-11-26 06:53:15,731 INFO Session started for tests/test_accessibility.py::TestButtonAndLinkLabeling::test_dashboard_new_scan_button_has_readable_text_content against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:53:17,380 INFO Session ending
+2026-11-26 06:53:20,773 INFO Session started for tests/test_accessibility.py::TestButtonAndLinkLabeling::test_dashboard_new_scan_button_has_readable_text_content against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:53:42,234 INFO Session ending
+2026-11-26 06:53:45,924 INFO Session started for tests/test_accessibility.py::TestButtonAndLinkLabeling::test_dashboard_new_scan_button_has_readable_text_content against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:53:48,018 INFO Session ending

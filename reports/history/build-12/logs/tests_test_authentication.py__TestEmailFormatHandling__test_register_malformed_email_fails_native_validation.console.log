@@ -1,0 +1,2 @@
+2026-11-26 06:54:00,033 INFO Session started for tests/test_authentication.py::TestEmailFormatHandling::test_register_malformed_email_fails_native_validation against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:54:00,767 INFO Session ending

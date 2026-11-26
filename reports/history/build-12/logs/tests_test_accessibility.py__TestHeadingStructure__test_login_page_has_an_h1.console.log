@@ -1,0 +1,2 @@
+2026-11-26 06:52:49,339 INFO Session started for tests/test_accessibility.py::TestHeadingStructure::test_login_page_has_an_h1 against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:52:49,782 INFO Session ending

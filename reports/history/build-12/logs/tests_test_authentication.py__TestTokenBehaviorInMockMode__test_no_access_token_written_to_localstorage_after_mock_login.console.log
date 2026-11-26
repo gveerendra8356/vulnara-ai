@@ -1,0 +1,2 @@
+2026-11-26 06:53:48,727 INFO Session started for tests/test_authentication.py::TestTokenBehaviorInMockMode::test_no_access_token_written_to_localstorage_after_mock_login against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:53:50,460 INFO Session ending

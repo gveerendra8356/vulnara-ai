@@ -1,0 +1,2 @@
+2026-11-26 06:52:55,182 INFO Session started for tests/test_accessibility.py::TestFormFieldAccessibility::test_new_scan_authorized_checkbox_is_a_native_checkbox_input against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:52:57,003 INFO Session ending

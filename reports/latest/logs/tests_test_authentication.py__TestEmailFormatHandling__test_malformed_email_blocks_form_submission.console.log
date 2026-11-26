@@ -1,0 +1,2 @@
+2026-11-26 06:53:58,389 INFO Session started for tests/test_authentication.py::TestEmailFormatHandling::test_malformed_email_blocks_form_submission against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:53:59,440 INFO Session ending

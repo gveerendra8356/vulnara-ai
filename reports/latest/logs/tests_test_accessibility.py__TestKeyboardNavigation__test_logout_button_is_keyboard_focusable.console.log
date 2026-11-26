@@ -1,0 +1,2 @@
+2026-11-26 06:52:46,220 INFO Session started for tests/test_accessibility.py::TestKeyboardNavigation::test_logout_button_is_keyboard_focusable against http://127.0.0.1:4173/vulnara-ai/
+2026-11-26 06:52:47,928 INFO Session ending
