@@ -59,17 +59,13 @@ jobs:
           tar -xzf gl.tgz gitleaks
           ./gitleaks detect --no-git --report-format json --report-path gitleaks.json --exit-code 0 || true
 
-      # ── Phase 5: dependency scan (Trivy filesystem) ─────────────────────
+      # ── Phase 5: dependency scan (Trivy filesystem, CLI) ────────────────
       - name: Trivy (dependency / filesystem scan)
         continue-on-error: true
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          scan-type: fs
-          scan-ref: .
-          format: json
-          output: trivy.json
-          severity: CRITICAL,HIGH,MEDIUM,LOW
-          exit-code: "0"
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/v0.56.2/contrib/install.sh | sh -s -- -b "$RUNNER_TEMP/bin" v0.56.2
+          "$RUNNER_TEMP/bin/trivy" fs --scanners vuln --format json --output trivy.json \
+            --severity CRITICAL,HIGH,MEDIUM,LOW --exit-code 0 . || true
 
       # ── Phase 5: Python deps (pip-audit) ────────────────────────────────
       - name: pip-audit (Python dependencies)
