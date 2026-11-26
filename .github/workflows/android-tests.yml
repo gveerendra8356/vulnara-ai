@@ -66,10 +66,14 @@ jobs:
           # relevant packages -- no cloud_firestore/other Firebase
           # products in this app) both declare lower Dart floors than the
           # app's own >=3.3.0, so the app's own constraint is already the
-          # highest floor in the dependency graph. channel: stable (no
-          # fixed version) always resolves at or above that floor,
-          # avoiding the "pinned below the highest package floor" trap
-          # this lesson warns about.
+          # highest floor in the dependency graph.
+          #
+          # PIN the Flutter version: bare `channel: stable` floats to the
+          # latest stable (3.50.1), which raised Flutter's minimum Gradle to
+          # 9.3.1 and broke the APK build against this project's Gradle 8.14
+          # wrapper. 3.47.9 is the version the project builds with (and matches
+          # build-apk.yml), so the debug APK builds without a Gradle/AGP bump.
+          flutter-version: "3.47.9"
           channel: "stable"
           cache: true
 
