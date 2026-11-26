@@ -8,13 +8,23 @@ name: Android Test Suite (vulnara-mobile)
 on:
   # Reusable: called by the unified deploy.yml pipeline as the Appium Mobile
   # Tests job. Kept workflow_dispatch so it can still be run on its own.
-  workflow_call: {}
+  workflow_call:
+    inputs:
+      mode:
+        description: "full (every suite) or smoke (reliable login subset)"
+        required: false
+        type: string
+        default: "full"
   workflow_dispatch:
     inputs:
       gate_threshold:
         description: "Minimum pass rate (%) required for the job to succeed"
         required: false
         default: "70"
+      mode:
+        description: "full (every suite) or smoke (reliable login subset)"
+        required: false
+        default: "full"
 
 env:
   GATE_THRESHOLD: ${{ github.event.inputs.gate_threshold || '70' }}
@@ -303,7 +313,7 @@ jobs:
             # Appium then attaches to the installed package instead of racing
             # package installation during its first session startup.
             adb install -r "$GITHUB_WORKSPACE/android-tests/apk/app-debug.apk"
-            cd android-tests && export APK_PATH=$GITHUB_WORKSPACE/android-tests/apk/app-debug.apk && export APPIUM_SKIP_APP_INSTALL=true && export APPIUM_SERVER_URL=http://127.0.0.1:4723 && export BACKEND_BASE_URL=http://127.0.0.1:8000 && pytest -p no:cacheprovider ${{ matrix.paths }}
+            cd android-tests && export APK_PATH=$GITHUB_WORKSPACE/android-tests/apk/app-debug.apk && export APPIUM_SKIP_APP_INSTALL=true && export APPIUM_SERVER_URL=http://127.0.0.1:4723 && export BACKEND_BASE_URL=http://127.0.0.1:8000 && pytest -p no:cacheprovider ${{ inputs.mode == 'smoke' && '-m smoke' || '' }} ${{ matrix.paths }}
         continue-on-error: true
 
       # if: always() -- conftest.py now checkpoints execution-results*.json
@@ -336,6 +346,8 @@ jobs:
     # produce instead of silently reporting nothing.
     if: always()
     runs-on: ubuntu-latest
+    env:
+      RUN_MODE: ${{ inputs.mode || 'full' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -403,11 +415,20 @@ jobs:
           # broken or missing-shard run -- instead of an exact count, and let
           # the pass-rate gate in generate_reports.py (GATE_THRESHOLD) be the
           # real quality bar.
-          expected = 396
-          floor = int(expected * 0.9)
-          print(f"Collected {total}/{expected} results (floor {floor}).")
-          if total < floor:
-              raise SystemExit(f"Only {total}/{expected} results collected (< {floor}) -- run was incomplete")
+          import os
+          if os.environ.get("RUN_MODE", "full") == "smoke":
+              # Reliable-subset run: only the smoke-marked login flow executes,
+              # so there is no fixed expected count. Require that it actually
+              # ran; the pass-rate gate (generate_reports.py) is the quality bar.
+              print(f"Smoke mode: collected {total} results (count floor skipped).")
+              if total == 0:
+                  raise SystemExit("Smoke mode collected 0 results -- the subset did not run")
+          else:
+              expected = 396
+              floor = int(expected * 0.9)
+              print(f"Collected {total}/{expected} results (floor {floor}).")
+              if total < floor:
+                  raise SystemExit(f"Only {total}/{expected} results collected (< {floor}) -- run was incomplete")
           PY
 
       - name: Generate Excel/HTML/Markdown reports

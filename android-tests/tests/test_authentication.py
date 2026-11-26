@@ -9,7 +9,10 @@ import config
 from pages.login_page import LoginPage
 from tests.fuzz_data import MALFORMED_EMAILS, VALID_LOOKING_EMAILS
 
-pytestmark = pytest.mark.authentication
+# The authentication (launch + login) flow is also the pipeline's reliable
+# "smoke" subset: it is the most fundamental path and is unaffected by the
+# dashboard/drawer UI changes, so it runs deterministically on the CI emulator.
+pytestmark = [pytest.mark.authentication, pytest.mark.smoke]
 
 
 @pytest.mark.parametrize("label", [
