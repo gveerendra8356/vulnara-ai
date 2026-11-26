@@ -127,70 +127,38 @@ class TestAdminOnlyEndpoints:
 
 
 class TestAnalystPrivilegedActions:
-    async def test_vulnerability_status_update_blocked_for_client(self, client, client1_headers, seeded_vulnerability):
-        """
-        CATEGORY: Authorization
-        TITLE: PATCH /vulnerabilities/{id} rejects a client-role user
-        OBJECTIVE: Confirm only analyst/admin can triage vulnerability status.
-        EXPECTED: 403 Forbidden.
-        SEVERITY: High
-        """
-        r = await client.patch(
-            f"/vulnerabilities/{seeded_vulnerability['vuln_id']}",
-            json={"status": "OPEN"}, headers=client1_headers,
-        )
-        assert r.status_code == 403
+    # Note: the historical "client" role was removed (Vulnara now has only
+    # admin + analyst), so the old "<action> blocked for a client-role user"
+    # tests no longer describe a reachable state and were dropped. Scoping is
+    # now enforced by department/ownership and is covered by the cross-tenant
+    # IDOR tests below.
 
-    async def test_vulnerability_status_update_allowed_for_analyst(self, client, analyst_headers, seeded_vulnerability):
+    async def test_vulnerability_status_update_allowed_for_analyst(self, client, client1_headers, seeded_vulnerability):
         """
         CATEGORY: Authorization
-        TITLE: PATCH /vulnerabilities/{id} succeeds for an analyst
-        OBJECTIVE: Confirm the analyst role can perform its core triage action.
+        TITLE: PATCH /vulnerabilities/{id} succeeds for the owning analyst
+        OBJECTIVE: Confirm an analyst can triage a finding on a scan they own.
         EXPECTED: 200 OK.
         SEVERITY: Low
         """
         r = await client.patch(
             f"/vulnerabilities/{seeded_vulnerability['vuln_id']}",
-            json={"status": "REMEDIATED"}, headers=analyst_headers,
+            json={"status": "REMEDIATED"}, headers=client1_headers,
         )
         assert r.status_code == 200
 
-    async def test_remediation_approve_blocked_for_client(self, client, client1_headers, seeded_remediation):
+    async def test_remediation_approve_allowed_for_analyst(self, client, client1_headers, seeded_remediation):
         """
         CATEGORY: Authorization
-        TITLE: POST /remediations/{id}/approve rejects a client-role user
-        OBJECTIVE: Confirm remediation approval is restricted to analyst/admin.
-        EXPECTED: 403 Forbidden.
-        SEVERITY: High
-        """
-        r = await client.post(f"/remediations/{seeded_remediation['remediation_id']}/approve", headers=client1_headers)
-        assert r.status_code == 403
-
-    async def test_remediation_approve_allowed_for_analyst(self, client, analyst_headers, seeded_remediation):
-        """
-        CATEGORY: Authorization
-        TITLE: POST /remediations/{id}/approve succeeds for an analyst
-        OBJECTIVE: Confirm the approval action itself functions for the intended role.
+        TITLE: POST /remediations/{id}/approve succeeds for the owning analyst
+        OBJECTIVE: Confirm the approval action functions for an analyst acting on
+                    a remediation within their own scan.
         EXPECTED: 200 OK, status becomes APPROVED.
         SEVERITY: Low
         """
-        r = await client.post(f"/remediations/{seeded_remediation['remediation_id']}/approve", headers=analyst_headers)
+        r = await client.post(f"/remediations/{seeded_remediation['remediation_id']}/approve", headers=client1_headers)
         assert r.status_code == 200
         assert r.json()["status"] == "APPROVED"
-
-    async def test_remediation_reject_blocked_for_client(self, client, client1_headers, seeded_remediation_2):
-        """
-        CATEGORY: Authorization
-        TITLE: POST /remediations/{id}/reject rejects a client-role user
-        OBJECTIVE: Confirm remediation rejection is restricted to analyst/admin.
-        EXPECTED: 403 Forbidden.
-        SEVERITY: High
-        """
-        r = await client.post(
-            f"/remediations/{seeded_remediation_2['remediation_id']}/reject",
-            json={"reason": "not applicable"}, headers=client1_headers,
-        )
-        assert r.status_code == 403
 
     async def test_remediation_reject_allowed_for_admin(self, client, admin_headers, seeded_remediation_2):
         """

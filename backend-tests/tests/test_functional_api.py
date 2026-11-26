@@ -283,18 +283,19 @@ class TestVulnerabilityCrud:
         assert r.status_code == 404
 
     @pytest.mark.parametrize("new_status", ["FALSE_POSITIVE", "REMEDIATED", "ACCEPTED_RISK", "OPEN"])
-    async def test_update_vulnerability_status_round_trips(self, client, analyst_headers, seeded_vulnerability, new_status):
+    async def test_update_vulnerability_status_round_trips(self, client, client1_headers, seeded_vulnerability, new_status):
         """
         CATEGORY: Functional API
         TITLE: PATCH /vulnerabilities/{id} correctly persists each plausible status value
-        OBJECTIVE: Confirm the write actually round-trips through a GET afterwards.
+        OBJECTIVE: Confirm the write actually round-trips through a GET afterwards
+                    (acting as the analyst who owns the finding's scan).
         EXPECTED: PATCH 200 with the new status; a follow-up GET reflects the same value.
         SEVERITY: Low
         """
-        patch = await client.patch(f"/vulnerabilities/{seeded_vulnerability['vuln_id']}", headers=analyst_headers, json={"status": new_status})
+        patch = await client.patch(f"/vulnerabilities/{seeded_vulnerability['vuln_id']}", headers=client1_headers, json={"status": new_status})
         assert patch.status_code == 200
         assert patch.json()["status"] == new_status
-        get = await client.get(f"/vulnerabilities/{seeded_vulnerability['vuln_id']}", headers=analyst_headers)
+        get = await client.get(f"/vulnerabilities/{seeded_vulnerability['vuln_id']}", headers=client1_headers)
         assert get.json()["status"] == new_status
 
     async def test_vulnerability_cvss_score_is_numeric(self, client, admin_headers, seeded_vulnerability):
@@ -770,7 +771,7 @@ class TestExtraFieldTolerance:
         })
         assert r.status_code == 201
 
-    async def test_vulnerability_update_ignores_unknown_extra_fields(self, client, analyst_headers, seeded_vulnerability):
+    async def test_vulnerability_update_ignores_unknown_extra_fields(self, client, client1_headers, seeded_vulnerability):
         """
         CATEGORY: Functional API
         TITLE: PATCH /vulnerabilities/{id} ignores unrecognized extra JSON fields
@@ -778,7 +779,7 @@ class TestExtraFieldTolerance:
         EXPECTED: 200 OK.
         SEVERITY: Low
         """
-        r = await client.patch(f"/vulnerabilities/{seeded_vulnerability['vuln_id']}", headers=analyst_headers, json={
+        r = await client.patch(f"/vulnerabilities/{seeded_vulnerability['vuln_id']}", headers=client1_headers, json={
             "status": "OPEN", "reviewer_notes": "not part of the schema",
         })
         assert r.status_code == 200

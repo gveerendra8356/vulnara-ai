@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.auth import CurrentUser, get_current_user
 from app.core.db import get_session
 from app.core.ownership import get_visible_vulnerability
+from app.models.scan import Scan
 from app.models.triage_models import Vulnerability
 from app.schemas.triage import VulnerabilityResponse, VulnerabilityUpdateRequest
 
@@ -34,10 +35,24 @@ async def update_vulnerability(
 
     result = await session.execute(select(Vulnerability).where(Vulnerability.vuln_id == vuln_id))
     vuln = result.scalar_one_or_none()
-    
+
     if not vuln:
         raise HTTPException(status_code=404, detail="Vulnerability not found")
-        
+
+    # Scope check: an analyst may only modify findings on scans they can access
+    # (their department, or their own if department-less). Admins: any. This
+    # closes the cross-tenant write IDOR — the old role check never blocked.
+    if current_user.role != "admin":
+        scan = (
+            await session.execute(select(Scan).where(Scan.scan_id == vuln.scan_id))
+        ).scalar_one_or_none()
+        if current_user.department_id is not None:
+            allowed = scan is not None and scan.department_id == current_user.department_id
+        else:
+            allowed = scan is not None and scan.user_id == current_user.user_id
+        if not allowed:
+            raise HTTPException(status_code=403, detail="Not authorized")
+
     vuln.status = payload.status
     await session.commit()
     await session.refresh(vuln)

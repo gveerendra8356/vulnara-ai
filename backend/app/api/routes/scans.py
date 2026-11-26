@@ -47,6 +47,19 @@ def _scan_scope_condition(current_user: CurrentUser):
     return Scan.user_id == current_user.user_id
 
 
+def _user_can_access_scan(scan, current_user: CurrentUser) -> bool:
+    """Whether this user may access a specific scan and its sub-resources.
+    Admins: always. An analyst with a department: only scans in that department.
+    A department-less analyst: only their own scans. (Mirrors
+    _scan_scope_condition so single-resource access matches list scoping and
+    closes the cross-tenant IDOR on the /scans/{id}/... sub-resources.)"""
+    if current_user.role == "admin":
+        return True
+    if current_user.department_id is not None:
+        return scan.department_id == current_user.department_id
+    return scan.user_id == current_user.user_id
+
+
 def _vuln_key(v: Vulnerability) -> str:
     """Stable identity of a finding across scans of the same target."""
     ident = v.cve_id or v.service_name or v.severity or "?"
@@ -313,7 +326,7 @@ async def list_scan_vulnerabilities(
     scan = scan_result.scalar_one_or_none()
     if not scan:
         raise HTTPException(status_code=404, detail="Scan not found")
-    if scan.user_id != current_user.user_id and current_user.role not in ("admin", "analyst"):
+    if not _user_can_access_scan(scan, current_user):
         raise HTTPException(status_code=403, detail="Not authorized")
 
     stmt = select(Vulnerability).where(Vulnerability.scan_id == scan_id)
@@ -333,7 +346,7 @@ async def list_scan_threat_logs(
 ):
     scan_result = await session.execute(select(Scan).where(Scan.scan_id == scan_id))
     scan = scan_result.scalar_one_or_none()
-    if not scan or (scan.user_id != current_user.user_id and current_user.role not in ("admin", "analyst")):
+    if not scan or not _user_can_access_scan(scan, current_user):
         raise HTTPException(status_code=404, detail="Scan not found")
 
     stmt = select(ThreatLog).where(ThreatLog.scan_id == scan_id).order_by(ThreatLog.executed_at.desc())
@@ -350,7 +363,7 @@ async def list_scan_remediations(
 ):
     scan_result = await session.execute(select(Scan).where(Scan.scan_id == scan_id))
     scan = scan_result.scalar_one_or_none()
-    if not scan or (scan.user_id != current_user.user_id and current_user.role not in ("admin", "analyst")):
+    if not scan or not _user_can_access_scan(scan, current_user):
         raise HTTPException(status_code=404, detail="Scan not found")
 
     stmt = (

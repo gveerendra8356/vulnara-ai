@@ -25,7 +25,7 @@ class TestRemediationLifecycle:
         r = await client.get(f"/remediations", headers=admin_headers)
         assert r.status_code == 200
 
-    async def test_approve_sets_status_and_reviewer(self, client, analyst_headers, seeded_remediation):
+    async def test_approve_sets_status_and_reviewer(self, client, client1_headers, seeded_remediation):
         """
         CATEGORY: Business Logic
         TITLE: Approving a remediation records status, reviewer, and timestamp
@@ -33,7 +33,7 @@ class TestRemediationLifecycle:
         EXPECTED: 200, status='APPROVED', reviewed_by set, reviewed_at set.
         SEVERITY: Medium
         """
-        r = await client.post(f"/remediations/{seeded_remediation['remediation_id']}/approve", headers=analyst_headers)
+        r = await client.post(f"/remediations/{seeded_remediation['remediation_id']}/approve", headers=client1_headers)
         assert r.status_code == 200
         body = r.json()
         assert body["status"] == "APPROVED"
@@ -52,7 +52,7 @@ class TestRemediationLifecycle:
         r = await client.post(f"/remediations/{seeded_remediation_2['remediation_id']}/mark-executed", headers=admin_headers)
         assert r.status_code == 400
 
-    async def test_mark_executed_succeeds_after_approval(self, client, analyst_headers, admin_headers, seeded_remediation_2):
+    async def test_mark_executed_succeeds_after_approval(self, client, client1_headers, admin_headers, seeded_remediation_2):
         """
         CATEGORY: Business Logic
         TITLE: mark-executed succeeds once a remediation has been approved
@@ -60,26 +60,19 @@ class TestRemediationLifecycle:
         EXPECTED: approve -> 200/APPROVED, then mark-executed -> 200/EXECUTED with executed_at set.
         SEVERITY: Medium
         """
-        approve = await client.post(f"/remediations/{seeded_remediation_2['remediation_id']}/approve", headers=analyst_headers)
+        approve = await client.post(f"/remediations/{seeded_remediation_2['remediation_id']}/approve", headers=client1_headers)
         assert approve.status_code == 200
         r = await client.post(f"/remediations/{seeded_remediation_2['remediation_id']}/mark-executed", headers=admin_headers)
         assert r.status_code == 200
         assert r.json()["status"] == "EXECUTED"
         assert r.json()["executed_at"] is not None
 
-    async def test_mark_executed_is_restricted_to_analysts_and_admins(self, client, client1_headers, seeded_remediation, analyst_headers):
-        """
-        CATEGORY: Authorization
-        TITLE: A client cannot mark an approved remediation as executed
-        OBJECTIVE: Ensure the execution transition is restricted to analysts and admins.
-        EXPECTED: 403 Forbidden for a client-role caller.
-        SEVERITY: High
-        """
-        await client.post(f"/remediations/{seeded_remediation['remediation_id']}/approve", headers=analyst_headers)
-        r = await client.post(f"/remediations/{seeded_remediation['remediation_id']}/mark-executed", headers=client1_headers)
-        assert r.status_code == 403
+    # test_mark_executed_is_restricted_to_analysts_and_admins was removed: the
+    # "client" role it guarded against no longer exists (every caller is an
+    # analyst or admin), so the 403 path is unreachable. Department/ownership
+    # scoping of the execution transition is covered by the cross-tenant tests.
 
-    async def test_reject_after_review_is_blocked(self, client, analyst_headers, admin_headers, seeded_remediation):
+    async def test_reject_after_review_is_blocked(self, client, admin_headers, seeded_remediation):
         """
         CATEGORY: Business Logic
         TITLE: Rejecting an already-approved remediation returns a conflict
@@ -89,7 +82,7 @@ class TestRemediationLifecycle:
         """
         current = await client.get(f"/remediations/{seeded_remediation['remediation_id']}", headers=admin_headers)
         if current.json()["status"] == "PENDING":
-            approve = await client.post(f"/remediations/{seeded_remediation['remediation_id']}/approve", headers=analyst_headers)
+            approve = await client.post(f"/remediations/{seeded_remediation['remediation_id']}/approve", headers=admin_headers)
             assert approve.status_code == 200
 
         reject = await client.post(
@@ -362,17 +355,17 @@ class TestAccountAndTokenBusinessRules:
         after = await client.get("/scans", headers=client2_headers)
         assert len(after.json()) == count_before
 
-    async def test_remediation_reviewed_by_matches_the_acting_users_id(self, client, analyst_headers, analyst_session, seeded_remediation):
+    async def test_remediation_reviewed_by_matches_the_acting_users_id(self, client, client1_headers, seeded_remediation):
         """
         CATEGORY: Business Logic
         TITLE: reviewed_by on an approved remediation matches the acting analyst's own user_id
         OBJECTIVE: Confirm the audit trail records the real actor, not a
                     placeholder or the vulnerability owner.
-        EXPECTED: reviewed_by == the analyst's own user_id from /auth/me.
+        EXPECTED: reviewed_by == the acting analyst's own user_id from /auth/me.
         SEVERITY: Medium
         """
-        me = await client.get("/auth/me", headers=analyst_headers)
-        approve = await client.post(f"/remediations/{seeded_remediation['remediation_id']}/approve", headers=analyst_headers)
+        me = await client.get("/auth/me", headers=client1_headers)
+        approve = await client.post(f"/remediations/{seeded_remediation['remediation_id']}/approve", headers=client1_headers)
         assert approve.json()["reviewed_by"] == me.json()["user_id"]
 
     async def test_multiple_remediations_can_exist_for_the_same_vulnerability(self, client, admin_headers, seeded_vulnerability, seeded_remediation, seeded_remediation_2):
