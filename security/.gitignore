@@ -1,0 +1,3 @@
+# Generated scanner outputs + reports (regenerated every CI run)
+/Vulnerability Test Results/
+*.json

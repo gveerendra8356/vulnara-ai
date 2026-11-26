@@ -85,10 +85,12 @@ jobs:
       - name: Run Locust (headless)
         working-directory: load-tests
         env:
+          # Baseline load profile: 100 concurrent virtual users for 60s
+          # (thousands of requests), reporting RPS + avg/min/max/p95 latency.
           LOAD_BASE_URL: "http://127.0.0.1:8000"
-          LOAD_USERS: "25"
-          LOAD_SPAWN_RATE: "5"
-          LOAD_RUN_TIME: "90s"
+          LOAD_USERS: "100"
+          LOAD_SPAWN_RATE: "20"
+          LOAD_RUN_TIME: "60s"
         run: |
           mkdir -p reports
           locust -f locustfile.py --headless \

@@ -60,6 +60,9 @@ def load_stats(path: str) -> dict:
                 "error_rate": (fails / count * 100.0) if count else 0.0,
                 "rps": rps,
                 "count": count,
+                "avg": _to_float(row.get("Average Response Time")),
+                "min": _to_float(row.get("Min Response Time")),
+                "max": _to_float(row.get("Max Response Time")),
             }
             stats[key] = entry
             stats[name] = entry  # also index by bare name
@@ -123,7 +126,8 @@ def main():
     executed = passed + failed
     pass_rate = round(passed / executed * 100, 2) if executed else 0.0
 
-    agg = stats.get("Aggregated", {"error_rate": 0.0, "p95": 0.0, "rps": 0.0, "count": 0})
+    agg = stats.get("Aggregated", {"error_rate": 0.0, "p95": 0.0, "rps": 0.0, "count": 0,
+                                   "avg": 0.0, "min": 0.0, "max": 0.0})
     # Genuine gate: aggregate breach or any High-priority endpoint failure.
     gate_breaches = []
     if agg.get("count", 0) == 0:
@@ -155,9 +159,12 @@ def main():
         ("Environment", os.environ.get("LOAD_BASE_URL", "http://127.0.0.1:8000")),
         ("Build/Commit", args.commit),
         ("Aggregate requests", int(agg.get("count", 0))),
-        ("Aggregate p95 (ms)", round(agg.get("p95", 0), 1)),
-        ("Aggregate error rate (%)", round(agg.get("error_rate", 0), 2)),
-        ("Aggregate throughput (req/s)", round(agg.get("rps", 0), 2)),
+        ("Throughput (req/s / RPS)", round(agg.get("rps", 0), 2)),
+        ("Avg response time (ms)", round(agg.get("avg", 0), 1)),
+        ("Min response time (ms)", round(agg.get("min", 0), 1)),
+        ("Max response time (ms)", round(agg.get("max", 0), 1)),
+        ("p95 response time (ms)", round(agg.get("p95", 0), 1)),
+        ("Error rate (%)", round(agg.get("error_rate", 0), 2)),
         ("Timestamp", time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime())),
         ("Deployment Readiness", deployment_ready),
     ]
@@ -182,7 +189,8 @@ def main():
                   x["actual_result"], x["status"], x["priority"], x["automation_status"], x["remarks"]])
 
     perf = wb.create_sheet("PERFORMANCE")
-    perf.append(["Endpoint", "Requests", "p95 (ms)", "Error rate (%)", "Throughput (req/s)"])
+    perf.append(["Endpoint", "Requests", "RPS (req/s)", "Avg (ms)", "Min (ms)",
+                 "Max (ms)", "p95 (ms)", "Error rate (%)"])
     for cell in perf[1]:
         cell.font = head
         cell.fill = head_fill
@@ -191,8 +199,9 @@ def main():
         if name in seen or st.get("count", 0) == 0:
             continue
         seen.add(name)
-        perf.append([name, int(st["count"]), round(st["p95"], 1),
-                     round(st["error_rate"], 2), round(st["rps"], 2)])
+        perf.append([name, int(st["count"]), round(st["rps"], 2), round(st.get("avg", 0), 1),
+                     round(st.get("min", 0), 1), round(st.get("max", 0), 1),
+                     round(st["p95"], 1), round(st["error_rate"], 2)])
 
     out_xlsx = os.path.join(HERE, "load_report.xlsx")
     wb.save(out_xlsx)
@@ -207,8 +216,9 @@ def main():
         "# Load / Performance Test Summary", "",
         f"- **Total cases:** {total}  |  **Passed:** {passed}  |  **Failed:** {failed}  |  **Skipped:** {skipped}",
         f"- **Pass rate (executed):** {pass_rate}%",
-        f"- **Requests:** {int(agg.get('count', 0))}  |  **p95:** {agg.get('p95', 0):.0f}ms  "
-        f"|  **Error rate:** {agg.get('error_rate', 0):.2f}%  |  **Throughput:** {agg.get('rps', 0):.2f} req/s",
+        f"- **Requests:** {int(agg.get('count', 0))}  |  **RPS:** {agg.get('rps', 0):.1f} req/s",
+        f"- **Response time** — avg {agg.get('avg', 0):.0f}ms · min {agg.get('min', 0):.0f}ms · "
+        f"max {agg.get('max', 0):.0f}ms · p95 {agg.get('p95', 0):.0f}ms  |  **Error rate:** {agg.get('error_rate', 0):.2f}%",
         f"- **Deployment Readiness:** {'✅ PASS' if deployment_ready == 'PASS' else '❌ FAIL'}",
         "",
     ]
