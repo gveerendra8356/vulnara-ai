@@ -1,0 +1,85 @@
+name: Publish Appium Reports to Pages
+
+# After the main CI/CD pipeline finishes, download the Appium (android) test
+# report it produced and publish the HTML report to GitHub Pages under a
+# /reports/ path — WITHOUT touching the web app that lives at the Pages root
+# (keep_files: true + destination_dir: reports).
+#
+#   https://gveerendra8356.github.io/vulnara-ai/reports/latest/execution-report.html
+#   https://gveerendra8356.github.io/vulnara-ai/reports/history/build-<n>/execution-report.html
+
+on:
+  workflow_run:
+    workflows: ["CI/CD Pipeline (Test → Bundle → Deploy)"]
+    types: [completed]
+  workflow_dispatch: {}
+
+permissions:
+  contents: write   # publish to gh-pages
+  actions: read     # download artifacts from the triggering run
+
+jobs:
+  publish-reports:
+    name: Publish Appium report to Pages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download the Appium report artifact from the pipeline run
+        id: dl
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: vulnara-android-report
+          path: android-report
+          run-id: ${{ github.event.workflow_run.id || github.run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Assemble reports/latest + reports/history/build-N
+        id: assemble
+        run: |
+          BUILD="build-${{ github.event.workflow_run.run_number || github.run_number }}"
+          mkdir -p "pages/latest" "pages/history/$BUILD"
+          if [ -d android-report ] && [ -n "$(ls -A android-report 2>/dev/null)" ]; then
+            for f in execution-report.html dashboard.html summary.md; do
+              [ -f "android-report/$f" ] && cp "android-report/$f" "pages/latest/" && cp "android-report/$f" "pages/history/$BUILD/"
+            done
+            for d in screenshots logs; do
+              [ -d "android-report/$d" ] && cp -r "android-report/$d" "pages/latest/" && cp -r "android-report/$d" "pages/history/$BUILD/"
+            done
+            # Ensure there is always an index to land on.
+            [ -f pages/latest/execution-report.html ] || echo "<h1>Appium report</h1><p>No execution-report.html in this build.</p>" > pages/latest/execution-report.html
+            cp pages/latest/execution-report.html pages/latest/index.html 2>/dev/null || true
+            echo "have_report=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No Appium report artifact found for this run."
+            echo "have_report=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish to GitHub Pages (/reports) — keep the web app intact
+        if: steps.assemble.outputs.have_report == 'true'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: pages
+          publish_branch: gh-pages
+          destination_dir: reports
+          keep_files: true
+
+      - name: Job summary
+        if: always()
+        run: |
+          URL="https://gveerendra8356.github.io/vulnara-ai/reports/latest/execution-report.html"
+          {
+            echo "# Android Appium Test Report Hosting"
+            echo ""
+            if [ "${{ steps.assemble.outputs.have_report }}" = "true" ]; then
+              echo "Build Number: ${{ github.event.workflow_run.run_number || github.run_number }}"
+              echo "Execution Date: $(date -u +'%Y-%m-%d %H:%M UTC')"
+              echo ""
+              echo "Report URL:"
+              echo "$URL"
+            else
+              echo "No Appium report artifact was available from the triggering run — nothing published this time."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

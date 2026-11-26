@@ -1,0 +1,101 @@
+name: Live Pages E2E Smoke (Selenium)
+
+# Runs a small read-only Selenium suite against the LIVE GitHub Pages
+# deployment (never localhost). It verifies the deployed site is up and its
+# public pages render. It runs AFTER the main pipeline deploys (workflow_run),
+# plus on demand and on a daily schedule.
+#
+# Note: this is intentionally a smoke suite, not the full 420-case Selenium
+# regression — that suite runs against a local mock-mode build because the live
+# site talks to the real backend and needs seeded auth/data.
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Live base URL to test"
+        required: false
+        default: "https://gveerendra8356.github.io/vulnara-ai/"
+  schedule:
+    - cron: "0 7 * * *"   # daily
+  workflow_run:
+    workflows: ["CI/CD Pipeline (Test → Bundle → Deploy)"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+env:
+  BASE_URL: ${{ github.event.inputs.base_url || 'https://gveerendra8356.github.io/vulnara-ai/' }}
+
+jobs:
+  live-smoke:
+    name: Live Pages smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # When triggered by the pipeline finishing, only run if it succeeded.
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: live-smoke/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r live-smoke/requirements.txt
+
+      - uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
+
+      - name: Verify deployment returns HTTP 200 (wait for Pages)
+        run: |
+          echo "Waiting for $BASE_URL ..."
+          for i in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 "$BASE_URL" || echo 000)
+            echo "attempt $i -> HTTP $code"
+            [ "$code" = "200" ] && { echo "deployment is live"; exit 0; }
+            sleep 10
+          done
+          echo "::error::Deployment never returned HTTP 200 at $BASE_URL"
+          exit 1
+
+      - name: Run live Selenium smoke suite
+        working-directory: live-smoke
+        env:
+          HEADLESS: "true"
+        run: |
+          pytest -q --json-report --json-report-file=report.json || true
+
+      - name: Generate reports
+        working-directory: live-smoke
+        run: |
+          python generate_report.py --json report.json --out "Test Results" \
+            --base-url "$BASE_URL" --summary-out "$GITHUB_STEP_SUMMARY"
+
+      - name: Enforce smoke result
+        working-directory: live-smoke
+        run: |
+          python - <<'PY'
+          import json, sys, os
+          d = json.load(open("report.json")) if os.path.exists("report.json") else {}
+          tests = d.get("tests", [])
+          failed = [t["nodeid"] for t in tests if t.get("outcome") == "failed"]
+          if not tests:
+              print("::error::No live smoke tests ran"); sys.exit(1)
+          if failed:
+              print("::error::Live smoke failures: " + ", ".join(failed)); sys.exit(1)
+          print(f"All {len(tests)} live smoke checks passed.")
+          PY
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vulnara-live-smoke-report
+          path: live-smoke/Test Results/**
+          retention-days: 30
+          if-no-files-found: warn
